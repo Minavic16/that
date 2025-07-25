@@ -1,17 +1,22 @@
 export function Logo() {
   return (
     <svg
-      width="32"
+      width="48"
       height="32"
-      viewBox="0 0 32 32"
+      viewBox="0 0 48 32"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       className="text-primary"
     >
-      <rect width="32" height="32" rx="8" fill="currentColor" />
       <path
-        d="M9 23V9H12.5L16 16L19.5 9H23V23H20V12L16.5 19H15.5L12 12V23H9Z"
-        fill="hsl(var(--primary-foreground))"
+        fillRule="evenodd"
+        clipRule="evenodd"
+        d="M18.7842 0L10.9697 19.3333V0H0V32H10.9697V12.6667L18.7842 32H29.7539L20.897 16L29.7539 0H18.7842Z"
+        fill="currentColor"
+      />
+      <path
+        d="M27 32H38V26H32V19H42V13H32V6H38V0H27V32Z"
+        fill="currentColor"
       />
     </svg>
   );
