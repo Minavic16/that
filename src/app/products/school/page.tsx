@@ -20,8 +20,8 @@ const benefits = [
 ]
 
 const screenshots = [
-  { src: 'https://firebasestudio.googleapis.com/v0/b/co-components-prod.appspot.com/o/images%2Fuser%2F1c37b848-a1c8-471a-942f-8796791f4b0f%2Fgenerated_1719597288673.png?alt=media&token=8e95793e-7a71-4603-9d95-8a2b53b84dd3', alt: 'Dashboard view', dataHint: 'dashboard analytics' },
-  { src: 'https://placehold.co/1200x800', alt: 'Student Profile page', dataHint: 'student profile' },
+  { src: 'https://placehold.co/1200x800', alt: 'Dashboard view', dataHint: 'dashboard analytics' },
+  { src: 'https://firebasestudio.googleapis.com/v0/b/co-components-prod.appspot.com/o/images%2Fuser%2F1c37b848-a1c8-471a-942f-8796791f4b0f%2Fgenerated_1719597288673.png?alt=media&token=8e95793e-7a71-4603-9d95-8a2b53b84dd3', alt: 'Student Profile page', dataHint: 'student profile' },
   { src: 'https://placehold.co/1200x800', alt: 'Timetable management', dataHint: 'calendar schedule' },
   { src: 'https://placehold.co/1200x800', alt: 'Result analytics', dataHint: 'chart graph' },
   { src: 'https://placehold.co/1200x800', alt: 'Parent communication portal', dataHint: 'messaging app' },
