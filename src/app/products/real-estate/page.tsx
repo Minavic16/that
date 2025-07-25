@@ -123,7 +123,7 @@ export default function RealEstateProductPage() {
             Join the future of real estate. Try NestEstate today to experience a smarter way to manage properties.
           </p>
           <Button size="lg" asChild className="bg-accent text-accent-foreground hover:bg-accent/90">
-            <Link href="/contact">Try NestEstate</Link>
+            <Link href="/demo">Try NestEstate</Link>
           </Button>
         </div>
       </section>

@@ -118,7 +118,7 @@ export default function SchoolProductPage() {
             Schedule a personalized demo or start a free trial to experience the power of NestEdge firsthand.
           </p>
           <Button size="lg" asChild className="bg-accent text-accent-foreground hover:bg-accent/90">
-            <Link href="/contact">Request a Demo</Link>
+            <Link href="/demo">Request a Demo</Link>
           </Button>
         </div>
       </section>

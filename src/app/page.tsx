@@ -68,7 +68,7 @@ export default function Home() {
               <Link href="/products">Explore Products</Link>
             </Button>
             <Button asChild size="lg" variant="outline" className="text-white border-white hover:bg-white hover:text-primary">
-              <Link href="/contact">Request a Demo</Link>
+              <Link href="/demo">Request a Demo</Link>
             </Button>
           </div>
         </div>
@@ -158,7 +158,7 @@ export default function Home() {
             Let us show you how NestEdge can transform your operations. Get in touch with our team for a personalized demo.
           </p>
           <Button size="lg" variant="secondary" asChild className="bg-accent text-accent-foreground hover:bg-accent/90">
-            <Link href="/contact">Request a Demo <ArrowRight className="ml-2 h-5 w-5" /></Link>
+            <Link href="/demo">Request a Demo <ArrowRight className="ml-2 h-5 w-5" /></Link>
           </Button>
         </div>
       </section>

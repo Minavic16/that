@@ -38,7 +38,7 @@ export function Header() {
               </Link>
             ))}
             <Button asChild className="bg-accent text-accent-foreground hover:bg-accent/90">
-              <Link href="/contact">Try Demo</Link>
+              <Link href="/demo">Try Demo</Link>
             </Button>
           </nav>
           <div className="md:hidden">
@@ -75,7 +75,7 @@ export function Header() {
                     </Link>
                   ))}
                   <Button asChild className="w-full bg-accent text-accent-foreground hover:bg-accent/90">
-                    <Link href="/contact" onClick={() => setMenuOpen(false)}>Try Demo</Link>
+                    <Link href="/demo" onClick={() => setMenuOpen(false)}>Try Demo</Link>
                   </Button>
                 </nav>
               </SheetContent>

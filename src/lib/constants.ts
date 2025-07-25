@@ -5,6 +5,7 @@ export const NAV_LINKS = [
   { href: '/products', label: 'Products' },
   { href: '/about', label: 'About' },
   { href: '/contact', label: 'Contact' },
+  { href: '/demo', label: 'Demo' },
 ];
 
 export const SOCIAL_LINKS = [
