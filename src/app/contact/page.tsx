@@ -27,11 +27,11 @@ export default function ContactPage() {
                 </div>
                 <div className="flex items-center gap-4">
                   <Phone className="w-6 h-6 text-primary" />
-                  <span>(123) 456-7890</span>
+                  <span>+2349068903182</span>
                 </div>
                 <div className="flex items-start gap-4">
                   <MapPin className="w-6 h-6 text-primary mt-1" />
-                  <span>123 Innovation Drive, Tech City, 12345</span>
+                  <span>No 1. Okpanyara Street, Umuayom Village.</span>
                 </div>
               </div>
                <div className="mt-8 rounded-lg overflow-hidden shadow-lg">
