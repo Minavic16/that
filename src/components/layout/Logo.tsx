@@ -3,21 +3,13 @@ export function Logo() {
     <svg
       width="48"
       height="32"
-      viewBox="0 0 48 32"
-      fill="none"
+      viewBox="0 0 150 100"
       xmlns="http://www.w3.org/2000/svg"
       className="text-primary"
+      fill="currentColor"
     >
-      <path
-        fillRule="evenodd"
-        clipRule="evenodd"
-        d="M18.7842 0L10.9697 19.3333V0H0V32H10.9697V12.6667L18.7842 32H29.7539L20.897 16L29.7539 0H18.7842Z"
-        fill="currentColor"
-      />
-      <path
-        d="M27 32H38V26H32V19H42V13H32V6H38V0H27V32Z"
-        fill="currentColor"
-      />
+      <path d="M10 90 V10 L60 60 V10 H70 V90 L20 40 V90 Z" />
+      <path d="M90 10 H140 L135 25 H90 V45 H130 L125 60 H90 V85 H140 L135 90 H90 Z" />
     </svg>
   );
 }
