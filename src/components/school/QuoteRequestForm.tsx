@@ -23,6 +23,7 @@ import {
   DialogFooter
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
+import { sendQuoteRequest } from "@/actions/send-quote-request";
 
 const formSchema = z.object({
   schoolName: z.string().min(2, { message: "School name must be at least 2 characters." }),
@@ -48,14 +49,23 @@ export function QuoteRequestForm({ isOpen, onOpenChange }: QuoteRequestFormProps
     },
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log("Quote Request Submitted:", values);
-    toast({
-      title: "Quote Request Sent!",
-      description: "Thank you for your interest. We will get back to you shortly with a detailed quote.",
-    });
-    form.reset();
-    onOpenChange(false);
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    const result = await sendQuoteRequest(values);
+
+    if (result.success) {
+      toast({
+        title: "Quote Request Sent!",
+        description: "Thank you for your interest. We will get back to you shortly with a detailed quote.",
+      });
+      form.reset();
+      onOpenChange(false);
+    } else {
+      toast({
+        variant: "destructive",
+        title: "Submission Failed",
+        description: result.error || "An unknown error occurred. Please try again.",
+      });
+    }
   }
 
   return (
