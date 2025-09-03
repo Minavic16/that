@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
-import { Check, Users, ArrowRight, Bot, BarChart, ShieldCheck, MapPin } from 'lucide-react';
+import { Users, ArrowRight, ShieldCheck, Star } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { PremiumAddOn } from '@/types';
 import Link from 'next/link';
