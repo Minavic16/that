@@ -37,9 +37,10 @@ const features = [
 ];
 
 const screenshots = [
-  { src: 'https://firebasestudio.googleapis.com/v0/b/co-components-prod.appspot.com/o/images%2Fuser%2F1c37b848-a1c8-471a-942f-8796791f4b0f%2Fgenerated_1719597288673.png?alt=media&token=8e95793e-7a71-4603-9d95-8a2b53b84dd3', alt: 'School management dashboard', dataHint: 'dashboard analytics' },
-  { src: 'https://placehold.co/1200x800', alt: 'Student profile page', dataHint: 'student profile' },
-  { src: 'https://placehold.co/1200x800', alt: 'Finance tracking interface', dataHint: 'financial chart' },
+  { src: 'https://res.cloudinary.com/da3ywduoa/image/upload/v1756903653/Screenshot_2025-09-03_053805_ebuaon.png', alt: 'Student result management', dataHint: 'student results' },
+  { src: 'https://res.cloudinary.com/da3ywduoa/image/upload/v1756903618/Screenshot_2025-09-03_054622_nxeiu9.png', alt: 'Student enrollment form', dataHint: 'enrollment form' },
+  { src: 'https://res.cloudinary.com/da3ywduoa/image/upload/v1756903291/Screenshot_2025-07-25_100716_pzjume.png', alt: 'School management dashboard', dataHint: 'management dashboard' },
+  { src: 'https://res.cloudinary.com/da3ywduoa/image/upload/v1756903274/Screenshot_2025-07-25_101136_nhk1rr.png', alt: 'Admin dashboard overview', dataHint: 'admin dashboard' },
 ];
 
 
