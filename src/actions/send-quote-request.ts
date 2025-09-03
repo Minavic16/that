@@ -1,8 +1,6 @@
-
 'use server';
 
 import { Resend } from 'resend';
-import { QuoteRequestEmail } from '@/emails/quote-request-email';
 import * as z from 'zod';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
@@ -27,10 +25,17 @@ export async function sendQuoteRequest(data: FormData) {
 
   try {
     const { data: result, error } = await resend.emails.send({
-      from: `NestEdge Quote Request <${fromEmail}>`,
+      from: fromEmail,
       to: [toEmail],
       subject: `New Quote Request from ${data.schoolName}`,
-      react: QuoteRequestEmail(data),
+      text: `
+        A new quote request has been submitted.
+        
+        School Name: ${data.schoolName}
+        Role: ${data.role}
+        School Address: ${data.schoolAddress}
+        School Email: ${data.schoolEmail}
+      `,
     });
 
     if (error) {
