@@ -2,8 +2,10 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Check, Info, Library, DollarSign, Briefcase, Star, Users } from 'lucide-react';
 import Link from 'next/link';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import PricingCalculator from '@/components/school/PricingCalculator';
+import Image from 'next/image';
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 
 
 const features = [
@@ -34,44 +36,10 @@ const features = [
     },
 ];
 
-const pricingTiers = [
-    {
-        name: 'Basic Plan',
-        price: '₦1,500,000',
-        students: 'Up to 250 students',
-        description: 'Ideal for small schools needing core management functionalities.',
-        features: [
-            'Core Modules Included',
-            'Standard Technical Support',
-        ],
-        highlight: false,
-    },
-    {
-        name: 'Standard Plan',
-        price: '₦4,500,000',
-        students: 'Up to 1,000 students',
-        description: 'The most popular choice for medium-sized schools.',
-        features: [
-            'All Basic Plan Features',
-            'Advanced Reporting & Analytics',
-            'Dedicated Support',
-            'Custom User Roles',
-        ],
-        highlight: true,
-    },
-    {
-        name: 'Enterprise Plan',
-        price: '₦6,500,000',
-        students: '1,000+ students',
-        description: 'A customizable solution for large, multi-campus institutions.',
-        features: [
-            'All Standard Plan Features',
-            'Dedicated Account Manager',
-            'Custom Integrations',
-            'Priority Support',
-        ],
-        highlight: false,
-    },
+const screenshots = [
+  { src: 'https://firebasestudio.googleapis.com/v0/b/co-components-prod.appspot.com/o/images%2Fuser%2F1c37b848-a1c8-471a-942f-8796791f4b0f%2Fgenerated_1719597288673.png?alt=media&token=8e95793e-7a71-4603-9d95-8a2b53b84dd3', alt: 'School management dashboard', dataHint: 'dashboard analytics' },
+  { src: 'https://placehold.co/1200x800', alt: 'Student profile page', dataHint: 'student profile' },
+  { src: 'https://placehold.co/1200x800', alt: 'Finance tracking interface', dataHint: 'financial chart' },
 ];
 
 
@@ -101,8 +69,39 @@ export default function SchoolProductPage() {
             </Card>
         </div>
       </section>
+      
+        <section className="py-16 md:py-24 bg-secondary/50">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+             <div className="text-center mb-12">
+                <h2 className="font-headline text-3xl font-bold">A Glimpse Inside NestEdge</h2>
+                 <p className="mt-2 text-lg text-muted-foreground">Explore the clean and powerful interface of our platform.</p>
+            </div>
+            <Carousel className="w-full" opts={{ loop: true }}>
+                <CarouselContent>
+                    {screenshots.map((img, index) => (
+                    <CarouselItem key={index}>
+                        <Card className="overflow-hidden shadow-xl">
+                            <CardContent className="p-0">
+                                <Image
+                                    src={img.src}
+                                    alt={img.alt}
+                                    width={1200}
+                                    height={800}
+                                    className="w-full h-auto object-cover"
+                                    data-ai-hint={img.dataHint}
+                                />
+                            </CardContent>
+                        </Card>
+                    </CarouselItem>
+                    ))}
+                </CarouselContent>
+                <CarouselPrevious className="ml-16" />
+                <CarouselNext className="mr-16" />
+            </Carousel>
+        </div>
+      </section>
 
-      <section id="features" className="py-16 md:py-24 bg-secondary/50">
+      <section id="features" className="py-16 md:py-24 bg-background">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
                 <h2 className="font-headline text-3xl md:text-4xl font-bold text-foreground">Key Features</h2>
@@ -126,55 +125,20 @@ export default function SchoolProductPage() {
         </div>
       </section>
       
-      <section id="pricing" className="py-16 md:py-24 bg-background">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-12">
-                <h2 className="font-headline text-3xl md:text-4xl font-bold text-foreground">Pricing & Licensing</h2>
-                <p className="text-lg text-muted-foreground mt-2 max-w-3xl mx-auto">
-                    The NestEdge School Management Engine is available under a proprietary license. This means the software is owned by our company and a license is required for its use.
+      <section id="pricing" className="py-16 md:py-24 bg-secondary/50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-16">
+                <h2 className="font-headline text-4xl md:text-5xl font-bold text-foreground">Transparent Pricing for Every School</h2>
+                <p className="text-xl text-muted-foreground mt-4 max-w-3xl mx-auto">
+                    Find the perfect plan for your institution. Our pricing is designed to be flexible and scalable.
+                </p>
+                 <p className="text-sm text-muted-foreground mt-2 max-w-3xl mx-auto">
+                    The NestEdge School Management Engine is available under a proprietary license, requiring a one-time fee for lifetime ownership.
                 </p>
             </div>
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-                {pricingTiers.map((tier) => (
-                    <Card key={tier.name} className={`flex flex-col shadow-lg ${tier.highlight ? 'border-primary ring-2 ring-primary shadow-primary/20 -translate-y-4' : 'border-border'}`}>
-                        {tier.highlight && (
-                            <div className="bg-primary text-primary-foreground text-sm font-bold text-center py-1 rounded-t-lg">Most Popular</div>
-                        )}
-                        <CardHeader className="text-center">
-                            <CardTitle className="font-headline text-2xl">{tier.name}</CardTitle>
-                            <p className="text-muted-foreground">{tier.description}</p>
-                        </CardHeader>
-                        <CardContent className="flex flex-col flex-grow">
-                            <div className="text-center my-4">
-                               <p className="text-4xl font-bold">{tier.price}</p>
-                               <p className="text-sm text-muted-foreground">One-time license fee</p>
-                               <p className="font-semibold mt-1">{tier.students}</p>
-                            </div>
-                            <ul className="space-y-3 flex-grow">
-                                {tier.features.map((feature) => (
-                                    <li key={feature} className="flex items-start">
-                                        <Check className="w-5 h-5 mr-2 text-green-500 mt-1 flex-shrink-0" />
-                                        <span className="text-muted-foreground">{feature}</span>
-                                    </li>
-                                ))}
-                            </ul>
-                        </CardContent>
-                        <div className="p-6 mt-4">
-                            <Button className={`w-full ${tier.highlight ? 'bg-primary hover:bg-primary/90' : 'bg-accent text-accent-foreground hover:bg-accent/90'}`}>
-                                Choose Plan
-                            </Button>
-                        </div>
-                    </Card>
-                ))}
-            </div>
 
-             <div className="mt-16 text-center">
-                <Card className="inline-block p-6 shadow-lg bg-secondary/50">
-                    <h3 className="font-headline text-xl font-bold">Termly Maintenance Fee</h3>
-                    <p className="text-2xl font-bold text-primary mt-2">₦1,000 per student</p>
-                    <p className="text-muted-foreground mt-1">This fee covers ongoing software updates, security enhancements, and continued support for each academic term.</p>
-                </Card>
-            </div>
+            <PricingCalculator />
+            
         </div>
       </section>
 

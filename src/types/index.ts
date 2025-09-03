@@ -9,3 +9,11 @@ export type Property = {
   type: 'sale' | 'rent';
   dataHint: string;
 };
+
+export type PremiumAddOn = {
+  id: string;
+  title: string;
+  price: number | [number, number];
+  description: string;
+  highlight: string;
+};
