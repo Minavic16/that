@@ -1,0 +1,49 @@
+accounts:
+  - id: 5308257
+    label: "Pepperstone"
+    is_live: false
+    risk_pct: 0.03
+    initial_balance: 20.0
+    max_lot: 0.20
+    leverage: 2000
+    margin_safety: 0.5
+    breakers_on: true
+    enabled: false
+  - id: 47697138
+    label: "FTMO"
+    is_live: false
+    risk_pct: 0.01
+    initial_balance: 1000.0
+    max_lot: 1.0
+    leverage: 100
+    margin_safety: 0.5
+    breakers_on: true
+    enabled: false
+  - id: 47828499
+    label: "Pepperstone_cTrader"
+    is_live: false
+    risk_pct: 0.03
+    initial_balance: 20.0
+    max_lot: 0.20
+    leverage: 2000
+    margin_safety: 0.5
+    breakers_on: true
+    enabled: true
+  - id: 47828437
+    label: "5ers"
+    is_live: false
+    risk_pct: 0.020
+    initial_balance: 2500.0
+    max_lot: 10.0
+    leverage: 100
+    margin_safety: 0.5
+    breakers_on: true
+    dd_expected_pct: 2.5
+    dd_drift_max_pct: 7.0
+    enabled: false
+    breaker_overrides:
+      drawdown_pace:
+        soft_dd: 6.0
+        soft_trades: 15
+        hard_dd: 9.0
+        hard_trades: 25

@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>MR+TF Live Engine</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  :root{
+    --bg:#0d1117;--surface:#161b22;--surface2:#1c2129;--border:#30363d;
+    --text:#c9d1d9;--muted:#8b949e;--dim:#484f58;
+    --green:#3fb950;--red:#f85149;--yellow:#d29922;--blue:#58a6ff;--purple:#bc8cff;
+    --green-bg:rgba(63,185,80,.1);--red-bg:rgba(248,81,73,.1);--yellow-bg:rgba(210,153,34,.1);--blue-bg:rgba(88,166,255,.1);
+  }
+  body{font-family:system-ui,-apple-system,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);padding:24px;line-height:1.5}
+  .wrap{max-width:1100px;margin:0 auto}
+
+  /* Header */
+  header{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:12px}
+  h1{font-size:22px;font-weight:600;display:flex;align-items:center;gap:10px}
+  h1 .ver{font-size:11px;color:var(--muted);font-weight:400;border:1px solid var(--border);padding:2px 8px;border-radius:4px}
+  .right-bar{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+  .pills{display:flex;gap:8px;flex-wrap:wrap}
+  .pill{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:20px;font-size:13px;font-weight:500;white-space:nowrap}
+  .pill .dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+  .pill.green{background:var(--green-bg);color:var(--green)}.pill.green .dot{background:var(--green)}
+  .pill.yellow{background:var(--yellow-bg);color:var(--yellow)}.pill.yellow .dot{background:var(--yellow)}
+  .pill.red{background:var(--red-bg);color:var(--red)}.pill.red .dot{background:var(--red)}
+  .pill.gray{background:rgba(139,148,158,.1);color:var(--muted)}.pill.gray .dot{background:var(--muted)}
+  .pill.green .dot.live{animation:pulse 2s infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+  .updated{font-size:12px;color:var(--dim)}
+
+  /* Admin toggle button */
+  .admin-btn{background:var(--purple);color:#fff;border:none;padding:6px 16px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;transition:filter .2s,transform .1s}
+  .admin-btn:hover{filter:brightness(1.15)}
+  .admin-btn:active{transform:scale(.95)}
+
+  /* Grid + Card animations */
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:18px;position:relative;animation:fadeUp .4s ease-out both}
+  .card.full{grid-column:1/-1}
+  .card:nth-child(1){animation-delay:0s}.card:nth-child(2){animation-delay:.06s}.card:nth-child(3){animation-delay:.12s}
+  .card:nth-child(4){animation-delay:.18s}.card:nth-child(5){animation-delay:.24s}.card:nth-child(6){animation-delay:.30s}
+  .card:nth-child(7){animation-delay:.36s}.card:nth-child(8){animation-delay:.42s}.card:nth-child(9){animation-delay:.48s}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+  /* When cards are re-rendered (periodic update), use a gentler reload */
+  .grid.refresh .card{animation:fadeUp .25s ease-out both;animation-delay:0s}
+
+  .card h2{font-size:12px;text-transform:uppercase;letter-spacing:.8px;color:var(--blue);margin-bottom:14px;display:flex;justify-content:space-between;align-items:center}
+  .card h2 .sub{color:var(--dim);font-weight:400;text-transform:none;letter-spacing:0;font-size:12px}
+  .row{display:flex;justify-content:space-between;font-size:14px;padding:5px 0;align-items:center}
+  .row .label{color:var(--muted)}.row .val{font-weight:500;text-align:right}
+  .val.green{color:var(--green)}.val.red{color:var(--red)}.val.yellow{color:var(--yellow)}.val.blue{color:var(--blue)}
+
+  /* DD bar */
+  .dd-bar{margin-top:10px}
+  .dd-track{height:6px;background:var(--surface2);border-radius:3px;overflow:hidden;position:relative}
+  .dd-fill{height:100%;border-radius:3px;transition:width .6s cubic-bezier(.4,0,.2,1)}
+  .dd-fill.ok{background:var(--green)}.dd-fill.warn{background:var(--yellow)}.dd-fill.danger{background:var(--red)}
+  .dd-label{display:flex;justify-content:space-between;font-size:11px;color:var(--dim);margin-top:4px}
+
+  /* Positions */
+  .pos-list{display:grid;gap:8px;margin-top:8px}
+  .pos{background:var(--surface2);border-radius:6px;padding:10px 12px;border-left:3px solid var(--border);animation:slideIn .3s ease-out both}
+  .pos.long{border-left-color:var(--green)}.pos.short{border-left-color:var(--red)}
+  .pos .ph{display:flex;justify-content:space-between;font-weight:600;font-size:14px;margin-bottom:4px}
+  .pos .pd{font-size:12px;color:var(--muted);display:grid;grid-template-columns:1fr 1fr;gap:2px 12px}
+  @keyframes slideIn{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:translateX(0)}}
+
+  /* Signals */
+  .signals{display:grid;gap:10px}
+  .empty{text-align:center;color:var(--dim);font-size:14px;padding:24px 0}
+  .sig{border:1px solid var(--border);border-radius:6px;padding:12px 14px;animation:fadeUp .35s ease-out both}
+  .sig.bull{border-left:3px solid var(--green)}.sig.bear{border-left:3px solid var(--red)}
+  .sig .sh{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+  .sig .sp{font-size:16px;font-weight:700}.sig .st{font-size:11px;padding:2px 8px;border-radius:10px;font-weight:600;text-transform:uppercase}
+  .sig.bull .st{background:var(--green-bg);color:var(--green)}.sig.bear .st{background:var(--red-bg);color:var(--red)}
+  .sig .sl{font-size:13px;display:grid;grid-template-columns:1fr 1fr;gap:4px 16px;margin-bottom:8px}
+  .sig .sl .lv{color:var(--text)}.sig .sl .lb{color:var(--dim);font-size:11px;text-transform:uppercase}
+  .sig .meta{font-size:12px;color:var(--muted);border-top:1px solid var(--border);padding-top:6px;margin-top:6px}
+
+  /* Pairs */
+  .pairs{display:flex;flex-wrap:wrap;gap:6px}
+  .pair-chip{background:var(--blue-bg);color:var(--blue);padding:4px 12px;border-radius:6px;font-size:13px;font-weight:500;animation:chipIn .3s ease-out both}
+  @keyframes chipIn{from{opacity:0;transform:scale(.8)}to{opacity:1;transform:scale(1)}}
+
+  /* Filters */
+  .filters{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+  .fchip{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:6px;font-size:12px;background:var(--surface2);border:1px solid var(--border)}
+  .fchip.on{color:var(--green);border-color:rgba(63,185,80,.3)}
+  .fchip.on::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--green)}
+  .fchip.off{color:var(--dim)}.fchip.off::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--dim)}
+
+  /* Validation */
+  .vlist{list-style:none}.vlist li{padding:6px 0;font-size:14px;display:flex;align-items:center;gap:10px}
+  .vbadge{font-size:10px;padding:2px 8px;border-radius:4px;font-weight:700;letter-spacing:.5px}
+  .vbadge.pass{background:var(--green-bg);color:var(--green)}.vbadge.fail{background:var(--red-bg);color:var(--red)}
+  .vname{font-weight:600}.vdetail{color:var(--muted);font-size:13px}
+
+  /* Error */
+  .err{color:var(--red);font-size:13px;padding:8px;background:var(--red-bg);border-radius:6px;text-align:center}
+  .err-banner{position:fixed;top:0;left:0;right:0;background:var(--red);color:#fff;text-align:center;padding:6px;font-size:13px;z-index:100}
+
+  /* Spinner */
+  .spinner{width:14px;height:14px;border:2px solid var(--surface2);border-top-color:var(--blue);border-radius:50%;animation:spin .6s linear infinite;flex-shrink:0}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  /* ── Admin Panel (slide-out drawer) ── */
+  .drawer-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:200;animation:fadeIn .2s}
+  .drawer-overlay.open{display:block}
+  @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+  .admin-drawer{position:fixed;top:0;right:0;width:380px;max-width:90vw;height:100vh;background:var(--surface);border-left:1px solid var(--border);z-index:300;transform:translateX(100%);transition:transform .3s cubic-bezier(.4,0,.2,1);overflow-y:auto;padding:0}
+  .admin-drawer.open{transform:translateX(0)}
+  .drawer-head{padding:20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;background:var(--surface);z-index:10}
+  .drawer-head h2{font-size:18px;color:var(--purple)}
+  .drawer-close{background:none;border:none;color:var(--muted);font-size:24px;cursor:pointer;padding:0 8px;transition:color .2s}
+  .drawer-close:hover{color:var(--text)}
+  .drawer-body{padding:20px}
+  .admin-section{margin-bottom:24px}
+  .admin-section>h3{font-size:12px;text-transform:uppercase;letter-spacing:.5px;color:var(--blue);margin-bottom:12px;padding-bottom:6px;border-bottom:1px solid var(--border)}
+  .btn-group{display:flex;gap:8px;flex-wrap:wrap}
+  .abtn{padding:10px 16px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;background:var(--surface2);color:var(--text);display:flex;align-items:center;gap:6px;transition:all .2s}
+  .abtn:hover{border-color:var(--blue);color:var(--blue)}
+  .abtn.green{border-color:rgba(63,185,80,.3);color:var(--green)}.abtn.green:hover{background:var(--green-bg)}
+  .abtn.red{border-color:rgba(248,81,73,.3);color:var(--red)}.abtn.red:hover{background:var(--red-bg)}
+  .abtn.blue{border-color:rgba(88,166,255,.3);color:var(--blue)}.abtn.blue:hover{background:var(--blue-bg)}
+  .abtn:disabled{opacity:.4;cursor:not-allowed}
+  .admin-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;font-size:13px}
+  .admin-row .label{color:var(--muted)}
+  .admin-row .val{font-weight:500}
+
+  /* Config inputs */
+  .config-input{width:100%;padding:6px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:13px;margin-top:4px}
+  .config-input:focus{outline:none;border-color:var(--blue)}
+  .config-field{margin-bottom:14px}
+  .config-field label{font-size:12px;color:var(--muted);display:block;margin-bottom:2px}
+
+  /* Toast */
+  .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(60px);background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px 20px;font-size:14px;z-index:500;opacity:0;transition:all .3s cubic-bezier(.4,0,.2,1);display:flex;align-items:center;gap:8px;max-width:90vw}
+  .toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+  .toast.success{border-color:rgba(63,185,80,.5)}.toast.success .dot{background:var(--green)}
+  .toast.error{border-color:rgba(248,81,73,.5)}.toast.error .dot{background:var(--red)}
+  .toast .dot{width:8px;height:8px;border-radius:50%}
+
+  /* Logs */
+  .logs-box{background:#0a0e14;border:1px solid var(--border);border-radius:6px;padding:10px;font-family:'SF Mono','Fira Code',monospace;font-size:11px;max-height:300px;overflow-y:auto;color:var(--text)}
+  .logs-box .ll{white-space:pre-wrap;word-break:break-all;padding:1px 0}
+  .logs-box .ll.INFO{color:var(--text)}.logs-box .ll.WARN{color:var(--yellow)}.logs-box .ll.ERROR{color:var(--red)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>MR+TF Live Engine <span class="ver">live</span></h1>
+    <div class="right-bar">
+      <div class="pills">
+        <span class="pill gray" id="session-pill"><span class="dot"></span><span id="session-text">Loading…</span></span>
+        <span class="pill gray" id="engine-pill"><span class="dot"></span><span id="engine-text">Engine: ?</span></span>
+      </div>
+      <button class="admin-btn" onclick="toggleDrawer()">⚙ Admin</button>
+      <span class="updated" id="updated"></span>
+    </div>
+  </header>
+
+  <div id="err-banner" class="err-banner" style="display:none"></div>
+  <div class="grid" id="grid"></div>
+</div>
+
+<!-- Admin Drawer -->
+<div class="drawer-overlay" id="drawer-overlay" onclick="toggleDrawer(false)"></div>
+<div class="admin-drawer" id="admin-drawer">
+  <div class="drawer-head">
+    <h2>Admin Control</h2>
+    <button class="drawer-close" onclick="toggleDrawer(false)">×</button>
+  </div>
+  <div class="drawer-body" id="drawer-body"></div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"><span class="dot"></span><span id="toast-text"></span></div>
+
+<script>
+const $ = id => document.getElementById(id);
+const fmt = (n, d=2) => (n == null || isNaN(n)) ? '—' : Number(n).toFixed(d);
+const money = n => n != null ? '$' + fmt(n) : '—';
+const pct = n => n != null ? fmt(n) + '%' : '—';
+const px = p => p != null ? Number(p).toPrecision(5) : '—';
+const esc = s => s != null ? String(s).replace(/</g,'<') : '—';
+
+// Toast
+let toastTimer;
+function toast(msg, type='success') {
+  $('toast-text').textContent = msg;
+  $('toast').className = 'toast show ' + type;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => $('toast').classList.remove('show'), 3000);
+}
+
+// Drawer
+function toggleDrawer(force) {
+  const open = force !== undefined ? force :
+    ($('admin-drawer').classList.contains('open') ? false : true);
+  $('admin-drawer').classList.toggle('open', open);
+  $('drawer-overlay').classList.toggle('open', open);
+  if (open) { loadAdminPanel(); primedFirstLoad=true; }
+}
+
+// Card builders (same as before)
+function sessionCard(s) {
+  const now = new Date(s.timestamp);
+  const utcStr = now.toISOString().slice(11,16);
+  const dateStr = now.toISOString().slice(0,10);
+  const dayName = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][now.getUTCDay()];
+  return `
+    <div class="card">
+      <h2>Trading Session <span class="sub">${dayName} ${dateStr}</span></h2>
+      <div class="row"><span class="label">Time (UTC)</span><span class="val">${utcStr}</span></div>
+      <div class="row"><span class="label">Status</span><span class="val ${s.session.active?'green':'yellow'}">${s.session.status}</span></div>
+      <div class="row"><span class="label">Account Size</span><span class="val">$${s.config.account_size.toLocaleString()}</span></div>
+    </div>`;
+}
+
+function engineCard(e, cfg) {
+  if (!e) return `
+    <div class="card">
+      <h2>Engine Status</h2>
+      <div class="empty">Engine not running.<br>Open <strong>Admin</strong> to start.</div>
+    </div>`;
+  const dd = e.dd_pct || 0, ddLimit = 7.0, ddPct = Math.min(dd / ddLimit * 100, 100);
+  const ddClass = dd > 6 ? 'danger' : dd > 3 ? 'warn' : 'ok';
+  const ddColor = dd > 6 ? 'red' : dd > 3 ? 'yellow' : 'green';
+  const pos = e.positions || {}, posKeys = Object.keys(pos);
+  const lev = e.leverage || cfg?.leverage || 100;
+  const marginUsed = e.margin_used || 0;
+  const marginAvail = e.margin_available || (e.balance * lev);
+  const marginPct = marginAvail > 0 ? (marginUsed / marginAvail * 100) : 0;
+  const mgClass = marginPct > 50 ? 'danger' : marginPct > 25 ? 'warn' : 'ok';
+  const posHtml = posKeys.length ? `<div class="pos-list">${posKeys.map(k => {
+    const p = pos[k];
+    const dir = (p.direction || p.side || '').toUpperCase();
+    const isLong = dir.includes('LONG') || dir.includes('BUY');
+    const vol = p.volume != null ? p.volume : (p.volume_units ? p.volume_units/100000 : 0);
+    return `<div class="pos ${isLong?'long':'short'}">
+      <div class="ph"><span>${esc(p.pair || k)}</span><span class="${isLong?'green':'red'}">${dir || '—'}</span></div>
+      <div class="pd"><span>Entry: ${px(p.entry_price || p.open_price || p.entry)}</span><span>SL: ${px(p.sl)}</span>
+      <span>TP: ${px(p.tp)}</span><span>Lot: ${fmt(vol,2)}</span>
+      ${p.margin_used!=null ? `<span>Margin: ${money(p.margin_used)}</span><span>Notional: ${money(p.notional)}</span>` : ''}</div></div>`;
+  }).join('')}</div>` : '';
+  return `
+    <div class="card ${posKeys.length?'full':''}">
+      <h2>Engine Status <span class="sub">${e.dry_run ? 'DRY RUN' : 'LIVE'} · 1:${lev}</span></h2>
+      <div class="row"><span class="label">State</span><span class="val ${e.running?'green':'red'}">${e.running?'RUNNING':'STOPPED'}</span></div>
+      <div class="row"><span class="label">Account</span><span class="val">${e.account_id || '—'}</span></div>
+      <div class="row"><span class="label">Balance</span><span class="val">${money(e.balance)}</span></div>
+      <div class="row"><span class="label">Peak</span><span class="val">${money(e.peak)}</span></div>
+      <div class="row"><span class="label">Leverage</span><span class="val blue">1:${lev}</span></div>
+      <div class="row"><span class="label">Trades Today</span><span class="val">${e.trades_today ?? 0}</span></div>
+      <div class="row"><span class="label">Signals Processed</span><span class="val">${e.signals_processed ?? 0}</span></div>
+      <div class="row"><span class="label">Open Positions</span><span class="val">${e.open_positions ?? 0}</span></div>
+      <div class="row"><span class="label">Margin Used</span><span class="val">${money(marginUsed)} (${fmt(marginPct,1)}%)</span></div>
+      <div class="dd-bar"><div class="dd-track"><div class="dd-fill ${mgClass}" style="width:${Math.min(marginPct,100)}%"></div></div>
+      <div class="dd-label"><span>0</span><span>${money(marginAvail)} avail (1:${lev})</span></div></div>
+      <div class="row" style="margin-top:10px"><span class="label">Drawdown</span><span class="val ${ddColor}">${fmt(dd)}% / ${ddLimit}%</span></div>
+      <div class="dd-bar"><div class="dd-track"><div class="dd-fill ${ddClass}" style="width:${ddPct}%"></div></div>
+      <div class="dd-label"><span>0%</span><span>${ddLimit}% limit</span></div></div>
+      ${posHtml}
+    </div>`;
+}
+
+function configCard(c) {
+  return `
+    <div class="card">
+      <h2>Strategy Config <span class="sub">${esc(c.version)}</span></h2>
+      <div class="row"><span class="label">Timeframe</span><span class="val">${c.timeframe}</span></div>
+      <div class="row"><span class="label">Account Size</span><span class="val">$${(c.account_size||0).toLocaleString()}</span></div>
+      <div class="row"><span class="label">Leverage</span><span class="val blue">1:${c.leverage||100}</span></div>
+      <div class="row"><span class="label">EMA Period</span><span class="val">${c.ema}</span></div>
+      <div class="row"><span class="label">MR Threshold</span><span class="val">${pct(c.mr_threshold)} from EMA</span></div>
+      <div class="row"><span class="label">TF Threshold</span><span class="val">${pct(c.tf_threshold)} from EMA</span></div>
+      <div class="row"><span class="label">MR Risk</span><span class="val">${pct(c.mr_risk)}</span></div>
+      <div class="row"><span class="label">MR RR</span><span class="val">${c.mr_rr}</span></div>
+      <div class="row"><span class="label">TF Risk</span><span class="val">${pct(c.tf_risk)}</span></div>
+      <div class="row"><span class="label">Trail ATR Mult</span><span class="val">${c.trail_atr_mult}x</span></div>
+      <div class="row"><span class="label">Correlation</span><span class="val">${c.correlation_threshold}</span></div>
+      <div class="row"><span class="label">Max/Currency</span><span class="val">${c.max_per_currency}</span></div>
+      <div class="row"><span class="label">Sessions</span><span class="val" style="font-size:12px">Lon ${esc(c.sessions.london)}<br>NY ${esc(c.sessions.new_york)}</span></div>
+    </div>`;
+}
+
+function pairsCard(c) {
+  return `<div class="card"><h2>Tradeable Pairs <span class="sub">${c.pairs.length} pairs</span></h2>
+    <div class="pairs">${c.pairs.map((p,i) => `<span class="pair-chip" style="animation-delay:${i*.05}s">${p}</span>`).join('')}</div></div>`;
+}
+
+function filtersCard(sigData) {
+  if (!sigData) return '';
+  const daily = sigData.daily_filter, session = sigData.session_filter, swing = sigData.swing_filter;
+  const lastGen = sigData.date || sigData.timestamp;
+  return `<div class="card"><h2>Signal Filters <span class="sub">${esc(sigData.file) || ''}</span></h2>
+    <div class="row"><span class="label">Last Generated</span><span class="val" style="font-size:12px">${lastGen ? new Date(lastGen).toISOString().slice(11,19) + ' UTC' : '—'}</span></div>
+    <div class="filters" style="margin-top:10px">
+      <span class="fchip ${session==='Active'?'on':'off'}">Session</span>
+      <span class="fchip ${daily==='Active'?'on':'off'}">Daily Candle</span>
+      <span class="fchip ${swing==='Active'?'on':'off'}">Swing Pullback</span>
+      <span class="fchip on">EMA 200/50</span>
+    </div></div>`;
+}
+
+function metricsCard(m) {
+  return `<div class="card"><h2>Backtest Performance <span class="sub">2022-2026</span></h2>
+    <div class="row"><span class="label">Win Rate</span><span class="val green">${pct(m.win_rate)}</span></div>
+    <div class="row"><span class="label">Profit Factor</span><span class="val">${m.profit_factor}</span></div>
+    <div class="row"><span class="label">Max Drawdown</span><span class="val yellow">${pct(m.max_drawdown)}</span></div>
+    <div class="row"><span class="label">Monthly EV</span><span class="val green">${m.monthly_ev}</span></div>
+    <div class="row"><span class="label">Trades / Month</span><span class="val">${m.trades_per_month}</span></div>
+    <div class="row"><span class="label">EV / Trade</span><span class="val green">${m.ev_per_trade}</span></div>
+    <div class="row"><span class="label">Total Trades</span><span class="val">${m.total_trades.toLocaleString()}</span></div></div>`;
+}
+
+function validationCard(vlist) {
+  const passCount = vlist.filter(v=>v.pass).length;
+  return `<div class="card"><h2>Validation <span class="sub">${passCount}/${vlist.length} pass</span></h2>
+    <ul class="vlist">${vlist.map(v => `<li><span class="vbadge ${v.pass?'pass':'fail'}">${v.pass?'PASS':'FAIL'}</span>
+      <span><span class="vname">${esc(v.name)}</span><br><span class="vdetail">${esc(v.detail)}</span></span></li>`).join('')}</ul></div>`;
+}
+
+function signalsCard(signals) {
+  if (!signals || signals.length === 0) {
+    return `<div class="card full"><h2>Active Signals <span class="sub">0 open</span></h2>
+      <div class="empty">No active signals — waiting for MR/TF regime entry.</div></div>`;
+  }
+  return `<div class="card full"><h2>Active Signals <span class="sub">${signals.length} open</span></h2>
+    <div class="signals">${signals.map((sig,i) => signalCardOne(sig,i)).join('')}</div></div>`;
+}
+
+function signalCardOne(sig, idx=0) {
+  const trend = (sig.trend || sig.direction || 'UNKNOWN').toUpperCase();
+  const isBull = trend.includes('BULL') || trend.includes('LONG') || trend.includes('BUY');
+  const cls = isBull ? 'bull' : 'bear';
+  const reasons = sig.reasons || sig.reason || [];
+  const reasonList = Array.isArray(reasons) ? reasons : [reasons];
+  const ts = sig.timestamp || sig.time || sig.date;
+  return `<div class="sig ${cls}" style="animation-delay:${idx*.08}s">
+    <div class="sh"><span class="sp">${esc(sig.pair)}</span><span class="st">${trend}</span></div>
+    <div class="sl">
+      <div><div class="lb">Entry</div><div class="lv">${px(sig.entry)}</div></div>
+      <div><div class="lb">Regime</div><div class="lv">${esc(sig.regime||'')}</div></div>
+      <div><div class="lb">Stop Loss</div><div class="lv" style="color:var(--red)">${px(sig.sl_price)}</div></div>
+      <div><div class="lb">Take Profit</div><div class="lv" style="color:var(--green)">${px(sig.tp_price)}</div></div>
+    </div>
+    <div class="row"><span class="label">Risk Amount</span><span class="val">${money(sig.risk_amount)}</span></div>
+    <div class="row"><span class="label">RR</span><span class="val">${sig.rr || '2.2'}</span></div>
+    ${reasonList.length ? `<div class="meta">Filters: ${reasonList.map(esc).join(', ')}</div>` : ''}
+    ${ts ? `<div class="meta">Generated: ${new Date(ts).toISOString().slice(0,19).replace('T',' ')} UTC</div>` : ''}
+  </div>`;
+}
+
+function liveTradingCard(live) {
+  if (!live || !live.running) return `
+    <div class="card">
+      <h2>Live Trading <span class="sub">MR+TF Engine</span></h2>
+      <div class="empty">Engine is offline.<br>
+        <span style="font-size:12px;color:var(--muted)">Run: <code>python3 run_live_pepperstone.py</code></span>
+      </div>
+    </div>`;
+  const s = live.stats || {};
+  const pnlColor = (live.balance >= 2500) ? 'green' : 'red';
+  const equity = live.equity || live.balance || 0;
+  const unrealized = equity - live.balance;
+  return `
+    <div class="card">
+      <h2>Live Trading <span class="sub">MR+TF Engine</span></h2>
+      <div class="row"><span class="label">Status</span><span class="val green">RUNNING</span></div>
+      <div class="row"><span class="label">Balance</span><span class="val ${pnlColor}">${money(live.balance)}</span></div>
+      <div class="row"><span class="label">Equity</span><span class="val ${equity >= 2500 ? 'green' : 'red'}">${money(equity)}</span></div>
+      <div class="row"><span class="label">Unrealized P&L</span><span class="val ${unrealized >= 0 ? 'green' : 'red'}">${money(unrealized)}</span></div>
+      <div class="row"><span class="label">Starting</span><span class="val">$2,500.00</span></div>
+      <div class="row"><span class="label">Daily P&L</span><span class="val ${(live.daily_pnl||0)>=0?'green':'red'}">${money(live.daily_pnl)}</span></div>
+      <div class="row"><span class="label">Open Positions</span><span class="val blue">${(live.open_positions||[]).length}</span></div>
+      <div class="row"><span class="label">Total Trades</span><span class="val">${s.total_trades||0}</span></div>
+      <div class="row"><span class="label">Win Rate</span><span class="val green">${pct(s.win_rate)}</span></div>
+      <div class="row"><span class="label">Total P&L</span><span class="val ${(s.total_pnl||0)>=0?'green':'red'}">${money(s.total_pnl)}</span></div>
+      <div class="row"><span class="label">Avg P&L/Trade</span><span class="val">${money(s.avg_pnl)}</span></div>
+    </div>`;
+}
+
+function livePositionsCard(live) {
+  if (!live || !live.running) return '';
+  const positions = live.open_positions || [];
+  if (positions.length === 0) {
+    return `<div class="card"><h2>Open Positions <span class="sub">0</span></h2>
+      <div class="empty">No open positions.</div></div>`;
+  }
+  return `<div class="card"><h2>Open Positions <span class="sub">${positions.length}</span></h2>
+    <div class="pos-list">${positions.map(p => {
+      const isLong = p.direction === 'long';
+      const entryTime = p.entry_time ? new Date(p.entry_time).toISOString().slice(11,16) + ' UTC' : '—';
+      return `<div class="pos ${isLong?'long':'short'}">
+        <div class="ph"><span>${esc(p.pair)}</span><span class="${isLong?'green':'red'}">${p.direction.toUpperCase()}</span></div>
+        <div class="pd"><span>Entry: ${px(p.entry)}</span><span>SL: ${px(p.sl)}</span>
+        <span>TP: ${px(p.tp)}</span><span>Lot: ${fmt(p.lot,2)}</span>
+        <span>Regime: ${(p.regime||'').toUpperCase()}</span><span>Opened: ${entryTime}</span></div></div>`;
+    }).join('')}</div></div>`;
+}
+
+function liveTradesCard(live) {
+  if (!live || !live.running) return '';
+  const trades = live.recent_trades || [];
+  if (trades.length === 0) {
+    return `<div class="card full"><h2>Recent Trades <span class="sub">0</span></h2>
+      <div class="empty">No trades yet.</div></div>`;
+  }
+  return `<div class="card full"><h2>Recent Trades <span class="sub">last ${trades.length}</span></h2>
+    <div style="overflow-x:auto">
+    <table style="width:100%;font-size:13px;border-collapse:collapse">
+      <thead><tr style="color:var(--muted);border-bottom:1px solid var(--border)">
+        <th style="text-align:left;padding:6px 8px">Time</th>
+        <th style="text-align:left;padding:6px 8px">Pair</th>
+        <th style="text-align:left;padding:6px 8px">Dir</th>
+        <th style="text-align:left;padding:6px 8px">Regime</th>
+        <th style="text-align:right;padding:6px 8px">Entry</th>
+        <th style="text-align:right;padding:6px 8px">Exit</th>
+        <th style="text-align:right;padding:6px 8px">P&L $</th>
+        <th style="text-align:right;padding:6px 8px">Pips</th>
+        <th style="text-align:left;padding:6px 8px">Reason</th>
+      </tr></thead>
+      <tbody>${trades.slice().reverse().map(t => {
+        const pnlColor = t.pnl_dollars > 0 ? 'green' : t.pnl_dollars < 0 ? 'red' : '';
+        const timeStr = t.time ? new Date(t.time).toISOString().slice(0,16).replace('T',' ') : '—';
+        return `<tr style="border-bottom:1px solid var(--border)">
+          <td style="padding:5px 8px;color:var(--muted)">${timeStr}</td>
+          <td style="padding:5px 8px;font-weight:600">${esc(t.pair)}</td>
+          <td style="padding:5px 8px;color:${t.direction==='long'?'var(--green)':'var(--red)'}">${t.direction.toUpperCase()}</td>
+          <td style="padding:5px 8px;color:var(--blue)">${(t.regime||'').toUpperCase()}</td>
+          <td style="padding:5px 8px;text-align:right">${px(t.entry)}</td>
+          <td style="padding:5px 8px;text-align:right">${t.exit ? px(t.exit) : '—'}</td>
+          <td style="padding:5px 8px;text-align:right;color:${pnlColor?'var(--'+pnlColor+')':''};font-weight:600">${money(t.pnl_dollars)}</td>
+          <td style="padding:5px 8px;text-align:right;color:${pnlColor?'var(--'+pnlColor+')':''}">${fmt(t.pnl_pips,1)}</td>
+          <td style="padding:5px 8px;color:var(--muted)">${esc(t.reason)}</td>
+        </tr>`;
+      }).join('')}</tbody></table></div></div>`;
+}
+
+// ── Fetch dashboard state ──
+let lastCardsHtml = '';
+async function fetchState() {
+  try {
+    const [stateResp, liveResp] = await Promise.all([
+      fetch('/api/state'),
+      fetch('/api/live'),
+    ]);
+    if (!stateResp.ok) throw new Error(`HTTP ${stateResp.status}`);
+    const s = await stateResp.json();
+    let live = null;
+    try { live = await liveResp.json(); } catch(e) {}
+
+    const sp = $('session-pill'), st = $('session-text');
+    sp.className = 'pill ' + (s.session.active ? 'green' : 'yellow');
+    st.textContent = s.session.status;
+
+    const ep = $('engine-pill'), et = $('engine-text');
+    if (live && live.running) {
+      ep.className = 'pill green'; ep.querySelector('.dot').classList.add('live');
+      et.textContent = `Live: ${money(live.equity || live.balance)} (${(live.open_positions||[]).length} pos)`;
+    } else {
+      ep.className = 'pill red';
+      et.textContent = 'Live Engine: OFFLINE';
+    }
+    $('updated').textContent = 'Updated ' + new Date(s.timestamp).toLocaleTimeString();
+
+    const sigData = s.signals;
+    const cardsHtml =
+      sessionCard(s) + liveTradingCard(live) +
+      livePositionsCard(live) + liveTradesCard(live) +
+      engineCard(s.engine, s.config) + configCard(s.config) +
+      metricsCard(s.metrics) + validationCard(s.validation) +
+      pairsCard(s.config);
+
+    // Only re-render if content changed (avoids re-triggering animations)
+    if (cardsHtml !== lastCardsHtml) {
+      const grid = $('grid');
+      grid.classList.add('refresh');
+      grid.innerHTML = cardsHtml;
+      lastCardsHtml = cardsHtml;
+      setTimeout(() => grid.classList.remove('refresh'), 300);
+    }
+    $('err-banner').style.display = 'none';
+  } catch (err) {
+    $('err-banner').textContent = 'Dashboard error: ' + err.message;
+    $('err-banner').style.display = 'block';
+  }
+}
+
+// ── Admin API helpers ──
+async function adminPost(url, body) {
+  try {
+    const r = await fetch(url, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: body ? JSON.stringify(body) : undefined,
+    });
+    return await r.json();
+  } catch (e) { return {ok:false, error:e.message}; }
+}
+
+async function adminGet(url) {
+  try {
+    const r = await fetch(url);
+    return await r.json();
+  } catch (e) { return {ok:false, error:e.message}; }
+}
+
+// ── Admin panel content ──
+async function loadAdminPanel() {
+  const body = $('drawer-body');
+  body.innerHTML = `<div style="text-align:center;padding:20px"><div class="spinner" style="display:inline-block"></div></div>`;
+
+  const [adst, st] = await Promise.all([
+    adminGet('/api/admin/status'),
+    adminGet('/api/state'),
+  ]);
+
+  const engRunning = adst.engine_running;
+  const ngrok = adst.ngrok_running;
+  const dash = adst.dashboard_running;
+
+  body.innerHTML = `
+    <!-- Process status -->
+    <div class="admin-section">
+      <h3>Process Status</h3>
+      <div class="admin-row"><span class="label">Dashboard</span><span class="val ${dash?'green':'red'}">${dash?'RUNNING':'DOWN'}</span></div>
+      <div class="admin-row"><span class="label">Engine</span><span class="val ${engRunning?'green':'red'}">${engRunning?'RUNNING':'STOPPED'} ${adst.engine_pids?.length?'(PID '+adst.engine_pids.join(',')+')':''}</span></div>
+      <div class="admin-row"><span class="label">Ngrok tunnel</span><span class="val ${ngrok?'green':'red'}">${ngrok?'ACTIVE':'INACTIVE'}</span></div>
+    </div>
+
+    <!-- Engine controls -->
+    <div class="admin-section">
+      <h3>Engine Control</h3>
+      <div class="btn-group" style="margin-bottom:8px">
+        <button class="abtn green" id="btn-start-dry" onclick="adminStartEngine('dry-run')" ${engRunning?'disabled':''}>▸ Start Dry-Run</button>
+        <button class="abtn red" id="btn-stop-engine" onclick="adminStopEngine()" ${!engRunning?'disabled':''}>■ Stop</button>
+      </div>
+      <div class="btn-group">
+        <button class="abtn blue" id="btn-restart-dry" onclick="adminRestartEngine('dry-run')">↻ Restart Dry-Run</button>
+        <button class="abtn" style="border-color:rgba(248,81,73,.3);color:var(--red)" id="btn-start-live" onclick="adminStartEngine('live')" ${engRunning?'disabled':''}>▸ Start LIVE</button>
+      </div>
+    </div>
+
+    <!-- Signal generation -->
+    <div class="admin-section">
+      <h3>Signal Generation</h3>
+      <button class="abtn blue" onclick="adminRunSignals()">⚡ Force Signal Run</button>
+      <div style="margin-top:8px;font-size:12px;color:var(--muted)">Runs the signal generator immediately (ignores cron schedule).</div>
+    </div>
+
+    <!-- Config editor -->
+    <div class="admin-section">
+      <h3>Config Editor</h3>
+      <div class="config-field">
+        <label>Account Size ($)</label>
+        <input class="config-input" type="number" id="cfg-account" value="${st.config.account_size}">
+      </div>
+      <div class="config-field">
+        <label>MR Risk (%)</label>
+        <input class="config-input" type="number" step="0.5" id="cfg-mr-risk" value="${st.config.mr_risk}">
+      </div>
+      <div class="config-field">
+        <label>MR RR</label>
+        <input class="config-input" type="number" step="0.1" id="cfg-mr-rr" value="${st.config.mr_rr}">
+      </div>
+      <div class="config-field">
+        <label>TF Risk (%)</label>
+        <input class="config-input" type="number" step="0.5" id="cfg-tf-risk" value="${st.config.tf_risk}">
+      </div>
+      <div class="config-field">
+        <label>Trail ATR Mult</label>
+        <input class="config-input" type="number" step="0.1" id="cfg-trail" value="${st.config.trail_atr_mult}">
+      </div>
+      <div class="config-field">
+        <label>Correlation Threshold</label>
+        <input class="config-input" type="number" step="0.05" id="cfg-corr" value="${st.config.correlation_threshold}">
+      </div>
+      <div class="config-field">
+        <label>Leverage (e.g. 100 = 1:100)</label>
+        <input class="config-input" type="number" step="1" id="cfg-lev" value="${st.config.leverage || 100}">
+      </div>
+      <button class="abtn green" onclick="adminSaveConfig()">💾 Save Config</button>
+    </div>
+
+    <!-- Logs -->
+    <div class="admin-section">
+      <h3>Recent Logs <button class="abtn" style="float:right;font-size:11px;padding:4px 10px" onclick="loadLogs()">↻ Refresh</button></h3>
+      <div class="logs-box" id="admin-logs">Loading...</div>
+    </div>
+  `;
+  loadLogs();
+}
+
+async function loadLogs() {
+  const data = await adminGet('/api/admin/logs?lines=40');
+  const box = $('admin-logs');
+  if (!data.ok) { box.innerHTML = `<span style="color:var(--red)">Error: ${esc(data.error)}</span>`; return; }
+  if (!data.lines || data.lines.length === 0) { box.innerHTML = '<span style="color:var(--dim)">No logs yet.</span>'; return; }
+  box.innerHTML = data.lines.map(line => {
+    let cls = 'll';
+    if (/ERROR/i.test(line)) cls += ' ERROR';
+    else if (/WARN/i.test(line)) cls += ' WARN';
+    else cls += ' INFO';
+    return `<div class="${cls}">${esc(line)}</div>`;
+  }).join('');
+  box.scrollTop = box.scrollHeight;
+}
+
+async function adminStartEngine(mode) {
+  toast('Starting engine (' + mode + ')...');
+  const r = await adminPost('/api/admin/engine/start', {mode});
+  toast(r.ok ? 'Engine started (' + mode + ')' : 'Error: ' + (r.error || r.output), r.ok ? 'success' : 'error');
+  setTimeout(loadAdminPanel, 1000);
+  fetchState();
+}
+async function adminStopEngine() {
+  toast('Stopping engine...');
+  const r = await adminPost('/api/admin/engine/stop');
+  toast(r.ok ? 'Engine stopped' : 'Error: ' + r.error, r.ok ? 'success' : 'error');
+  setTimeout(loadAdminPanel, 1500);
+  fetchState();
+}
+async function adminRestartEngine(mode) {
+  toast('Restarting engine...');
+  const r = await adminPost('/api/admin/engine/restart', {mode});
+  toast(r.ok ? 'Engine restarted (' + mode + ')' : 'Error: ' + (r.error || r.output), r.ok ? 'success' : 'error');
+  setTimeout(loadAdminPanel, 2000);
+  fetchState();
+}
+async function adminRunSignals() {
+  toast('Running signal generator...');
+  const r = await adminPost('/api/admin/signals/run');
+  toast(r.ok ? 'Signals generated' : 'Error: ' + (r.error || r.output), r.ok ? 'success' : 'error');
+  fetchState();
+}
+async function adminSaveConfig() {
+  const updates = {
+    account_size: parseFloat($('cfg-account').value),
+    mr_risk: parseFloat($('cfg-mr-risk').value),
+    mr_rr: parseFloat($('cfg-mr-rr').value),
+    tf_risk: parseFloat($('cfg-tf-risk').value),
+    trail_atr_mult: parseFloat($('cfg-trail').value),
+    correlation_threshold: parseFloat($('cfg-corr').value),
+    leverage: parseInt($('cfg-lev').value),
+  };
+  toast('Saving config...');
+  const r = await adminPost('/api/admin/config/update', updates);
+  toast(r.ok ? 'Config updated' : 'Error: ' + (r.error || 'No changes'), r.ok ? 'success' : 'error');
+  fetchState();
+}
+
+// Init
+fetchState();
+setInterval(fetchState, 10000);
+</script>
+</body>
+</html>
