@@ -1,45 +1,55 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+# Sensitive data
+.env
+*.h5
+*.hdf5
 
-# dependencies
-/node_modules
-/.pnp
-.pnp.*
-.yarn/*
-!.yarn/patches
-!.yarn/plugins
-!.yarn/releases
-!.yarn/versions
+# Data files (too large for git)
+data/
+git_ignore_folder/
 
-# testing
-/coverage
+# Logs
+logs/
 
-# next.js
-/.next/
-/out/
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+dist/
+build/
+.eggs/
 
-# production
-/build
+# Virtual environments
+.venv/
+venv/
+env/
 
-# misc
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
 .DS_Store
-*.pem
+Thumbs.db
 
-# debug
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-.pnpm-debug.log*
+# NexQuant
+NexQuant/rdagent/
+NexQuant/test/
+NexQuant/.git/
+NexQuant/results/
+NexQuant/web/
+NexQuant/models/
+NexQuant/docs/
+NexQuant/changelog/
+NexQuant/constraints/
+NexQuant/prompts/
+NexQuant/examples/
+NexQuant/patches/
+NexQuant/.github/
 
-# vercel
-.vercel
-
-# typescript
-*.tsbuildinfo
-next-env.d.ts
-
-.genkit/*
-.env*
-
-# firebase
-firebase-debug.log
-firestore-debug.log
+# Temporary files
+*.log
+*.tmp
+*.bak
