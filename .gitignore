@@ -1,55 +1,139 @@
-# Sensitive data
+# Secrets
 .env
-*.h5
-*.hdf5
 
-# Data files (too large for git)
-data/
-git_ignore_folder/
+# Runtime logs
+logs/*.log
+logs/*.csv
+logs/*.db
+logs/*.json
+!logs/live_engine_status.json
 
-# Logs
-logs/
+# Signal files
+signals_structured_*.json
+
+# Data files
+*.pkl
+*.tar.gz
 
 # Python
 __pycache__/
 *.pyc
 *.pyo
 *.egg-info/
-dist/
-build/
-.eggs/
 
-# Virtual environments
-.venv/
-venv/
-env/
+# Node
+node_modules/
 
 # IDE
 .vscode/
 .idea/
-*.swp
-*.swo
 
 # OS
 .DS_Store
 Thumbs.db
 
-# NexQuant
-NexQuant/rdagent/
-NexQuant/test/
-NexQuant/.git/
-NexQuant/results/
-NexQuant/web/
-NexQuant/models/
-NexQuant/docs/
-NexQuant/changelog/
-NexQuant/constraints/
-NexQuant/prompts/
-NexQuant/examples/
-NexQuant/patches/
-NexQuant/.github/
+# Screenshots
+*.png
 
-# Temporary files
-*.log
-*.tmp
+# Backup files
 *.bak
+*.bak2
+*.vps_backup
+*_backup
+
+# Docker
+.docker/
+
+# Other projects
+NexQuant/
+nestquant/
+headless-mt5/
+mt5/
+tokensaver/
+us100_robustness/
+ctrader_proto/
+data_pre2016/
+merged/
+analysis_output/
+backup_old/
+tests/
+
+# Temp
+tmp/
+temp/
+
+# Binary logs
+logs/dryrun.log
+logs/dashboard.log
+logs/signal_cron.log
+logs/dual_engine*.log
+logs/engine_test.log
+logs/structured_engine.log
+logs/ngrok.log
+logs/structured_status.json
+logs/engine_status.json
+logs/latest_signal.json
+
+# Old test scripts
+test_ev.py
+test_filtered_oos.py
+test_improvements.py
+test_improvements_fast.py
+test_improvements_seq.py
+test_mr_verify.py
+test_node_fetch.js
+test_one_loss.py
+test_proper_oos.py
+test_regime_system.py
+test_risk_levels.py
+test_slippage_stress.py
+test_tf_derived.py
+
+# Old scripts
+deploy.sh
+deploy_v3.sh
+full_restart.sh
+restart_engine.sh
+restart_hermes.sh
+restart_hermes_v2.sh
+restart_litellm.sh
+restart_litellm_v2.sh
+run_combined_v3.py.bak2
+run_signal.sh
+run_vps.sh
+check_hermes.sh
+test_litellm.sh
+patch_tokensaver.sh
+start_live.sh
+start_ngrok.sh
+start_structured.sh
+
+# Old docs
+NESTQUANT_TABFM_PLAN.md
+PHASE1_COMPLETE.md
+PHASE2_COMPLETE.md
+PHASE3_COMPLETE.md
+STRUCTURED_ENTRY_RULES.txt
+anchored_summary.md
+technical_report.md
+
+# Old data
+structured_entry_12pairs_results.json
+structured_entry_real_ev.json
+structured_entry_real_ev_12.json
+tf_backtest_results.json
+us100_backtest_results.json
+walk_forward_results.json
+users.json
+master_news_calendar.csv
+litellm_config.yaml
+pyproject.toml
+
+# Train scripts
+train_tabfm.py
+train_tabfm_demo.py
+
+# Old configs
+config.py.vps_backup
+risk_manager.py.pre_cb_backup
+risk_manager.py.vps_backup

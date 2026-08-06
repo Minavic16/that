@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MR+TF Backtest Results</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  :root{
+    --bg:#0d1117;--surface:#161b22;--surface2:#1c2129;--border:#30363d;
+    --text:#c9d1d9;--muted:#8b949e;--dim:#484f58;
+    --green:#3fb950;--red:#f85149;--yellow:#d29922;--blue:#58a6ff;--purple:#bc8cff;
+    --green-bg:rgba(63,185,80,.1);--red-bg:rgba(248,81,73,.1);--yellow-bg:rgba(210,153,34,.1);--blue-bg:rgba(88,166,255,.1);
+  }
+  body{font-family:system-ui,-apple-system,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);padding:24px;line-height:1.5}
+  .wrap{max-width:1100px;margin:0 auto}
+  header{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:12px}
+  h1{font-size:22px;font-weight:600;color:var(--blue)}
+  .back{color:var(--muted);font-size:14px;text-decoration:none;padding:6px 14px;border:1px solid var(--border);border-radius:6px}
+  .back:hover{border-color:var(--blue);color:var(--blue)}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:18px}
+  .card.full{grid-column:1/-1}
+  .card h2{font-size:12px;text-transform:uppercase;letter-spacing:.8px;color:var(--blue);margin-bottom:14px;display:flex;justify-content:space-between;align-items:center}
+  .card h2 .sub{color:var(--dim);font-weight:400;text-transform:none;letter-spacing:0;font-size:12px}
+  .row{display:flex;justify-content:space-between;font-size:14px;padding:5px 0;align-items:center}
+  .row .label{color:var(--muted)}.row .val{font-weight:500;text-align:right}
+  .val.green{color:var(--green)}.val.red{color:var(--red)}.val.yellow{color:var(--yellow)}.val.blue{color:var(--blue)}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th{text-align:left;padding:8px 12px;border-bottom:1px solid var(--border);color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.5px}
+  td{padding:8px 12px;border-bottom:1px solid var(--border)}
+  tr:hover{background:var(--surface2)}
+  .tag{display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600}
+  .tag.pass{background:var(--green-bg);color:var(--green)}
+  .tag.fail{background:var(--red-bg);color:var(--red)}
+  .section-title{font-size:16px;font-weight:600;margin:24px 0 12px;color:var(--text);border-bottom:1px solid var(--border);padding-bottom:8px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Backtest Results</h1>
+    <a href="/" class="back">← Dashboard</a>
+  </header>
+
+  <div id="content">Loading...</div>
+</div>
+
+<script>
+const money = n => n != null ? '$' + Number(n).toLocaleString(undefined, {minimumFractionDigits:0, maximumFractionDigits:0}) : '—';
+const pct = n => n != null ? Number(n).toFixed(1) + '%' : '—';
+
+async function load() {
+  const resp = await fetch('/api/backtest');
+  const data = await resp.json();
+  const m = data.metrics;
+  const v = data.validation;
+  const c = data.config;
+
+  document.getElementById('content').innerHTML = `
+    <div class="grid">
+      <div class="card">
+        <h2>Full Period <span class="sub">2022-2026 (Fixed $2,500)</span></h2>
+        <div class="row"><span class="label">Trades</span><span class="val">${m.full.total_trades.toLocaleString()}</span></div>
+        <div class="row"><span class="label">Trades/Month</span><span class="val">${m.full.trades_per_month}</span></div>
+        <div class="row"><span class="label">Win Rate</span><span class="val green">${pct(m.full.win_rate)}</span></div>
+        <div class="row"><span class="label">Profit Factor</span><span class="val">${m.full.profit_factor}</span></div>
+        <div class="row"><span class="label">Max Drawdown</span><span class="val yellow">${pct(m.full.max_drawdown)}</span></div>
+        <div class="row"><span class="label">Monthly Return</span><span class="val green">${m.full.monthly_ev}</span></div>
+        <div class="row"><span class="label">EV/Trade</span><span class="val green">${m.full.ev_per_trade}</span></div>
+      </div>
+      <div class="card">
+        <h2>OOS <span class="sub">2025-2026 (Fixed $2,500)</span></h2>
+        <div class="row"><span class="label">Trades</span><span class="val">${m.oos.total_trades.toLocaleString()}</span></div>
+        <div class="row"><span class="label">Trades/Month</span><span class="val">${m.oos.trades_per_month}</span></div>
+        <div class="row"><span class="label">Win Rate</span><span class="val green">${pct(m.oos.win_rate)}</span></div>
+        <div class="row"><span class="label">Profit Factor</span><span class="val">${m.oos.profit_factor}</span></div>
+        <div class="row"><span class="label">Max Drawdown</span><span class="val yellow">${pct(m.oos.max_drawdown)}</span></div>
+        <div class="row"><span class="label">Monthly Return</span><span class="val green">${m.oos.monthly_ev}</span></div>
+        <div class="row"><span class="label">EV/Trade</span><span class="val green">${m.oos.ev_per_trade}</span></div>
+      </div>
+    </div>
+
+    <h3 class="section-title">Validation</h3>
+    <div class="card full" style="padding:0">
+      <table>
+        <tr><th>Check</th><th>Detail</th><th>Result</th></tr>
+        ${v.map(x => `<tr><td style="font-weight:600">${x.name}</td><td style="color:var(--muted)">${x.detail}</td><td><span class="tag ${x.pass?'pass':'fail'}">${x.pass?'PASS':'FAIL'}</span></td></tr>`).join('')}
+      </table>
+    </div>
+
+    <h3 class="section-title">Strategy Parameters</h3>
+    <div class="card full" style="padding:0">
+      <table>
+        <tr><th>Parameter</th><th>Value</th></tr>
+        <tr><td>Timeframe</td><td>${c.timeframe}</td></tr>
+        <tr><td>Pairs</td><td>${c.pairs.length} pairs</td></tr>
+        <tr><td>EMA</td><td>${c.ema}</td></tr>
+        <tr><td>MR Threshold</td><td>${c.mr_threshold}% from EMA</td></tr>
+        <tr><td>MR Risk</td><td>${c.mr_risk}%</td></tr>
+        <tr><td>MR RR</td><td>${c.mr_rr}</td></tr>
+        <tr><td>TF Risk</td><td>${c.tf_risk}%</td></tr>
+        <tr><td>Trail ATR Mult</td><td>${c.trail_atr_mult}x</td></tr>
+        <tr><td>Correlation</td><td>${c.correlation_threshold}</td></tr>
+        <tr><td>Max/Currency</td><td>${c.max_per_currency}</td></tr>
+        <tr><td>Leverage</td><td>1:${c.leverage}</td></tr>
+        <tr><td>Account</td><td>$${c.account_size.toLocaleString()}</td></tr>
+        <tr><td>Commission</td><td>${c.costs.commission}</td></tr>
+        <tr><td>Entry Slippage</td><td>${c.costs.entry_slippage}</td></tr>
+        <tr><td>Sessions</td><td>London ${c.sessions.london}, NY ${c.sessions.new_york}</td></tr>
+      </table>
+    </div>
+
+    <h3 class="section-title">Costs</h3>
+    <div class="card full" style="padding:0">
+      <table>
+        <tr><th>Pair</th><th>Spread (pips)</th></tr>
+        ${c.costs.spreads.split(', ').map(s => {
+          const [pair, spread] = s.split(' ');
+          return `<tr><td>${pair}</td><td>${spread} pips</td></tr>`;
+        }).join('')}
+      </table>
+    </div>
+  `;
+}
+
+load();
+</script>
+</body>
+</html>

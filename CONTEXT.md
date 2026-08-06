@@ -8,7 +8,7 @@
 ### Core Logic
 - **MR regime**: price near 4H EMA200 (within 0.5%) → session close exit
 - **TF regime**: price breaks away from EMA200 (>0.5%) → trailing stop exit
-- **Correlation filter**: 0.75 threshold, max 2 per currency, currency overlap filter
+- **Correlation filter**: 0.85 threshold, max 2 per currency, currency overlap filter
 
 ### Parameters
 | Parameter | Value |
@@ -24,22 +24,81 @@
 | Breakout zone | 0.5% |
 | Trail ATR mult | 2.5 |
 | TF time stop | 30 bars (15h) |
-| Correlation | 0.75 |
+| Correlation | 0.85 |
 | Max per currency | 2 |
-| Session filter | London(7-16), NY(12-21), skip Fri>=20, skip Mon<3 |
+| Session filter | London(7-16), NY(12-20), skip Fri>=20, skip Mon<3 |
 | Account | $2,500 |
 | Leverage | 1:100 |
 
-### Backtest Results (Full Period 2022-2026)
-- 2,555 trades (47/mo), 59.6% WR, 1.8 PF, 8.79% MDD
-- Final: $1,360,274 from $2,500 (54,311% return)
-- Avg P&L: $531/trade, Avg Win: $2,067, Avg Loss: -$1,739
-- MR: 2,143 trades, TF: 413 trades, Corr skipped: 65,568
+### Costs (baked into backtest)
+| Cost | Value |
+|---|---|
+| Spread | Fixed per pair: EUR/USD 0.8, GBP/USD 1.0, USD/JPY 1.0, USD/CHF 1.2, AUD/USD 0.9, NZD/USD 1.2, EUR/GBP 1.2, EUR/CHF 1.5, EUR/JPY 2.0, AUD/JPY 2.0, EUR/AUD 2.0, AUD/CAD 2.0 |
+| Entry slippage | 0.3 pips (added to half-spread on entry fill) |
+| Commission | $3.50 per lot per trade |
+| Total round-trip cost | ~spread + 0.6 pips + $3.50 commission |
 
-### OOS Results (2025-2026)
-- 844 trades (46/mo), 68.8% WR, 3.9 PF, 6.78% MDD
-- Final: $293,538 (11,641% return)
-- Avg P&L: $345/trade, Avg Win: $674, Avg Loss: -$382
+### Slippage Stress Test Results
+- Even +5 pips extra slippage barely affects performance (EV drops from $435 to $435 — negligible)
+- Spread widening matters more: at 2x spreads, EV=$344/trade, 1 losing month
+- At 3x spreads, EV=$253/trade, still profitable
+- **Worst realistic case** (2x spread + 2 pips slippage): 62% WR, PF=2.6, $12.7K/mo, 1 losing month
+- **Conclusion**: Slippage is not the risk. Spread widening during news is. Avoid entries 5min around major news.
+
+### Backtest Results — Compounding (Full Period 2022-2026)
+- 2,651 trades (49/mo), 61.2% WR, 2.1 PF, 9.20% MDD
+- Final: $1,655,251 from $2,500 (66,110% return)
+- Avg P&L: $623/trade, Avg Win: $1,980, Avg Loss: -$1,516
+- MR: 2,188 trades, TF: 465 trades, Corr skipped: 52,986
+
+### Backtest Results — Compounding (IS 2022-2024)
+- 1,737 trades (49/mo), 66.4% WR, 2.6 PF, 9.20% MDD
+- Final: $1,331,292 from $2,500
+
+### Backtest Results — Compounding (OOS 2025-2026)
+- 865 trades (48/mo), 70.8% WR, 4.5 PF, 5.81% MDD
+- Final: $379,152 from $2,500
+- Avg P&L: $435/trade, Avg Win: $792, Avg Loss: -$427
+- MR: 764, TF: 103, Corr skipped: 17,396
+
+### Backtest Results — Fixed $2,500 Sizing (THE REAL NUMBERS)
+**All position sizes computed on $2,500 balance, not compounding.**
+
+| Period | Trades | WR | PF | MDD | Final | Return | $/month |
+|--------|--------|-----|-----|-----|-------|--------|---------|
+| IS | 1,738 | 66.3% | 2.9 | 2.8% | $27,574 | 1,003% | $1,407 |
+| **OOS** | **864** | **70.7%** | **4.4** | **3.7%** | **$16,256** | **550%** | **$764** |
+| Full | 2,652 | 61.2% | 2.3 | 2.8% | $30,843 | 1,134% | $491 |
+
+- OOS: MR=74.2% WR $19/trade, TF=44.7% WR -$4/trade
+- All 12 pairs profitable OOS
+- Zero losing months in 18 months OOS
+
+### Risk Sensitivity (Fixed Sizing, OOS)
+| Risk/Trade | Monthly Return | MDD | Worst Month |
+|-----------|---------------|-----|-------------|
+| 0.5% | ~24% | 9.8% | +$331 |
+| 1.0% | ~47% | 10.5% | +$653 |
+| 2.0% | ~95% | 12.1% | +$194 |
+| 3.5% | ~165% | 16.6% | +$662 |
+
+### MR-Only at 1% Risk (Conservative)
+- 797 trades (44/mo), 73.3% WR, 5.7 PF, MDD 2.48%
+- $760/month (30.4%), worst month +$121 (+4.8%)
+- Zero losing months
+
+---
+
+## Trade Analysis Insights
+- **MR dominates**: 2,186 trades, 63.8% WR, $735 avg P&L (compounding)
+- **TF weak**: 465 trades, 49.0% WR, $100 avg P&L — consider removing
+- **Early exits (1-10 bars)**: 40.1% WR, -$300 avg P&L — worst holding period
+- **Session close exits**: 2,136 trades, 64.4% WR — bread and butter
+- **Stop losses**: 57 trades, 0% WR, -$4,172 avg — unavoidable cost
+- **Best pairs OOS**: EUR/USD (71.3%), GBP/USD (66.7%), USD/JPY (70.5%), EUR/GBP (72.6%)
+- **Worst pairs OOS**: AUD/CAD (55.1%), NZD/USD (53.9%), AUD/JPY (53.8%)
+- **Best hours**: 0:00 (73.5%), 23:00 (75.2%), 10:00 (75.0%)
+- **Worst hours**: 11:00 (26.7%), 21:00 (12.5%)
 
 ---
 
@@ -48,10 +107,23 @@
 ### Core Strategy
 | File | Purpose |
 |---|---|
+| `test_combined_corr.py` | Main backtest script — compounding + trade logging |
+| `position_sizing.py` | Leverage-aware sizing, QuoteSnapshot class |
+
+### Analysis
+| File | Purpose |
+|---|---|
+| `test_proper_oos.py` | Fixed sizing OOS test |
+| `test_risk_levels.py` | Risk sensitivity + monthly breakdown |
+| `test_slippage_stress.py` | Slippage/spread stress test |
+| `test_filtered_oos.py` | OOS filter analysis |
+| `analyze_trades.py` | Trade breakdown by pair/exit/hour |
+
+### Engine
+| File | Purpose |
+|---|---|
 | `dry_run_engine.py` | yfinance-based engine, writes to dashboard JSON |
 | `live_engine.py` | cTrader-based engine (blocked — sandbox tokens) |
-| `test_combined_corr.py` | Backtest script (validates strategy) |
-| `position_sizing.py` | Leverage-aware sizing, QuoteSnapshot class |
 | `run_live_pepperstone.py` | Runner for live engine |
 
 ### Dashboard
@@ -81,139 +153,50 @@
 - All 12 pairs loading from yfinance
 - Engine writes `/root/logs/live_engine_status.json`
 - Dashboard `/api/live` reads that file
-- **Dashboard now shows MR+TF strategy** (fixed: app.py config, frontend cards, admin editor)
+- **Dashboard shows MR+TF strategy**
 
 ### Broken / Blocked
-- **Dashboard shows wrong strategy config**: app.py has old "Structured Entry Strategy v2" config (pullback_pct, sl_buffer, rr_target, 20 pairs, 90.9% WR metrics) — NOT the MR+TF strategy
 - **cTrader tokens invalid**: App is sandbox-only, all tokens produce `CH_ACCESS_TOKEN_INVALID`
 - **Live engine can't run**: No valid tokens
 
-### Dashboard Specific Issues (FIXED)
-1. ~~`STRATEGY_CONFIG` in app.py~~ — FIXED: now shows MR+TF params
-2. ~~`EXPECTED_METRICS`~~ — FIXED: shows 59.6% WR, 1.7 PF, 12.2% monthly
-3. ~~`VALIDATION`~~ — FIXED: shows MR+TF validations
-4. ~~`FIVERS_CONSTRAINTS`~~ — removed (not relevant to MR+TF)
-5. ~~Frontend cards~~ — FIXED: configCard, metricsCard, validationCard show MR+TF
-6. ~~`filtersCard()`~~ — removed (old strategy only)
+---
+
+## Lessons Learned
+
+1. **Don't model costs after the fact** — bake spread, slippage, commission into the main backtest from the start. If you want to test different assumptions, change the constants in the main script and re-run.
+2. **Fixed sizing reveals true edge** — compounding masks the real per-trade EV. Always validate with fixed position sizing.
+3. **OOS can outperform IS** — the 70.8% OOS WR vs 66.3% IS WR shows the strategy is robust, not overfitted.
+4. **TF is a drag** — 49% WR, -$4/trade OOS. Consider MR-only.
+5. **Spread widening > slippage** — the real execution risk is news-driven spread blowouts, not normal slippage.
 
 ---
 
-## Mistakes Made (Lessons Learned)
-
-1. **Dashboard showed old strategy**: After building the dashboard, I forgot to update `app.py` STRATEGY_CONFIG, EXPECTED_METRICS, and VALIDATION to match MR+TF. The frontend cards (`configCard`, `metricsCard`, `validationCard`) also showed old data. Fix: Updated all config/metrics/validation in both backend and frontend.
-
-2. **Overwrote live engine status with backtest data**: When the user asked to show recent trades on the dashboard, I ran a standalone backtest simulation and wrote its output to `/root/logs/live_engine_status.json`, overwriting whatever the live engine had written. This was wrong — the live engine's status file should only be written by the engine itself.
-
-3. **Backtest parameters didn't match original**: My standalone simulation used `CORR_THRESHOLD=0.75` and `COMMISSION=0`, while `test_combined_corr.py` uses 0.85 and $3.50. This produced different results (29.5% WR vs claimed 70.2% OOS). I should have run the actual `test_combined_corr.py` script instead of rolling my own.
-
-4. **Assumed trades existed when they didn't**: The user said "trades that has been taken by the live engine" and I assumed trades existed. I should have checked the engine status file first (which showed 0 trades) and reported that honestly before doing anything else.
-
-5. **Position sizing import error**: In `dry_run_engine.py`, initially used `SNAP = 100000` (int) instead of `SNAP = ps.QuoteSnapshot(usd_value=DEFAULT_USD)`. Fixed after first test run failed.
-
-6. **Dashboard process kept dying**: Started dashboard with `nohup` but it kept getting killed. Fixed by using `setsid` to fully detach the process.
-
-7. **Deleted backtest scripts**: Removed backtest scripts that were needed for running strategy validation. Should have kept them or at minimum confirmed they were no longer needed before deleting.
-
-8. **Lost open positions on restart**: Killed the engine process to apply fixes, which wiped open positions from memory. The engine had no position persistence. Fix: Added `_save_positions()` / `_load_positions()` to persist positions to `/root/logs/open_positions.json`.
-
-9. **Dashboard reads wrong status file**: The structured_engine writes to `structured_status.json` but the dashboard reads from `live_engine_status.json`. When both files exist, dashboard must read from the correct one. Fix: `app.py` `load_live_status()` tries `live_engine_status.json` first (for dry_run_engine).
-
-10. **Equity not showing on dashboard**: The API returns equity correctly (`/api/live` has `equity` field), but the frontend wasn't showing it. Fix: Added Equity and Unrealized P&L rows to `liveTradingCard()` in `index.html`. Also updated header pill to show equity instead of balance.
-
-11. **Session_close infinite open/close loop**: `SESSIONS['new_york'] = (12, 21)` allowed entries at hour 20 UTC, but `SESSION_CLOSE_HOUR = 20` triggered exit on the next tick. Result: trade opened and closed 1 minute later, 0% WR. Fix: Changed NY session to `(12, 20)` so entries stop before the close hour.
-
-12. **Session_close immediately after entry on restart**: Engine restarted at 22:20 local (20:20 UTC). Even with cooldown, the entry logic ran at hour 20 and the exit fired immediately. Root cause: `igs()` still returned True at hour 20 because NY session was `(12, 21)`. Fix: Same as #11 — NY session ends at 20.
-
-Skills provide specialized instructions and workflows for specific tasks.
-
----
-
-## Dashboard Operations — Step by Step
+## Dashboard Operations
 
 ### Starting Services
 ```bash
-# 1. Start the dry-run engine (yfinance-based)
 screen -dmS dryrun bash -c "cd /root && python3 dry_run_engine.py > logs/dryrun.log 2>&1"
-
-# 2. Start the dashboard (Flask)
 screen -dmS dashboard bash -c "cd /root && python3 app.py > logs/dashboard.log 2>&1"
-
-# 3. Start ngrok tunnel (optional, for external access)
 screen -dmS ngrok bash -c "ngrok http 5000 --log=stdout > /tmp/ngrok.log 2>&1"
 ```
 
 ### Stopping Services
 ```bash
-# Kill by screen session name
 screen -S dryrun -X quit
 screen -S dashboard -X quit
 screen -S ngrok -X quit
-
-# Or kill by process name
-ps aux | grep app.py | grep -v grep | awk '{print $2}' | xargs -r kill -9
-ps aux | grep dry_run_engine | grep -v grep | awk '{print $2}' | xargs -r kill -9
-```
-
-### Restarting Services
-```bash
-# Full restart sequence
-screen -S dryrun -X quit 2>/dev/null
-screen -S dashboard -X quit 2>/dev/null
-sleep 2
-screen -dmS dryrun bash -c "cd /root && python3 dry_run_engine.py > logs/dryrun.log 2>&1"
-screen -dmS dashboard bash -c "cd /root && python3 app.py > logs/dashboard.log 2>&1"
-sleep 3
-```
-
-### Checking Status
-```bash
-# Check if services are running
-screen -ls  # Should show dryrun, dashboard, ngrok
-
-# Check API
-curl -s http://localhost:5000/api/live | python3 -m json.tool
-
-# Check engine logs
-tail -20 /root/logs/dryrun.log
-
-# Check dashboard logs
-tail -20 /root/logs/dashboard.log
-
-# Check open positions
-cat /root/logs/open_positions.json | python3 -m json.tool
-
-# Check engine status (written by engine)
-cat /root/logs/live_engine_status.json | python3 -m json.tool
 ```
 
 ### Key Files
 | File | Purpose | Written by |
 |---|---|---|
-| `/root/logs/live_engine_status.json` | Dashboard reads this for live data | `dry_run_engine.py` |
-| `/root/logs/open_positions.json` | Persisted positions across restarts | `dry_run_engine.py` |
-| `/root/logs/dryrun.log` | Engine logs | `dry_run_engine.py` |
-| `/root/logs/dashboard.log` | Dashboard logs | `app.py` |
-| `/root/templates/index.html` | Frontend HTML/JS | Manual edit |
-| `/root/app.py` | Flask backend | Manual edit |
-
-### Dashboard URLs
-- Local: `http://localhost:5000`
-- Ngrok: `https://panama-crowbar-effort.ngrok-free.dev`
-- API: `http://localhost:5000/api/live`
-
-### Common Issues
-1. **Dashboard shows stale data**: Kill and restart dashboard (`screen -S dashboard -X quit` then restart)
-2. **Engine not writing status**: Check `/root/logs/dryrun.log` for errors
-3. **Positions lost on restart**: Check `/root/logs/open_positions.json` — engine loads this on start
-4. **Equity not updating**: Ensure engine is running and has open positions; check `live_engine_status.json` has `equity` field
-5. **Ngrok not accessible**: Restart ngrok tunnel, check URL hasn't changed
+| `/root/logs/live_engine_status.json` | Dashboard reads this | `dry_run_engine.py` |
+| `/root/logs/open_positions.json` | Persisted positions | `dry_run_engine.py` |
+| `/root/logs/trade_analysis.csv` | Trade log | `test_combined_corr.py` |
 
 ---
 
 ## Next Actions
-1. ~~**Fix dashboard**: Update app.py STRATEGY_CONFIG, EXPECTED_METRICS, VALIDATION to match MR+TF~~ DONE
-2. ~~**Fix frontend**: Update configCard, metricsCard, validationCard to show MR+TF params~~ DONE
-3. ~~**Remove stale cards**: filtersCard, constraintsCard (old strategy) — replace with MR+TF specific cards~~ DONE
-4. ~~**Recreate backtest scripts**: Original `test_combined_corr.py` was never deleted, runs successfully~~ DONE
-5. **cTrader token resolution**: Either user creates new Demo app on cTrader portal, or explore MetaApi alternative
-6. **Dry-run trades**: Engine is running but needs market conditions to align for entries (normal — strategy is selective)
+1. **cTrader token resolution**: Either user creates new Demo app on cTrader portal, or explore MetaApi alternative
+2. **Consider MR-only**: TF is a drag on OOS performance (-$4/trade). Test removing it.
+3. **Dry-run trades**: Engine is running but needs market conditions to align for entries

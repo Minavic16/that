@@ -17,6 +17,7 @@ from typing import Dict, List, Optional
 from dataclasses import dataclass, field
 
 import position_sizing as ps
+import persistence as db
 
 logger = logging.getLogger(__name__)
 
@@ -124,7 +125,6 @@ class DryRunEngine:
     POSITIONS_FILE = '/root/logs/open_positions.json'
 
     def __init__(self, initial_balance: float = 2500.0):
-        self.balance = initial_balance
         self.initial_balance = initial_balance
         self.open_positions: List[OpenPosition] = []
         self.trade_log = []
@@ -135,10 +135,57 @@ class DryRunEngine:
         self._status_file = STATUS_FILE
         self._last_prices = {}
         self._session_close_times = {}  # {pair: datetime} — when last session_close happened
-        self._load_positions()
+        self._daily_losses = {}  # {pair: date} — last loss date per pair
 
-    def _load_positions(self):
-        """Load open positions from disk."""
+        # Initialize DB and load persisted state
+        db.init_db()
+        self._load_state()
+
+    def _load_state(self):
+        """Load all state from DB, fallback to JSON files."""
+        # Load account state from DB
+        acct = db.load_account_state()
+        self.balance = acct['balance']
+
+        # Load daily state from DB
+        daily = db.load_daily_state()
+        if daily:
+            self.daily_pnl = daily['daily_pnl']
+            # Reconstruct _session_close_times
+            for pair, ts_str in daily.get('session_close_times', {}).items():
+                try:
+                    self._session_close_times[pair] = datetime.fromisoformat(ts_str)
+                except (ValueError, TypeError):
+                    pass
+            # Reconstruct _daily_losses
+            for pair, date_str in daily.get('daily_losses', {}).items():
+                try:
+                    self._daily_losses[pair] = datetime.fromisoformat(date_str).date()
+                except (ValueError, TypeError):
+                    pass
+
+        # Load open positions from DB
+        db_positions = db.load_open_positions()
+        if db_positions:
+            for p in db_positions:
+                pair = p['pair']
+                self.open_positions.append(OpenPosition(
+                    pair=pair, trend=1 if p['direction'] == 'long' else -1,
+                    entry=p['entry_price'], sl=p['sl_price'], tp=p['tp_price'],
+                    lot=p['lot_size'], regime=p['regime'],
+                    entry_time=datetime.fromisoformat(p['entry_time']) if p.get('entry_time') else None,
+                    pip=ps.pip_size_for_pair(pair),
+                    pv=ps.pip_value_per_lot(pair, SNAP),
+                    spread=SPREAD.get(pair, 2.0),
+                ))
+            logger.info(f"Loaded {len(self.open_positions)} positions from DB, balance=${self.balance:.2f}")
+            return
+
+        # Fallback: load from JSON file (migration path)
+        self._load_positions_from_json()
+
+    def _load_positions_from_json(self):
+        """Legacy: load from open_positions.json (one-time migration)."""
         try:
             with open(self.POSITIONS_FILE, 'r') as f:
                 data = json.load(f)
@@ -146,6 +193,13 @@ class DryRunEngine:
             self.daily_pnl = data.get('daily_pnl', 0.0)
             for p in data.get('open_positions', []):
                 pair = p['pair']
+                pos_dict = {
+                    'pair': pair, 'direction': p['direction'],
+                    'entry': p['entry'], 'sl': p['sl'], 'tp': p['tp'],
+                    'lot': p['lot'], 'regime': p['regime'],
+                    'entry_time': p.get('entry_time'),
+                }
+                db.save_position(pos_dict)
                 self.open_positions.append(OpenPosition(
                     pair=pair, trend=1 if p['direction'] == 'long' else -1,
                     entry=p['entry'], sl=p['sl'], tp=p['tp'],
@@ -155,28 +209,47 @@ class DryRunEngine:
                     pv=ps.pip_value_per_lot(pair, SNAP),
                     spread=SPREAD.get(pair, 2.0),
                 ))
-            logger.info(f"Loaded {len(self.open_positions)} open positions, balance=${self.balance:.2f}")
+            db.save_account_state(self.balance)
+            logger.info(f"Migrated {len(self.open_positions)} positions from JSON to DB")
         except (FileNotFoundError, json.JSONDecodeError):
-            pass
+            self.balance = self.initial_balance
 
     def _save_positions(self):
-        """Persist open positions to disk."""
-        data = {
-            'balance': round(self.balance, 2),
-            'daily_pnl': round(self.daily_pnl, 2),
-            'open_positions': [{
+        """Persist open positions to DB + atomic JSON for dashboard."""
+        # Save to DB
+        positions_data = []
+        for p in self.open_positions:
+            pos_dict = {
                 'pair': p.pair, 'direction': 'long' if p.trend == 1 else 'short',
                 'entry': p.entry, 'sl': p.sl, 'tp': p.tp,
                 'lot': p.lot, 'regime': p.regime,
                 'entry_time': p.entry_time.isoformat() if p.entry_time else None,
-            } for p in self.open_positions],
-        }
+            }
+            db.save_position(pos_dict)
+            positions_data.append(pos_dict)
+
+        # Save to DB
+        db.save_account_state(self.balance, self.balance + self._calc_unrealized_pnl())
+
+        # Atomic JSON write for dashboard backward compat
         try:
-            os.makedirs(os.path.dirname(self.POSITIONS_FILE), exist_ok=True)
-            with open(self.POSITIONS_FILE, 'w') as f:
-                json.dump(data, f, indent=2)
+            db.save_positions_json(self.balance, self.daily_pnl, positions_data)
         except Exception as e:
             logger.error(f"Failed to save positions: {e}")
+
+    def _calc_unrealized_pnl(self) -> float:
+        """Calculate total unrealized P&L across open positions."""
+        total = 0.0
+        for pos in self.open_positions:
+            current_price = self._get_current_price(pos.pair)
+            if current_price is not None:
+                pip_size = pos.pip
+                if pos.trend == 1:
+                    pos_pnl = (current_price - pos.entry) / pip_size * pos.pv * pos.lot
+                else:
+                    pos_pnl = (pos.entry - current_price) / pip_size * pos.pv * pos.lot
+                total += pos_pnl
+        return total
 
     async def start(self):
         logger.info("Starting dry-run engine...")
@@ -364,7 +437,7 @@ class DryRunEngine:
 
     def _check_exit(self, pos: OpenPosition, current_price: float) -> Optional[str]:
         now = datetime.now(timezone.utc)
-        if pos.regime == 'mr' and now.hour >= SESSION_CLOSE_HOUR:
+        if pos.regime == 'mr' and now.hour >= SESSION_CLOSE_HOUR and now.weekday() < 5:
             self._session_close_times[pos.pair] = now
             return 'session_close'
 
@@ -444,6 +517,15 @@ class DryRunEngine:
         return True
 
     def _execute_exit(self, pos: OpenPosition, reason: str, current_price: float) -> bool:
+        # Dedup: check if this position was already closed in DB
+        entry_time_str = pos.entry_time.isoformat() if pos.entry_time else ''
+        if entry_time_str:
+            existing = db.load_trades(pair=pos.pair, limit=100)
+            for t in existing:
+                if t.get('entry_time') == entry_time_str and t.get('exit_reason'):
+                    logger.info(f"SKIP CLOSE {pos.pair} — already closed in DB")
+                    return False
+
         pip_size = pos.pip
         if pos.trend == 1:
             pnl_pips = (current_price - pos.entry) / pip_size
@@ -454,18 +536,39 @@ class DryRunEngine:
         pnl_dollars = pnl_pips * pos.pv * pos.lot
 
         self.balance += pnl_dollars
-        self.trade_log.append({
-            'time': datetime.now(timezone.utc),
+
+        now = datetime.now(timezone.utc)
+        trade = {
             'pair': pos.pair,
             'regime': pos.regime,
             'direction': 'long' if pos.trend == 1 else 'short',
             'entry': pos.entry,
             'exit': current_price,
+            'entry_time': entry_time_str,
+            'exit_time': now.isoformat(),
+            'exit_reason': reason,
             'pnl_pips': pnl_pips,
             'pnl_dollars': pnl_dollars,
-            'reason': reason,
-        })
+            'lot': pos.lot,
+            'sl': pos.sl,
+            'tp': pos.tp,
+            'spread': pos.spread,
+        }
+        self.trade_log.append(trade)
+
+        # Persist trade to DB
+        db.save_trade(trade)
+
+        # Close position in DB
+        db.close_position(pos.pair, entry_time_str,
+                         current_price, reason, pnl_dollars)
+
         logger.info(f"DRY-RUN CLOSE {pos.pair} {reason}: P&L=${pnl_dollars:.2f} ({pnl_pips:.1f} pips)")
+
+        # Track daily losses — one loss per pair per day
+        if pnl_dollars < 0:
+            self._daily_losses[pos.pair] = now.date()
+
         return True
 
     def _write_status_file(self):
@@ -480,7 +583,7 @@ class DryRunEngine:
                     pos_pnl_pips = (current_price - pos.entry) / pip_size
                 else:  # short
                     pos_pnl_pips = (pos.entry - current_price) / pip_size
-                pos_pnl_dollars = pos_pnl_pips * pos.lot * pip_size * 100000
+                pos_pnl_dollars = pos_pnl_pips * pos.pv * pos.lot
                 unrealized_pnl += pos_pnl_dollars
             else:
                 pos_pnl_dollars = 0.0
@@ -498,24 +601,22 @@ class DryRunEngine:
                 'unrealized_pnl': round(pos_pnl_dollars, 2),
             })
 
-        recent_trades = []
-        for t in self.trade_log[-30:]:
-            recent_trades.append({
-                'time': t['time'].isoformat() if hasattr(t['time'], 'isoformat') else str(t['time']),
+        # Load stats from DB (survives restart)
+        stats = db.get_trade_stats()
+        recent_trades = db.load_trades(limit=30)
+        recent_display = []
+        for t in recent_trades:
+            recent_display.append({
+                'time': t.get('exit_time', ''),
                 'pair': t['pair'],
-                'regime': t['regime'],
-                'direction': t['direction'],
-                'entry': t['entry'],
-                'exit': t['exit'],
-                'pnl_pips': round(t['pnl_pips'], 1),
-                'pnl_dollars': round(t['pnl_dollars'], 2),
-                'reason': t['reason'],
+                'regime': t.get('regime', ''),
+                'direction': t.get('direction', ''),
+                'entry': t.get('entry_price', 0),
+                'exit': t.get('exit_price', 0),
+                'pnl_pips': round(t.get('pnl_pips', 0), 1),
+                'pnl_dollars': round(t.get('pnl_dollars', 0), 2),
+                'reason': t.get('exit_reason', ''),
             })
-
-        wins = sum(1 for t in self.trade_log if t['pnl_dollars'] > 0)
-        losses = sum(1 for t in self.trade_log if t['pnl_dollars'] <= 0)
-        total = wins + losses
-        total_pnl = sum(t['pnl_dollars'] for t in self.trade_log)
 
         status = {
             'timestamp': now.isoformat(),
@@ -525,20 +626,12 @@ class DryRunEngine:
             'equity': round(self.balance + unrealized_pnl, 2),
             'daily_pnl': round(self.daily_pnl, 2),
             'open_positions': positions,
-            'stats': {
-                'total_trades': total,
-                'wins': wins,
-                'losses': losses,
-                'win_rate': round(wins / total * 100, 1) if total > 0 else 0,
-                'total_pnl': round(total_pnl, 2),
-                'avg_pnl': round(total_pnl / total, 2) if total > 0 else 0,
-            },
-            'recent_trades': recent_trades,
+            'stats': stats,
+            'recent_trades': recent_display,
         }
 
         try:
-            with open(self._status_file, 'w') as f:
-                json.dump(status, f, indent=2)
+            db.save_status_json(status)
         except Exception as e:
             logger.error(f"Failed to write status: {e}")
 
@@ -549,9 +642,8 @@ class DryRunEngine:
         if self.current_date != today:
             self.current_date = today
             self.daily_pnl = 0.0
-
-        if not igs(now):
-            return
+            self._daily_losses = {}
+            self._session_close_times = {}
 
         # Refresh data from yfinance periodically
         for pair in PAIRS:
@@ -573,7 +665,7 @@ class DryRunEngine:
                     except Exception:
                         pass
 
-        # Check exits
+        # Check exits (always — even outside session hours)
         remaining = []
         for pos in self.open_positions:
             current_price = self._get_current_price(pos.pair)
@@ -590,7 +682,17 @@ class DryRunEngine:
         self.open_positions = remaining
         self._save_positions()
 
-        # Check entries
+        # Persist daily state
+        db.save_daily_state(
+            str(today), self.daily_pnl,
+            self._session_close_times, self._daily_losses
+        )
+
+        # Check entries (only during session hours)
+        if not igs(now):
+            self._write_status_file()
+            return
+
         if self.balance < MIN_BALANCE:
             return
 
@@ -600,9 +702,13 @@ class DryRunEngine:
                 break
             if any(p.pair == pair for p in self.open_positions):
                 continue
-            # Check session_close cooldown
+            # Don't re-enter same pair after session_close on the same day
             last_close = self._session_close_times.get(pair)
-            if last_close and (now - last_close).total_seconds() < SESSION_REENTRY_COOLDOWN:
+            if last_close and last_close.date() == now.date():
+                continue
+            # One loss per pair per day — skip if stopped out today
+            last_loss = self._daily_losses.get(pair)
+            if last_loss and last_loss == now.date():
                 continue
             entry = self._check_entry(pair)
             if entry:

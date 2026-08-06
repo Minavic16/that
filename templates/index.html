@@ -161,7 +161,9 @@
         <span class="pill gray" id="session-pill"><span class="dot"></span><span id="session-text">Loading…</span></span>
         <span class="pill gray" id="engine-pill"><span class="dot"></span><span id="engine-text">Engine: ?</span></span>
       </div>
+      <a href="/backtest" style="background:var(--blue-bg);color:var(--blue);padding:6px 14px;border-radius:6px;font-size:13px;font-weight:600;text-decoration:none">Backtest</a>
       <button class="admin-btn" onclick="toggleDrawer()">⚙ Admin</button>
+      <a href="/logout" style="color:var(--muted);font-size:13px;text-decoration:none">Logout</a>
       <span class="updated" id="updated"></span>
     </div>
   </header>
@@ -225,46 +227,43 @@ function sessionCard(s) {
 }
 
 function engineCard(e, cfg) {
-  if (!e) return `
+  if (!e || !e.running) return `
     <div class="card">
       <h2>Engine Status</h2>
       <div class="empty">Engine not running.<br>Open <strong>Admin</strong> to start.</div>
     </div>`;
-  const dd = e.dd_pct || 0, ddLimit = 7.0, ddPct = Math.min(dd / ddLimit * 100, 100);
+  const balance = e.balance || 2500;
+  const equity = e.equity || balance;
+  const unrealized = equity - balance;
+  const pnlPct = ((balance - 2500) / 2500 * 100);
+  const pnlColor = balance >= 2500 ? 'green' : 'red';
+  const positions = e.open_positions || [];
+  const dd = e.dd_pct || 0, ddLimit = 10.0, ddPct = Math.min(dd / ddLimit * 100, 100);
   const ddClass = dd > 6 ? 'danger' : dd > 3 ? 'warn' : 'ok';
   const ddColor = dd > 6 ? 'red' : dd > 3 ? 'yellow' : 'green';
-  const pos = e.positions || {}, posKeys = Object.keys(pos);
-  const lev = e.leverage || cfg?.leverage || 100;
-  const marginUsed = e.margin_used || 0;
-  const marginAvail = e.margin_available || (e.balance * lev);
-  const marginPct = marginAvail > 0 ? (marginUsed / marginAvail * 100) : 0;
-  const mgClass = marginPct > 50 ? 'danger' : marginPct > 25 ? 'warn' : 'ok';
-  const posHtml = posKeys.length ? `<div class="pos-list">${posKeys.map(k => {
-    const p = pos[k];
-    const dir = (p.direction || p.side || '').toUpperCase();
-    const isLong = dir.includes('LONG') || dir.includes('BUY');
-    const vol = p.volume != null ? p.volume : (p.volume_units ? p.volume_units/100000 : 0);
+  const posHtml = positions.length ? `<div class="pos-list">${positions.map(p => {
+    const dir = (p.direction || '').toUpperCase();
+    const isLong = dir === 'LONG';
+    const pnl = p.unrealized_pnl || 0;
+    const pnlC = pnl >= 0 ? 'green' : 'red';
     return `<div class="pos ${isLong?'long':'short'}">
-      <div class="ph"><span>${esc(p.pair || k)}</span><span class="${isLong?'green':'red'}">${dir || '—'}</span></div>
-      <div class="pd"><span>Entry: ${px(p.entry_price || p.open_price || p.entry)}</span><span>SL: ${px(p.sl)}</span>
-      <span>TP: ${px(p.tp)}</span><span>Lot: ${fmt(vol,2)}</span>
-      ${p.margin_used!=null ? `<span>Margin: ${money(p.margin_used)}</span><span>Notional: ${money(p.notional)}</span>` : ''}</div></div>`;
-  }).join('')}</div>` : '';
+      <div class="ph"><span>${esc(p.pair)}</span><span class="${isLong?'green':'red'}">${dir} ${p.regime?.toUpperCase() || ''}</span></div>
+      <div class="pd"><span>Entry: ${px(p.entry)}</span><span>SL: ${px(p.sl)}</span>
+      <span>TP: ${px(p.tp)}</span><span>Lot: ${fmt(p.lot,2)}</span>
+      <span>P&L: <span class="${pnlC}">${money(pnl)}</span></span>
+      <span>${esc(p.entry_time?.slice(0,16) || '')}</span></div></div>`;
+  }).join('')}</div>` : '<div class="empty">No open positions.</div>';
   return `
-    <div class="card ${posKeys.length?'full':''}">
-      <h2>Engine Status <span class="sub">${e.dry_run ? 'DRY RUN' : 'LIVE'} · 1:${lev}</span></h2>
-      <div class="row"><span class="label">State</span><span class="val ${e.running?'green':'red'}">${e.running?'RUNNING':'STOPPED'}</span></div>
-      <div class="row"><span class="label">Account</span><span class="val">${e.account_id || '—'}</span></div>
-      <div class="row"><span class="label">Balance</span><span class="val">${money(e.balance)}</span></div>
-      <div class="row"><span class="label">Peak</span><span class="val">${money(e.peak)}</span></div>
-      <div class="row"><span class="label">Leverage</span><span class="val blue">1:${lev}</span></div>
-      <div class="row"><span class="label">Trades Today</span><span class="val">${e.trades_today ?? 0}</span></div>
-      <div class="row"><span class="label">Signals Processed</span><span class="val">${e.signals_processed ?? 0}</span></div>
-      <div class="row"><span class="label">Open Positions</span><span class="val">${e.open_positions ?? 0}</span></div>
-      <div class="row"><span class="label">Margin Used</span><span class="val">${money(marginUsed)} (${fmt(marginPct,1)}%)</span></div>
-      <div class="dd-bar"><div class="dd-track"><div class="dd-fill ${mgClass}" style="width:${Math.min(marginPct,100)}%"></div></div>
-      <div class="dd-label"><span>0</span><span>${money(marginAvail)} avail (1:${lev})</span></div></div>
-      <div class="row" style="margin-top:10px"><span class="label">Drawdown</span><span class="val ${ddColor}">${fmt(dd)}% / ${ddLimit}%</span></div>
+    <div class="card full">
+      <h2>Engine Status <span class="sub">DRY RUN · 1:100</span></h2>
+      <div class="row"><span class="label">State</span><span class="val green">RUNNING</span></div>
+      <div class="row"><span class="label">Balance</span><span class="val ${pnlColor}">${money(balance)}</span></div>
+      <div class="row"><span class="label">Equity</span><span class="val ${equity >= 2500 ? 'green' : 'red'}">${money(equity)}</span></div>
+      <div class="row"><span class="label">Unrealized P&L</span><span class="val ${unrealized >= 0 ? 'green' : 'red'}">${money(unrealized)}</span></div>
+      <div class="row"><span class="label">Starting</span><span class="val">$2,500.00</span></div>
+      <div class="row"><span class="label">Return</span><span class="val ${pnlColor}">${fmt(pnlPct)}%</span></div>
+      <div class="row"><span class="label">Open Positions</span><span class="val blue">${positions.length}</span></div>
+      <div class="row" style="margin-top:8px"><span class="label">Drawdown</span><span class="val ${ddColor}">${fmt(dd)}% / ${ddLimit}%</span></div>
       <div class="dd-bar"><div class="dd-track"><div class="dd-fill ${ddClass}" style="width:${ddPct}%"></div></div>
       <div class="dd-label"><span>0%</span><span>${ddLimit}% limit</span></div></div>
       ${posHtml}
@@ -477,7 +476,7 @@ async function fetchState() {
       sessionCard(s) + liveTradingCard(live) +
       livePositionsCard(live) + liveTradesCard(live) +
       engineCard(s.engine, s.config) + configCard(s.config) +
-      metricsCard(s.metrics) + validationCard(s.validation) +
+      validationCard(s.validation) +
       pairsCard(s.config);
 
     // Only re-render if content changed (avoids re-triggering animations)
