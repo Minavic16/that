@@ -74,20 +74,8 @@ logs/structured_status.json
 logs/engine_status.json
 logs/latest_signal.json
 
-# Old test scripts
-test_ev.py
-test_filtered_oos.py
-test_improvements.py
-test_improvements_fast.py
-test_improvements_seq.py
-test_mr_verify.py
+# Node test
 test_node_fetch.js
-test_one_loss.py
-test_proper_oos.py
-test_regime_system.py
-test_risk_levels.py
-test_slippage_stress.py
-test_tf_derived.py
 
 # Old scripts
 deploy.sh

@@ -60,7 +60,7 @@ def check_currency_overlap(open_positions, new_pair):
         return True
     return False
 
-def run_sim(start, end, max_conc=20):
+def run_sim(start, end, max_conc=20, one_loss_per_pair=False):
     pdata={}
     close_series = {}
 
@@ -108,7 +108,8 @@ def run_sim(start, end, max_conc=20):
 
     bal=ACC; peak=ACC; mdd=0; open_pos=[]; pnls=[]; daily_sb=ACC; daily_d=None
     n_mr_sl=0; n_mr_tp=0; n_mr_sc=0; n_tf_sl=0; n_tf_tp=0; n_tf_sc=0; n_tf_mh=0; n_tf_ts=0; n_dl=0
-    mr_trades=0; tf_trades=0; n_corr_skip=0
+    mr_trades=0; tf_trades=0; n_corr_skip=0; trades_log=[]
+    daily_losses = {}  # {pair: date} — last loss date per pair
 
     corr_skip_this = 0
     for i in range(250, n_bars-1):
@@ -116,7 +117,7 @@ def run_sim(start, end, max_conc=20):
             print(f"    Bar {i}/{n_bars} ({i*100//n_bars}%) | Trades so far: {len(pnls)} | Open: {len(open_pos)} | Balance: ${bal:,.0f}")
         ts_now=ref['ts'][i]
         today=ts_now.date()
-        if daily_d!=today: daily_d=today; daily_sb=bal
+        if daily_d!=today: daily_d=today; daily_sb=bal; daily_losses = {}
 
         # Daily loss limit
         if daily_sb>0 and (daily_sb-bal)/daily_sb>=0.05:
@@ -126,6 +127,7 @@ def run_sim(start, end, max_conc=20):
                 ep=pd_['c'][i]-(pos['spread']*0.5+0.3)*pos['pip'] if pos['trend']==1 else pd_['c'][i]+(pos['spread']*0.5+0.3)*pos['pip']
                 pnl=(ep-pos['entry'])*pos['trend']/pos['pip']*pos['pv']*pos['lot']-pos['lot']*COMMISSION
                 bal+=pnl; pnls.append(pnl); n_dl+=1
+                trades_log.append({'pair':pos['pair'],'regime':pos['regime'],'dir':'LONG' if pos['trend']==1 else 'SHORT','entry':pos['entry'],'exit':ep,'pnl':pnl,'exit_reason':'daily_loss','bars':i-pos['bar'],'bar':i,'ts':str(ref['ts'][i]),'lot':pos['lot'],'spread':pos['spread']})
             open_pos.clear(); continue
 
         # --- EXITS ---
@@ -140,25 +142,33 @@ def run_sim(start, end, max_conc=20):
             if tr==1 and bar_lo<=sl:
                 pnl=(sl-pos['entry'])/pos['pip']*pos['pv']*pos['lot']-pos['lot']*COMMISSION
                 bal+=pnl; pnls.append(pnl)
+                trades_log.append({'pair':pos['pair'],'regime':regime,'dir':'LONG','entry':pos['entry'],'exit':sl,'pnl':pnl,'exit_reason':'stop_loss','bars':i-pos['bar'],'bar':i,'ts':str(ref['ts'][i]),'lot':pos['lot'],'spread':pos['spread']})
                 if regime=='mr': n_mr_sl+=1
                 else: n_tf_sl+=1
+                if one_loss_per_pair and pnl < 0:
+                    daily_losses[pos['pair']] = today
                 closed=True
             elif tr==-1 and bar_hi>=sl:
                 pnl=(pos['entry']-sl)/pos['pip']*pos['pv']*pos['lot']-pos['lot']*COMMISSION
                 bal+=pnl; pnls.append(pnl)
+                trades_log.append({'pair':pos['pair'],'regime':regime,'dir':'SHORT','entry':pos['entry'],'exit':sl,'pnl':pnl,'exit_reason':'stop_loss','bars':i-pos['bar'],'bar':i,'ts':str(ref['ts'][i]),'lot':pos['lot'],'spread':pos['spread']})
                 if regime=='mr': n_mr_sl+=1
                 else: n_tf_sl+=1
+                if one_loss_per_pair and pnl < 0:
+                    daily_losses[pos['pair']] = today
                 closed=True
 
             if not closed and tr==1 and bar_hi>=tp:
                 pnl=(tp-pos['entry'])/pos['pip']*pos['pv']*pos['lot']-pos['lot']*COMMISSION
                 bal+=pnl; pnls.append(pnl)
+                trades_log.append({'pair':pos['pair'],'regime':regime,'dir':'LONG','entry':pos['entry'],'exit':tp,'pnl':pnl,'exit_reason':'take_profit','bars':i-pos['bar'],'bar':i,'ts':str(ref['ts'][i]),'lot':pos['lot'],'spread':pos['spread']})
                 if regime=='mr': n_mr_tp+=1
                 else: n_tf_tp+=1
                 closed=True
             elif not closed and tr==-1 and bar_lo<=tp:
                 pnl=(pos['entry']-tp)/pos['pip']*pos['pv']*pos['lot']-pos['lot']*COMMISSION
                 bal+=pnl; pnls.append(pnl)
+                trades_log.append({'pair':pos['pair'],'regime':regime,'dir':'SHORT','entry':pos['entry'],'exit':tp,'pnl':pnl,'exit_reason':'take_profit','bars':i-pos['bar'],'bar':i,'ts':str(ref['ts'][i]),'lot':pos['lot'],'spread':pos['spread']})
                 if regime=='mr': n_mr_tp+=1
                 else: n_tf_tp+=1
                 closed=True
@@ -179,18 +189,21 @@ def run_sim(start, end, max_conc=20):
                 ep=bar_cl-(pos['spread']*0.5+0.3)*pos['pip'] if tr==1 else bar_cl+(pos['spread']*0.5+0.3)*pos['pip']
                 pnl=(ep-pos['entry'])*tr/pos['pip']*pos['pv']*pos['lot']-pos['lot']*COMMISSION
                 bal+=pnl; pnls.append(pnl); n_mr_sc+=1; closed=True
+                trades_log.append({'pair':pos['pair'],'regime':'mr','dir':'LONG' if tr==1 else 'SHORT','entry':pos['entry'],'exit':ep,'pnl':pnl,'exit_reason':'session_close','bars':i-pos['bar'],'bar':i,'ts':str(ref['ts'][i]),'lot':pos['lot'],'spread':pos['spread']})
 
             # TF: TIME STOP EXIT
             if not closed and regime=='tf' and (i-pos['bar'])>=TF_TIME_STOP and (i-pos['bar'])<TF_MAX_HOLD:
                 ep=bar_cl-(pos['spread']*0.5+0.3)*pos['pip'] if tr==1 else bar_cl+(pos['spread']*0.5+0.3)*pos['pip']
                 pnl=(ep-pos['entry'])*tr/pos['pip']*pos['pv']*pos['lot']-pos['lot']*COMMISSION
                 bal+=pnl; pnls.append(pnl); n_tf_ts+=1; closed=True
+                trades_log.append({'pair':pos['pair'],'regime':'tf','dir':'LONG' if tr==1 else 'SHORT','entry':pos['entry'],'exit':ep,'pnl':pnl,'exit_reason':'time_stop','bars':i-pos['bar'],'bar':i,'ts':str(ref['ts'][i]),'lot':pos['lot'],'spread':pos['spread']})
 
             # TF: MAX HOLD EXIT
             if not closed and regime=='tf' and (i-pos['bar'])>=TF_MAX_HOLD:
                 ep=bar_cl-(pos['spread']*0.5+0.3)*pos['pip'] if tr==1 else bar_cl+(pos['spread']*0.5+0.3)*pos['pip']
                 pnl=(ep-pos['entry'])*tr/pos['pip']*pos['pv']*pos['lot']-pos['lot']*COMMISSION
                 bal+=pnl; pnls.append(pnl); n_tf_mh+=1; closed=True
+                trades_log.append({'pair':pos['pair'],'regime':'tf','dir':'LONG' if tr==1 else 'SHORT','entry':pos['entry'],'exit':ep,'pnl':pnl,'exit_reason':'max_hold','bars':i-pos['bar'],'bar':i,'ts':str(ref['ts'][i]),'lot':pos['lot'],'spread':pos['spread']})
 
             # TF: TREND REVERSAL
             if not closed and regime=='tf':
@@ -201,6 +214,7 @@ def run_sim(start, end, max_conc=20):
                         ep=bar_cl-(pos['spread']*0.5+0.3)*pos['pip'] if tr==1 else bar_cl+(pos['spread']*0.5+0.3)*pos['pip']
                         pnl=(ep-pos['entry'])*tr/pos['pip']*pos['pv']*pos['lot']-pos['lot']*COMMISSION
                         bal+=pnl; pnls.append(pnl); n_tf_sc+=1; closed=True
+                        trades_log.append({'pair':pos['pair'],'regime':'tf','dir':'LONG' if tr==1 else 'SHORT','entry':pos['entry'],'exit':ep,'pnl':pnl,'exit_reason':'trend_reversal','bars':i-pos['bar'],'bar':i,'ts':str(ref['ts'][i]),'lot':pos['lot'],'spread':pos['spread']})
 
             if not closed: remaining.append(pos)
         open_pos=remaining
@@ -225,6 +239,10 @@ def run_sim(start, end, max_conc=20):
         for pair in PAIRS:
             if len(open_pos)>=max_conc: break
             if any(p['pair']==pair for p in open_pos): continue
+
+            # ONE LOSS PER PAIR PER DAY
+            if one_loss_per_pair and daily_losses.get(pair) == today:
+                continue
 
             # CURRENCY OVERLAP CHECK
             if check_currency_overlap(open_pos, pair):
@@ -349,6 +367,7 @@ def run_sim(start, end, max_conc=20):
         'mr_trades': mr_trades, 'tf_trades': tf_trades,
         'corr_skip': n_corr_skip,
         'exits': {'MR_SL':n_mr_sl,'MR_TP':n_mr_tp,'MR_SC':n_mr_sc,'TF_SL':n_tf_sl,'TF_TP':n_tf_tp,'TF_SC':n_tf_sc,'TF_MH':n_tf_mh,'TF_TS':n_tf_ts,'DL':n_dl},
+        'trades_log': trades_log,
     }
 
 def pr(r, label):
@@ -374,3 +393,92 @@ if is_r: pr(is_r, "IS  (2022-2024)")
 if oos_r: pr(oos_r, "OOS (2025-2026)")
 if is_r and oos_r:
     print(f"\n    WR drop: {is_r['wr']-oos_r['wr']:.1f}pp")
+
+# Save trade log CSV
+if r and r['trades_log']:
+    import csv
+    with open('/root/logs/trade_analysis.csv','w',newline='') as f:
+        w=csv.DictWriter(f,fieldnames=['pair','regime','dir','entry','exit','pnl','exit_reason','bars','bar','ts','lot','spread'])
+        w.writeheader()
+        w.writerows(r['trades_log'])
+    print(f"\n  Saved {len(r['trades_log'])} trades to /root/logs/trade_analysis.csv")
+
+    # Quick analysis
+    from collections import Counter, defaultdict
+    tl = r['trades_log']
+    print(f"\n{'='*80}")
+    print(f"  TRADE ANALYSIS ({len(tl)} trades)")
+    print(f"{'='*80}")
+
+    wins = [t for t in tl if t['pnl']>0]
+    losses = [t for t in tl if t['pnl']<=0]
+    print(f"\n  WR: {len(wins)/len(tl)*100:.1f}% ({len(wins)}W / {len(losses)}L)")
+    print(f"  Avg P&L: ${np.mean([t['pnl'] for t in tl]):.2f}")
+    print(f"  Avg Win: ${np.mean([t['pnl'] for t in wins]):.2f}" if wins else "  Avg Win: N/A")
+    print(f"  Avg Loss: ${np.mean([t['pnl'] for t in losses]):.2f}" if losses else "  Avg Loss: N/A")
+
+    # By pair
+    print(f"\n  --- By Pair ---")
+    pairs=Counter(t['pair'] for t in tl)
+    for pair,cnt in pairs.most_common():
+        pt=[t for t in tl if t['pair']==pair]
+        pw=sum(1 for t in pt if t['pnl']>0)
+        pl=sum(t['pnl'] for t in pt)
+        print(f"  {pair:10s} {cnt:4d} trades WR={pw/cnt*100:5.1f}% AvgP&L=${np.mean([t['pnl'] for t in pt]):8.2f} Total=${pl:10.2f}")
+
+    # By regime
+    print(f"\n  --- By Regime ---")
+    for regime in ['mr','tf']:
+        rt=[t for t in tl if t['regime']==regime]
+        if not rt: continue
+        rw=sum(1 for t in rt if t['pnl']>0)
+        print(f"  {regime.upper():3s}: {len(rt):4d} trades WR={rw/len(rt)*100:5.1f}% AvgP&L=${np.mean([t['pnl'] for t in rt]):8.2f}")
+
+    # By exit reason
+    print(f"\n  --- By Exit Reason ---")
+    reasons=Counter(t['exit_reason'] for t in tl)
+    for reason,cnt in reasons.most_common():
+        rt=[t for t in tl if t['exit_reason']==reason]
+        rw=sum(1 for t in rt if t['pnl']>0)
+        print(f"  {reason:20s} {cnt:4d} trades WR={rw/cnt*100:5.1f}% AvgP&L=${np.mean([t['pnl'] for t in rt]):8.2f}")
+
+    # By holding period
+    print(f"\n  --- By Holding Period ---")
+    bins=[(1,10,'1-10 bars'),(11,30,'11-30 bars'),(31,60,'31-60 bars'),(61,100,'61-100 bars'),(101,999,'100+ bars')]
+    for lo,hi,label in bins:
+        bt=[t for t in tl if lo<=t['bars']<=hi]
+        if not bt: continue
+        bw=sum(1 for t in bt if t['pnl']>0)
+        print(f"  {label:15s} {len(bt):4d} trades WR={bw/len(bt)*100:5.1f}% AvgP&L=${np.mean([t['pnl'] for t in bt]):8.2f}")
+
+    # By entry bar (time of day)
+    print(f"\n  --- By Entry Hour (approx, from bar index) ---")
+    # Group by hour buckets
+    hour_bins=defaultdict(list)
+    for t in tl:
+        h=(t['bar']%48)//2  # 30min bars, 48 per day -> hour
+        hour_bins[h].append(t)
+    for h in sorted(hour_bins.keys()):
+        ht=hour_bins[h]
+        hw=sum(1 for t in ht if t['pnl']>0)
+        print(f"  Hour {h:2d}: {len(ht):4d} trades WR={hw/len(ht)*100:5.1f}% AvgP&L=${np.mean([t['pnl'] for t in ht]):8.2f}")
+
+    # By direction
+    print(f"\n  --- By Direction ---")
+    for d in ['LONG','SHORT']:
+        dt=[t for t in tl if t['dir']==d]
+        if not dt: continue
+        dw=sum(1 for t in dt if t['pnl']>0)
+        print(f"  {d:6s} {len(dt):4d} trades WR={dw/len(dt)*100:5.1f}% AvgP&L=${np.mean([t['pnl'] for t in dt]):8.2f}")
+
+    # Worst trades
+    print(f"\n  --- Top 10 Worst Trades ---")
+    worst=sorted(tl,key=lambda t:t['pnl'])[:10]
+    for t in worst:
+        print(f"  {t['pair']:10s} {t['regime'].upper()} {t['dir']:5s} P&L=${t['pnl']:8.2f} {t['exit_reason']:15s} held={t['bars']:3d}bars")
+
+    # Best trades
+    print(f"\n  --- Top 10 Best Trades ---")
+    best=sorted(tl,key=lambda t:t['pnl'],reverse=True)[:10]
+    for t in best:
+        print(f"  {t['pair']:10s} {t['regime'].upper()} {t['dir']:5s} P&L=${t['pnl']:8.2f} {t['exit_reason']:15s} held={t['bars']:3d}bars")
