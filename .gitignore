@@ -1,0 +1,52 @@
+# Secrets
+.env
+.env.*
+!.env.example
+
+# Python environments
+.venv/
+venv/
+env/
+
+# Python cache / build artifacts
+__pycache__/
+*.py[cod]
+*.pyo
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Runtime logs
+*.log
+logs/*.log
+logs/*.csv
+logs/*.db
+logs/*.json
+!logs/live_engine_status.json
+
+# Trading/runtime data
+*.pkl
+*.tar.gz
+*.sqlite
+*.sqlite3
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.bak
+*.bak2
+*.vps_backup
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Node
+node_modules/
+
+# Generated signal files
+signals_structured_*.json

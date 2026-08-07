@@ -1,0 +1,16 @@
+[
+  {
+    "year": 2023,
+    "simulations": 20,
+    "payout_rate": 0.0,
+    "avg_pnl": -909.95,
+    "median_pnl": -923.4,
+    "worst_5_percent": -990.83,
+    "best_95_percent": -791.84,
+    "max_drawdown": 99.4,
+    "kill_switch_triggers": 0,
+    "avg_valid_days": 0.05,
+    "positive_sims": 0,
+    "positive_rate": 0.0
+  }
+]
