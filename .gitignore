@@ -50,3 +50,6 @@ node_modules/
 
 # Generated signal files
 signals_structured_*.json
+
+# Empty placeholder directories
+features/
