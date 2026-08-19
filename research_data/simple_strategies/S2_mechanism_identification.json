@@ -1,0 +1,596 @@
+{
+  "S20": {
+    "fixed_6bar": {
+      "failed_breakout": {
+        "label": "failed_breakout",
+        "n": 3016,
+        "win_rate": 0.0905,
+        "avg_pnl_pips": -31.9478,
+        "median_pnl_pips": -39.4,
+        "total_pnl_pips": -96354.52,
+        "avg_r": -0.4913,
+        "profit_factor": 0.2348,
+        "max_dd_pips": 96312.32,
+        "t_stat": -32.8027,
+        "p_value": 0.0
+      },
+      "range_noise": {
+        "label": "range_noise",
+        "n": 4378,
+        "win_rate": 0.6108,
+        "avg_pnl_pips": 78.5018,
+        "median_pnl_pips": 27.75,
+        "total_pnl_pips": 343680.82,
+        "avg_r": 1.1232,
+        "profit_factor": 37.4047,
+        "max_dd_pips": 207.69,
+        "t_stat": 52.8035,
+        "p_value": 0.0
+      },
+      "retest_continuation": {
+        "label": "retest_continuation",
+        "n": 3145,
+        "win_rate": 0.351,
+        "avg_pnl_pips": 30.3157,
+        "median_pnl_pips": -0.4,
+        "total_pnl_pips": 95342.79,
+        "avg_r": 0.4509,
+        "profit_factor": 3.4495,
+        "max_dd_pips": 852.21,
+        "t_stat": 19.3041,
+        "p_value": 0.0
+      },
+      "clean_continuation": {
+        "label": "clean_continuation",
+        "n": 168,
+        "win_rate": 0.619,
+        "avg_pnl_pips": 68.8043,
+        "median_pnl_pips": 27.45,
+        "total_pnl_pips": 11559.13,
+        "avg_r": 1.1426,
+        "profit_factor": 30.4125,
+        "max_dd_pips": 184.7,
+        "t_stat": 10.5762,
+        "p_value": 0.0
+      },
+      "reversal": {
+        "label": "reversal",
+        "n": 6,
+        "win_rate": 0.1667,
+        "avg_pnl_pips": -36.7832,
+        "median_pnl_pips": -43.8845,
+        "total_pnl_pips": -220.7,
+        "avg_r": -0.7242,
+        "profit_factor": 0.1054,
+        "max_dd_pips": 171.9,
+        "t_stat": -2.5429,
+        "p_value": 0.051713
+      }
+    },
+    "fixed_12bar": {
+      "failed_breakout": {
+        "label": "failed_breakout",
+        "n": 3623,
+        "win_rate": 0.0403,
+        "avg_pnl_pips": -35.1007,
+        "median_pnl_pips": -36.6976,
+        "total_pnl_pips": -127169.72,
+        "avg_r": -0.5323,
+        "profit_factor": 0.1093,
+        "max_dd_pips": 127127.52,
+        "t_stat": -52.039,
+        "p_value": 0.0
+      },
+      "range_noise": {
+        "label": "range_noise",
+        "n": 3269,
+        "win_rate": 0.7938,
+        "avg_pnl_pips": 105.1164,
+        "median_pnl_pips": 68.1,
+        "total_pnl_pips": 343625.63,
+        "avg_r": 1.5054,
+        "profit_factor": 252.7969,
+        "max_dd_pips": 123.42,
+        "t_stat": 61.4717,
+        "p_value": 0.0
+      },
+      "retest_continuation": {
+        "label": "retest_continuation",
+        "n": 3694,
+        "win_rate": 0.3573,
+        "avg_pnl_pips": 34.2266,
+        "median_pnl_pips": -0.4,
+        "total_pnl_pips": 126432.97,
+        "avg_r": 0.5051,
+        "profit_factor": 5.1364,
+        "max_dd_pips": 400.64,
+        "t_stat": 24.3823,
+        "p_value": 0.0
+      },
+      "clean_continuation": {
+        "label": "clean_continuation",
+        "n": 123,
+        "win_rate": 0.7724,
+        "avg_pnl_pips": 92.0824,
+        "median_pnl_pips": 63.9,
+        "total_pnl_pips": 11326.13,
+        "avg_r": 1.5224,
+        "profit_factor": 969.0452,
+        "max_dd_pips": 1.5,
+        "t_stat": 11.851,
+        "p_value": 0.0
+      },
+      "reversal": {
+        "label": "reversal",
+        "n": 4,
+        "win_rate": 0.0,
+        "avg_pnl_pips": -51.8726,
+        "median_pnl_pips": -48.6787,
+        "total_pnl_pips": -207.49,
+        "avg_r": -1.0079,
+        "profit_factor": 0.0,
+        "max_dd_pips": 158.69,
+        "t_stat": -679.5905,
+        "p_value": 0.0
+      }
+    },
+    "temporal_audit": {
+      "uses_exit_data": false,
+      "uses_future_candles": false,
+      "uses_only_post_entry": true,
+      "classification_timestamp": "entry_time + horizon",
+      "horizons_tested": [
+        6,
+        12
+      ],
+      "verdict": "CLASSIFICATION IS CAUSAL \u2014 uses only first N bars after entry"
+    },
+    "horizon_stability": {
+      "clean_continuation": {
+        "count_6bar": 168,
+        "count_12bar": 123,
+        "change_pct": -26.8
+      },
+      "retest_continuation": {
+        "count_6bar": 3145,
+        "count_12bar": 3694,
+        "change_pct": 17.5
+      },
+      "failed_breakout": {
+        "count_6bar": 3016,
+        "count_12bar": 3623,
+        "change_pct": 20.1
+      },
+      "reversal": {
+        "count_6bar": 6,
+        "count_12bar": 4,
+        "change_pct": -33.3
+      },
+      "range_noise": {
+        "count_6bar": 4378,
+        "count_12bar": 3269,
+        "change_pct": -25.3
+      }
+    },
+    "s1d_leakage_note": "The original S1-D classification used lookforward = min(exit_idx - entry_idx, 30), which means the label depends on when the trade exits. This is a form of label leakage: the classification of a trade can change if we change the exit logic. S2-0 reclassifies using FIXED horizons (6 and 12 bars) to eliminate this dependency.",
+    "pnl_by_fixed_6bar": {
+      "failed_breakout": {
+        "n": 3016,
+        "total_pnl": -96354.52,
+        "avg_pnl": -31.95,
+        "win_rate": 0.0905
+      },
+      "range_noise": {
+        "n": 4378,
+        "total_pnl": 343680.82,
+        "avg_pnl": 78.5,
+        "win_rate": 0.6108
+      },
+      "retest_continuation": {
+        "n": 3145,
+        "total_pnl": 95342.79,
+        "avg_pnl": 30.32,
+        "win_rate": 0.351
+      },
+      "clean_continuation": {
+        "n": 168,
+        "total_pnl": 11559.13,
+        "avg_pnl": 68.8,
+        "win_rate": 0.619
+      },
+      "reversal": {
+        "n": 6,
+        "total_pnl": -220.7,
+        "avg_pnl": -36.78,
+        "win_rate": 0.1667
+      }
+    },
+    "pnl_by_fixed_12bar": {
+      "failed_breakout": {
+        "n": 3623,
+        "total_pnl": -127169.72,
+        "avg_pnl": -35.1,
+        "win_rate": 0.0403
+      },
+      "range_noise": {
+        "n": 3269,
+        "total_pnl": 343625.63,
+        "avg_pnl": 105.12,
+        "win_rate": 0.7938
+      },
+      "retest_continuation": {
+        "n": 3694,
+        "total_pnl": 126432.97,
+        "avg_pnl": 34.23,
+        "win_rate": 0.3573
+      },
+      "clean_continuation": {
+        "n": 123,
+        "total_pnl": 11326.13,
+        "avg_pnl": 92.08,
+        "win_rate": 0.7724
+      },
+      "reversal": {
+        "n": 4,
+        "total_pnl": -207.49,
+        "avg_pnl": -51.87,
+        "win_rate": 0.0
+      }
+    }
+  },
+  "S2A": {
+    "0-0.5ATR": {
+      "label": "0-0.5ATR",
+      "n": 6050,
+      "win_rate": 0.342,
+      "avg_pnl_pips": 22.2013,
+      "median_pnl_pips": -0.5,
+      "total_pnl_pips": 134317.84,
+      "avg_r": 0.3238,
+      "profit_factor": 2.0783,
+      "max_dd_pips": 1484.17,
+      "t_stat": 18.0884,
+      "p_value": 0.0
+    },
+    "0.5-0.75ATR": {
+      "label": "0.5-0.75ATR",
+      "n": 1833,
+      "win_rate": 0.3775,
+      "avg_pnl_pips": 31.7644,
+      "median_pnl_pips": -0.4,
+      "total_pnl_pips": 58224.19,
+      "avg_r": 0.4728,
+      "profit_factor": 3.1644,
+      "max_dd_pips": 685.6,
+      "t_stat": 14.7069,
+      "p_value": 0.0
+    },
+    "0.75-1ATR": {
+      "label": "0.75-1ATR",
+      "n": 1230,
+      "win_rate": 0.4366,
+      "avg_pnl_pips": 43.6729,
+      "median_pnl_pips": -0.4,
+      "total_pnl_pips": 53717.66,
+      "avg_r": 0.6318,
+      "profit_factor": 4.9867,
+      "max_dd_pips": 356.27,
+      "t_stat": 16.0405,
+      "p_value": 0.0
+    },
+    "1-1.25ATR": {
+      "label": "1-1.25ATR",
+      "n": 729,
+      "win_rate": 0.5089,
+      "avg_pnl_pips": 62.2279,
+      "median_pnl_pips": 1.7,
+      "total_pnl_pips": 45364.11,
+      "avg_r": 0.829,
+      "profit_factor": 9.4884,
+      "max_dd_pips": 212.1,
+      "t_stat": 15.8991,
+      "p_value": 0.0
+    },
+    "1.25-1.5ATR": {
+      "label": "1.25-1.5ATR",
+      "n": 413,
+      "win_rate": 0.4939,
+      "avg_pnl_pips": 59.2682,
+      "median_pnl_pips": -0.3,
+      "total_pnl_pips": 24477.78,
+      "avg_r": 0.8592,
+      "profit_factor": 10.7787,
+      "max_dd_pips": 215.73,
+      "t_stat": 12.4867,
+      "p_value": 0.0
+    },
+    "1.5-2ATR": {
+      "label": "1.5-2ATR",
+      "n": 322,
+      "win_rate": 0.5776,
+      "avg_pnl_pips": 63.4258,
+      "median_pnl_pips": 17.6,
+      "total_pnl_pips": 20423.12,
+      "avg_r": 0.8948,
+      "profit_factor": 16.6618,
+      "max_dd_pips": 131.88,
+      "t_stat": 11.9866,
+      "p_value": 0.0
+    },
+    "2-3ATR": {
+      "label": "2-3ATR",
+      "n": 122,
+      "win_rate": 0.6967,
+      "avg_pnl_pips": 125.1342,
+      "median_pnl_pips": 68.75,
+      "total_pnl_pips": 15266.37,
+      "avg_r": 1.3777,
+      "profit_factor": 20.9446,
+      "max_dd_pips": 206.15,
+      "t_stat": 9.9445,
+      "p_value": 0.0
+    },
+    "3-5ATR": {
+      "label": "3-5ATR",
+      "n": 14,
+      "win_rate": 0.8571,
+      "avg_pnl_pips": 158.3181,
+      "median_pnl_pips": 146.8172,
+      "total_pnl_pips": 2216.45,
+      "avg_r": 1.6913,
+      "profit_factor": 29.9135,
+      "max_dd_pips": 76.26,
+      "t_stat": 4.097,
+      "p_value": 0.00126
+    },
+    ">5ATR": {
+      "label": ">5ATR",
+      "n": 0,
+      "win_rate": 0,
+      "avg_pnl_pips": 0,
+      "median_pnl_pips": 0,
+      "total_pnl_pips": 0,
+      "avg_r": 0,
+      "profit_factor": 0,
+      "max_dd_pips": 0,
+      "t_stat": 0,
+      "p_value": 1
+    },
+    "_monotonicity": {
+      "violations": 1,
+      "total_transitions": 8,
+      "relationship": "monotonic"
+    }
+  },
+  "S2B": {
+    "raw_displacement": {
+      "mean": 0.055361,
+      "std": 0.160728,
+      "corr_with_pnl": 0.15,
+      "corr_with_pnl_pval": 0.0
+    },
+    "vol_normalized": {
+      "mean": 0.5435,
+      "std": 0.4679,
+      "corr_with_pnl": 0.1579,
+      "corr_with_pnl_pval": 0.0
+    },
+    "pre_breakout_atr": {
+      "mean": 0.10027,
+      "std": 0.194998,
+      "corr_with_pnl": 0.1263
+    },
+    "vol_normalization_helps": true,
+    "improvement": 0.002432,
+    "quintile_analysis": {
+      "Q1": {
+        "n": 2143,
+        "avg_pnl": 19.5319,
+        "win_rate": 0.3332,
+        "avg_displacement": 0.0736
+      },
+      "Q2": {
+        "n": 2142,
+        "avg_pnl": 21.6727,
+        "win_rate": 0.3403,
+        "avg_displacement": 0.2344
+      },
+      "Q3": {
+        "n": 2143,
+        "avg_pnl": 26.493,
+        "win_rate": 0.356,
+        "avg_displacement": 0.4267
+      },
+      "Q4": {
+        "n": 2142,
+        "avg_pnl": 36.6872,
+        "win_rate": 0.4015,
+        "avg_displacement": 0.696
+      },
+      "Q5": {
+        "n": 2143,
+        "avg_pnl": 60.8349,
+        "win_rate": 0.5086,
+        "avg_displacement": 1.2867
+      }
+    }
+  },
+  "S2C": {
+    "total_trades": 10713,
+    "range_noise_count": 4378,
+    "range_noise_pct": 40.9,
+    "basic_stats": {
+      "n": 4378,
+      "avg_pnl": 78.5018,
+      "median_pnl": 27.75,
+      "win_rate": 0.6108,
+      "total_pnl": 343680.82
+    },
+    "displacement": {
+      "mean": 0.7196,
+      "median": 0.6243,
+      "std": 0.5305,
+      "min": 0.0023,
+      "max": 4.4935
+    },
+    "forward_6bar": {
+      "mean": 79.0198,
+      "positive_pct": 0.9963
+    },
+    "by_session": {
+      "Other": 90.11,
+      "London/NY": 81.81,
+      "New York": 75.32,
+      "London": 75.08,
+      "Asia": 75.9
+    },
+    "by_pair": {
+      "EUR/USD": {
+        "n": 240,
+        "avg": 69.47
+      },
+      "GBP/USD": {
+        "n": 255,
+        "avg": 91.83
+      },
+      "USD/JPY": {
+        "n": 242,
+        "avg": 104.86
+      },
+      "USD/CHF": {
+        "n": 233,
+        "avg": 65.34
+      },
+      "AUD/USD": {
+        "n": 226,
+        "avg": 57.13
+      },
+      "NZD/USD": {
+        "n": 226,
+        "avg": 60.35
+      },
+      "EUR/GBP": {
+        "n": 224,
+        "avg": 44.13
+      },
+      "EUR/CHF": {
+        "n": 198,
+        "avg": 47.22
+      },
+      "EUR/CAD": {
+        "n": 207,
+        "avg": 86.44
+      },
+      "EUR/AUD": {
+        "n": 217,
+        "avg": 102.2
+      },
+      "GBP/JPY": {
+        "n": 215,
+        "avg": 150.27
+      },
+      "GBP/CAD": {
+        "n": 218,
+        "avg": 114.65
+      },
+      "GBP/AUD": {
+        "n": 208,
+        "avg": 132.17
+      },
+      "CAD/JPY": {
+        "n": 239,
+        "avg": 91.76
+      },
+      "AUD/JPY": {
+        "n": 223,
+        "avg": 74.35
+      },
+      "NZD/JPY": {
+        "n": 213,
+        "avg": 71.02
+      },
+      "AUD/CAD": {
+        "n": 212,
+        "avg": 51.6
+      },
+      "AUD/CHF": {
+        "n": 203,
+        "avg": 48.68
+      },
+      "NZD/CHF": {
+        "n": 190,
+        "avg": 47.37
+      },
+      "CAD/CHF": {
+        "n": 189,
+        "avg": 47.01
+      }
+    },
+    "exit_reasons": {
+      "SL": 2964,
+      "TP": 885,
+      "MH": 525,
+      "END": 4
+    },
+    "displacement_comparison": {
+      "range_noise_mean_disp": 0.7196,
+      "all_trades_mean_disp": 2.0958,
+      "range_noise_lower": true
+    },
+    "potential_issues": {
+      "end_exit_count": 4,
+      "end_exit_pct": 0.1,
+      "short_hold_count": 11,
+      "short_hold_pct": 0.3,
+      "assessment": "Exit reason distribution is normal"
+    }
+  },
+  "S2D": {
+    "train_2016_2021": {
+      "label": "train_2016_2021",
+      "n": 6093,
+      "win_rate": 0.3877,
+      "avg_pnl_pips": 33.6823,
+      "median_pnl_pips": -0.4,
+      "total_pnl_pips": 205226.08,
+      "avg_r": 0.4882,
+      "profit_factor": 3.0363,
+      "max_dd_pips": 653.01,
+      "t_stat": 26.6609,
+      "p_value": 0.0
+    },
+    "valid_2022_2023": {
+      "label": "valid_2022_2023",
+      "n": 2028,
+      "win_rate": 0.3831,
+      "avg_pnl_pips": 35.9057,
+      "median_pnl_pips": -0.4,
+      "total_pnl_pips": 72816.73,
+      "avg_r": 0.4677,
+      "profit_factor": 3.0213,
+      "max_dd_pips": 1034.3,
+      "t_stat": 15.0605,
+      "p_value": 0.0
+    },
+    "holdout_2024_2026": {
+      "label": "holdout_2024_2026",
+      "n": 2574,
+      "win_rate": 0.3947,
+      "avg_pnl_pips": 29.1239,
+      "median_pnl_pips": -0.4,
+      "total_pnl_pips": 74964.95,
+      "avg_r": 0.4301,
+      "profit_factor": 2.9843,
+      "max_dd_pips": 632.41,
+      "t_stat": 16.1773,
+      "p_value": 0.0
+    },
+    "degradation": {
+      "train_to_valid": 6.6,
+      "train_to_holdout": -13.5,
+      "valid_to_holdout": -18.9,
+      "holdout_retains_pct_of_train": 86.5
+    }
+  },
+  "runtime_seconds": 27.7
+}

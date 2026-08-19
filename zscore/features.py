@@ -33,11 +33,20 @@ def causal_atr(
     return atr
 
 
-def causal_realized_volatility(close: np.ndarray, period: int) -> np.ndarray:
+def causal_realized_volatility(
+    close: np.ndarray, period: int, bars_per_day: int = 24
+) -> np.ndarray:
     """Causal realized volatility (annualized from log returns).
 
-    RV[i] = std(log(close[j]/close[j-1]) for j in [i-period+1, i]) * sqrt(252*390)
+    RV[i] = std(log(close[j]/close[j-1]) for j in [i-period+1, i]) * sqrt(252 * bars_per_day)
     Computed from `period` log returns ending at bar i.
+
+    Args:
+        close: Price array
+        period: Number of log-returns in the rolling window
+        bars_per_day: Trading bars per day for annualization.
+            Defaults to 24 (1H bars). Common values:
+            1440=1min, 288=5min, 96=15min, 48=30min, 24=1h, 6=4h, 1=1day.
 
     NaN behavior: first `period` bars return NaN.
     Warmup: first `period` bars return NaN.
@@ -47,9 +56,10 @@ def causal_realized_volatility(close: np.ndarray, period: int) -> np.ndarray:
     if n < period + 1:
         return rv
     log_returns = np.diff(np.log(close))
+    ann_factor = np.sqrt(252 * bars_per_day)
     for i in range(period, n):
         window = log_returns[i - period:i]
-        rv[i] = float(np.std(window, ddof=1)) * np.sqrt(252 * 390)
+        rv[i] = float(np.std(window, ddof=1)) * ann_factor
     return rv
 
 
@@ -81,6 +91,7 @@ def compute_features(
     atr_period: int = 14,
     rv_period: int = 20,
     ema_span: int = 200,
+    bars_per_day: int = 24,
 ) -> FeatureSet:
     """Compute all causal features at each bar.
 
@@ -91,6 +102,8 @@ def compute_features(
         atr_period: ATR lookback
         rv_period: realized volatility lookback
         ema_span: EMA span for distance calculation
+        bars_per_day: Trading bars per day for RV annualization.
+            Defaults to 24 (1H bars). Use 1440 for 1min, 24 for 1h, 6 for 4h.
 
     Returns:
         FeatureSet with ATR%, RV, and EMA distances
@@ -99,7 +112,7 @@ def compute_features(
     atr_pct = np.where(close > 0, atr / close * 100, 0.0)
     atr_pct = np.where(np.isnan(atr), np.nan, atr_pct)
 
-    rv = causal_realized_volatility(close, rv_period)
+    rv = causal_realized_volatility(close, rv_period, bars_per_day=bars_per_day)
     dist_ema200 = causal_ema_distance(close, ema_span)
     dist_ema50 = causal_ema_distance(close, 50)
 

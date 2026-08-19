@@ -18,10 +18,10 @@ _RESAMPLE_RULES = {
 
 def resample_ohlcv(df: pd.DataFrame, target_interval: str) -> pd.DataFrame:
     """
-    Resample a 1-min OHLCV DataFrame to a higher timeframe.
+    Resample an OHLCV DataFrame to a higher timeframe.
 
     Args:
-        df: 1-min OHLCV DataFrame
+        df: OHLCV DataFrame with DatetimeIndex
         target_interval: One of "5min", "15min", "30min", "1h", "4h", "1day"
 
     Returns:
@@ -42,23 +42,24 @@ def resample_ohlcv(df: pd.DataFrame, target_interval: str) -> pd.DataFrame:
     return resampled
 
 
-def build_all_timeframes(df_1min: pd.DataFrame) -> dict[str, pd.DataFrame]:
+def build_all_timeframes(df_base: pd.DataFrame, base_timeframe: str = "1min") -> dict[str, pd.DataFrame]:
     """
-    Pre-build all management timeframes from a 1-min base DataFrame.
+    Pre-build all management timeframes from a base DataFrame.
 
     Args:
-        df_1min: 1-minute OHLCV DataFrame
+        df_base: OHLCV DataFrame at the base timeframe
+        base_timeframe: Timeframe of the input DataFrame (e.g., "1min", "5min", "1h")
 
     Returns:
         Dict mapping interval string to resampled DataFrame
     """
     tfs: dict[str, pd.DataFrame] = {}
-    for iv in ["1min", "5min", "15min", "30min", "1day"]:
-        if iv == "1min":
-            tfs[iv] = df_1min
+    for iv in ["1min", "5min", "15min", "30min", "1h", "4h", "1day"]:
+        if iv == base_timeframe:
+            tfs[iv] = df_base
         else:
             try:
-                tfs[iv] = resample_ohlcv(df_1min, iv)
+                tfs[iv] = resample_ohlcv(df_base, iv)
             except Exception:
                 pass
     return tfs

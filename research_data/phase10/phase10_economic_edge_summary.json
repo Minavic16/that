@@ -1,0 +1,11 @@
+{
+  "classification": "A. NO SIGNAL",
+  "gross_edge_pip": 0.0821748733272709,
+  "net_edge_pip": -1.567825126672729,
+  "median_break_even_pip": 0.6707946849597822,
+  "auc_oos": 0.6244847215102369,
+  "perm_p": 0.478,
+  "temporal_stability": "41/67 positive 6m windows",
+  "cross_pair_stability": "8/19 positive pairs",
+  "main_failure_mode": "Edge is too small to survive realistic transaction costs"
+}

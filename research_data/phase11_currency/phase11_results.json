@@ -1,0 +1,790 @@
+{
+  "phase": "11",
+  "title": "Controlled Filter Ablation for Currency-Strength Hypothesis",
+  "cost_pips": 1.72,
+  "discovery_period": "2016-01-01 to 2023-12-31",
+  "oos_period": "2024-01-01 to 2026-07-31",
+  "filters": {
+    "gap_range": {
+      "hypothesis": "Middle gap deciles (D40-D70) have positive gross expectancy; extremes do not",
+      "discovery_thresholds": {
+        "gap_q40": -24.4758,
+        "gap_q70": 56.1954
+      },
+      "discovery_all": {
+        "1h": {
+          "n": 1994412,
+          "mean_return": -0.007888,
+          "win_rate": 0.500269,
+          "net_expectancy": -1.727888,
+          "profit_factor": 0.9981,
+          "t_statistic": -0.8163,
+          "p_value": 0.414324,
+          "break_even_cost": 8.3055
+        },
+        "4h": {
+          "n": 1994412,
+          "mean_return": -0.030489,
+          "win_rate": 0.50261,
+          "net_expectancy": -1.750489,
+          "profit_factor": 0.9964,
+          "t_statistic": -1.5966,
+          "p_value": 0.110353,
+          "break_even_cost": 16.684
+        }
+      },
+      "discovery_filtered": {
+        "1h": {
+          "n": 598324,
+          "mean_return": 0.012175,
+          "win_rate": 0.49995,
+          "net_expectancy": -1.707825,
+          "profit_factor": 1.003,
+          "t_statistic": 0.7056,
+          "p_value": 0.48041,
+          "break_even_cost": 8.2005
+        },
+        "4h": {
+          "n": 598324,
+          "mean_return": 0.001146,
+          "win_rate": 0.5031,
+          "net_expectancy": -1.718854,
+          "profit_factor": 1.0001,
+          "t_statistic": 0.0334,
+          "p_value": 0.973351,
+          "break_even_cost": 16.5728
+        }
+      },
+      "oos_all": {
+        "1h": {
+          "n": 634161,
+          "mean_return": 0.042124,
+          "win_rate": 0.502402,
+          "net_expectancy": -1.677876,
+          "profit_factor": 1.0115,
+          "t_statistic": 2.7638,
+          "p_value": 0.005713,
+          "break_even_cost": 7.3863
+        },
+        "4h": {
+          "n": 634041,
+          "mean_return": 0.166377,
+          "win_rate": 0.507466,
+          "net_expectancy": -1.553623,
+          "profit_factor": 1.0226,
+          "t_statistic": 5.5493,
+          "p_value": 0.0,
+          "break_even_cost": 14.8438
+        }
+      },
+      "oos_filtered": {
+        "1h": {
+          "n": 188591,
+          "mean_return": 0.036162,
+          "win_rate": 0.502283,
+          "net_expectancy": -1.683838,
+          "profit_factor": 1.01,
+          "t_statistic": 1.3224,
+          "p_value": 0.186038,
+          "break_even_cost": 7.2526
+        },
+        "4h": {
+          "n": 188552,
+          "mean_return": 0.256961,
+          "win_rate": 0.506995,
+          "net_expectancy": -1.463039,
+          "profit_factor": 1.0358,
+          "t_statistic": 4.7783,
+          "p_value": 2e-06,
+          "break_even_cost": 14.6508
+        }
+      }
+    },
+    "jpy_crosses": {
+      "hypothesis": "JPY crosses are the primary source of gross edge",
+      "discovery_all": {
+        "1h": {
+          "n": 1994412,
+          "mean_return": -0.007888,
+          "win_rate": 0.500269,
+          "net_expectancy": -1.727888,
+          "profit_factor": 0.9981,
+          "t_statistic": -0.8163,
+          "p_value": 0.414324,
+          "break_even_cost": 8.3055
+        },
+        "4h": {
+          "n": 1994412,
+          "mean_return": -0.030489,
+          "win_rate": 0.50261,
+          "net_expectancy": -1.750489,
+          "profit_factor": 0.9964,
+          "t_statistic": -1.5966,
+          "p_value": 0.110353,
+          "break_even_cost": 16.684
+        }
+      },
+      "discovery_filtered": {
+        "1h": {
+          "n": 498640,
+          "mean_return": 0.024619,
+          "win_rate": 0.507117,
+          "net_expectancy": -1.695381,
+          "profit_factor": 1.0053,
+          "t_statistic": 1.1582,
+          "p_value": 0.246779,
+          "break_even_cost": 9.125
+        },
+        "4h": {
+          "n": 498640,
+          "mean_return": 0.101927,
+          "win_rate": 0.513537,
+          "net_expectancy": -1.618073,
+          "profit_factor": 1.0108,
+          "t_statistic": 2.3909,
+          "p_value": 0.016806,
+          "break_even_cost": 18.5365
+        }
+      },
+      "oos_all": {
+        "1h": {
+          "n": 634161,
+          "mean_return": 0.042124,
+          "win_rate": 0.502402,
+          "net_expectancy": -1.677876,
+          "profit_factor": 1.0115,
+          "t_statistic": 2.7638,
+          "p_value": 0.005713,
+          "break_even_cost": 7.3863
+        },
+        "4h": {
+          "n": 634041,
+          "mean_return": 0.166377,
+          "win_rate": 0.507466,
+          "net_expectancy": -1.553623,
+          "profit_factor": 1.0226,
+          "t_statistic": 5.5493,
+          "p_value": 0.0,
+          "break_even_cost": 14.8438
+        }
+      },
+      "oos_filtered": {
+        "1h": {
+          "n": 158553,
+          "mean_return": 0.118142,
+          "win_rate": 0.51239,
+          "net_expectancy": -1.601858,
+          "profit_factor": 1.0228,
+          "t_statistic": 2.8371,
+          "p_value": 0.004553,
+          "break_even_cost": 10.3489
+        },
+        "4h": {
+          "n": 158523,
+          "mean_return": 0.467863,
+          "win_rate": 0.52352,
+          "net_expectancy": -1.252137,
+          "profit_factor": 1.0445,
+          "t_statistic": 5.6533,
+          "p_value": 0.0,
+          "break_even_cost": 20.977
+        }
+      }
+    },
+    "session_overlap": {
+      "hypothesis": "London-NY overlap (12-16 UTC) has tighter spreads and stronger trends",
+      "discovery_all": {
+        "1h": {
+          "n": 1994412,
+          "mean_return": -0.007888,
+          "win_rate": 0.500269,
+          "net_expectancy": -1.727888,
+          "profit_factor": 0.9981,
+          "t_statistic": -0.8163,
+          "p_value": 0.414324,
+          "break_even_cost": 8.3055
+        },
+        "4h": {
+          "n": 1994412,
+          "mean_return": -0.030489,
+          "win_rate": 0.50261,
+          "net_expectancy": -1.750489,
+          "profit_factor": 0.9964,
+          "t_statistic": -1.5966,
+          "p_value": 0.110353,
+          "break_even_cost": 16.684
+        }
+      },
+      "discovery_filtered": {
+        "1h": {
+          "n": 332155,
+          "mean_return": 0.021134,
+          "win_rate": 0.497999,
+          "net_expectancy": -1.698866,
+          "profit_factor": 1.0036,
+          "t_statistic": 0.6898,
+          "p_value": 0.490296,
+          "break_even_cost": 11.7268
+        },
+        "4h": {
+          "n": 332155,
+          "mean_return": 0.146506,
+          "win_rate": 0.502103,
+          "net_expectancy": -1.573494,
+          "profit_factor": 1.0147,
+          "t_statistic": 2.8144,
+          "p_value": 0.004887,
+          "break_even_cost": 20.0755
+        }
+      },
+      "oos_all": {
+        "1h": {
+          "n": 634161,
+          "mean_return": 0.042124,
+          "win_rate": 0.502402,
+          "net_expectancy": -1.677876,
+          "profit_factor": 1.0115,
+          "t_statistic": 2.7638,
+          "p_value": 0.005713,
+          "break_even_cost": 7.3863
+        },
+        "4h": {
+          "n": 634041,
+          "mean_return": 0.166377,
+          "win_rate": 0.507466,
+          "net_expectancy": -1.553623,
+          "profit_factor": 1.0226,
+          "t_statistic": 5.5493,
+          "p_value": 0.0,
+          "break_even_cost": 14.8438
+        }
+      },
+      "oos_filtered": {
+        "1h": {
+          "n": 105581,
+          "mean_return": 0.134288,
+          "win_rate": 0.506076,
+          "net_expectancy": -1.585712,
+          "profit_factor": 1.027,
+          "t_statistic": 2.8253,
+          "p_value": 0.004725,
+          "break_even_cost": 10.0859
+        },
+        "4h": {
+          "n": 105581,
+          "mean_return": 0.439161,
+          "win_rate": 0.513568,
+          "net_expectancy": -1.280839,
+          "profit_factor": 1.0511,
+          "t_statistic": 5.1963,
+          "p_value": 0.0,
+          "break_even_cost": 17.5736
+        }
+      }
+    },
+    "trend_alignment": {
+      "hypothesis": "Signal aligned with 4H EMA200 trend has stronger forward returns",
+      "discovery_all": {
+        "1h": {
+          "n": 1994412,
+          "mean_return": -0.007888,
+          "win_rate": 0.500269,
+          "net_expectancy": -1.727888,
+          "profit_factor": 0.9981,
+          "t_statistic": -0.8163,
+          "p_value": 0.414324,
+          "break_even_cost": 8.3055
+        },
+        "4h": {
+          "n": 1994412,
+          "mean_return": -0.030489,
+          "win_rate": 0.50261,
+          "net_expectancy": -1.750489,
+          "profit_factor": 0.9964,
+          "t_statistic": -1.5966,
+          "p_value": 0.110353,
+          "break_even_cost": 16.684
+        }
+      },
+      "discovery_filtered": {
+        "1h": {
+          "n": 1001686,
+          "mean_return": -0.058808,
+          "win_rate": 0.49499,
+          "net_expectancy": -1.778808,
+          "profit_factor": 0.9858,
+          "t_statistic": -4.4114,
+          "p_value": 1e-05,
+          "break_even_cost": 8.226
+        },
+        "4h": {
+          "n": 1001686,
+          "mean_return": -0.113419,
+          "win_rate": 0.496826,
+          "net_expectancy": -1.833419,
+          "profit_factor": 0.9865,
+          "t_statistic": -4.2842,
+          "p_value": 1.8e-05,
+          "break_even_cost": 16.6586
+        }
+      },
+      "oos_all": {
+        "1h": {
+          "n": 634161,
+          "mean_return": 0.042124,
+          "win_rate": 0.502402,
+          "net_expectancy": -1.677876,
+          "profit_factor": 1.0115,
+          "t_statistic": 2.7638,
+          "p_value": 0.005713,
+          "break_even_cost": 7.3863
+        },
+        "4h": {
+          "n": 634041,
+          "mean_return": 0.166377,
+          "win_rate": 0.507466,
+          "net_expectancy": -1.553623,
+          "profit_factor": 1.0226,
+          "t_statistic": 5.5493,
+          "p_value": 0.0,
+          "break_even_cost": 14.8438
+        }
+      },
+      "oos_filtered": {
+        "1h": {
+          "n": 332895,
+          "mean_return": -0.064818,
+          "win_rate": 0.495685,
+          "net_expectancy": -1.784818,
+          "profit_factor": 0.9821,
+          "t_statistic": -3.1657,
+          "p_value": 0.001547,
+          "break_even_cost": 7.1671
+        },
+        "4h": {
+          "n": 332832,
+          "mean_return": -0.117124,
+          "win_rate": 0.497696,
+          "net_expectancy": -1.837124,
+          "profit_factor": 0.984,
+          "t_statistic": -2.8946,
+          "p_value": 0.003796,
+          "break_even_cost": 14.4821
+        }
+      }
+    },
+    "volatility_low": {
+      "hypothesis": "Low-volatility regime has better trend-following behavior",
+      "discovery_all": {
+        "1h": {
+          "n": 1994412,
+          "mean_return": -0.007888,
+          "win_rate": 0.500269,
+          "net_expectancy": -1.727888,
+          "profit_factor": 0.9981,
+          "t_statistic": -0.8163,
+          "p_value": 0.414324,
+          "break_even_cost": 8.3055
+        },
+        "4h": {
+          "n": 1994412,
+          "mean_return": -0.030489,
+          "win_rate": 0.50261,
+          "net_expectancy": -1.750489,
+          "profit_factor": 0.9964,
+          "t_statistic": -1.5966,
+          "p_value": 0.110353,
+          "break_even_cost": 16.684
+        }
+      },
+      "discovery_filtered": {
+        "1h": {
+          "n": 0,
+          "mean_return": 0.0,
+          "win_rate": 0.5,
+          "net_expectancy": 0.0,
+          "profit_factor": 1.0,
+          "t_statistic": 0.0,
+          "p_value": 1.0,
+          "break_even_cost": 0.0
+        },
+        "4h": {
+          "n": 0,
+          "mean_return": 0.0,
+          "win_rate": 0.5,
+          "net_expectancy": 0.0,
+          "profit_factor": 1.0,
+          "t_statistic": 0.0,
+          "p_value": 1.0,
+          "break_even_cost": 0.0
+        }
+      },
+      "oos_all": {
+        "1h": {
+          "n": 634161,
+          "mean_return": 0.042124,
+          "win_rate": 0.502402,
+          "net_expectancy": -1.677876,
+          "profit_factor": 1.0115,
+          "t_statistic": 2.7638,
+          "p_value": 0.005713,
+          "break_even_cost": 7.3863
+        },
+        "4h": {
+          "n": 634041,
+          "mean_return": 0.166377,
+          "win_rate": 0.507466,
+          "net_expectancy": -1.553623,
+          "profit_factor": 1.0226,
+          "t_statistic": 5.5493,
+          "p_value": 0.0,
+          "break_even_cost": 14.8438
+        }
+      },
+      "oos_filtered": {
+        "1h": {
+          "n": 0,
+          "mean_return": 0.0,
+          "win_rate": 0.5,
+          "net_expectancy": 0.0,
+          "profit_factor": 1.0,
+          "t_statistic": 0.0,
+          "p_value": 1.0,
+          "break_even_cost": 0.0
+        },
+        "4h": {
+          "n": 0,
+          "mean_return": 0.0,
+          "win_rate": 0.5,
+          "net_expectancy": 0.0,
+          "profit_factor": 1.0,
+          "t_statistic": 0.0,
+          "p_value": 1.0,
+          "break_even_cost": 0.0
+        }
+      }
+    },
+    "currency_structure": {
+      "hypothesis": "Top-bottom rank pairs (|gap| >= 90th pctile) have stronger edge",
+      "discovery_thresholds": {
+        "gap_abs_q90": 166.7088
+      },
+      "discovery_all": {
+        "1h": {
+          "n": 1994412,
+          "mean_return": -0.007888,
+          "win_rate": 0.500269,
+          "net_expectancy": -1.727888,
+          "profit_factor": 0.9981,
+          "t_statistic": -0.8163,
+          "p_value": 0.414324,
+          "break_even_cost": 8.3055
+        },
+        "4h": {
+          "n": 1994412,
+          "mean_return": -0.030489,
+          "win_rate": 0.50261,
+          "net_expectancy": -1.750489,
+          "profit_factor": 0.9964,
+          "t_statistic": -1.5966,
+          "p_value": 0.110353,
+          "break_even_cost": 16.684
+        }
+      },
+      "discovery_filtered": {
+        "1h": {
+          "n": 199442,
+          "mean_return": -0.074937,
+          "win_rate": 0.499669,
+          "net_expectancy": -1.794937,
+          "profit_factor": 0.9826,
+          "t_statistic": -2.1598,
+          "p_value": 0.030791,
+          "break_even_cost": 8.4715
+        },
+        "4h": {
+          "n": 199442,
+          "mean_return": -0.095446,
+          "win_rate": 0.50192,
+          "net_expectancy": -1.815446,
+          "profit_factor": 0.9887,
+          "t_statistic": -1.4023,
+          "p_value": 0.160834,
+          "break_even_cost": 16.5842
+        }
+      },
+      "oos_all": {
+        "1h": {
+          "n": 634161,
+          "mean_return": 0.042124,
+          "win_rate": 0.502402,
+          "net_expectancy": -1.677876,
+          "profit_factor": 1.0115,
+          "t_statistic": 2.7638,
+          "p_value": 0.005713,
+          "break_even_cost": 7.3863
+        },
+        "4h": {
+          "n": 634041,
+          "mean_return": 0.166377,
+          "win_rate": 0.507466,
+          "net_expectancy": -1.553623,
+          "profit_factor": 1.0226,
+          "t_statistic": 5.5493,
+          "p_value": 0.0,
+          "break_even_cost": 14.8438
+        }
+      },
+      "oos_filtered": {
+        "1h": {
+          "n": 62769,
+          "mean_return": -0.121268,
+          "win_rate": 0.500454,
+          "net_expectancy": -1.841268,
+          "profit_factor": 0.9689,
+          "t_statistic": -2.2989,
+          "p_value": 0.021516,
+          "break_even_cost": 7.5508
+        },
+        "4h": {
+          "n": 62762,
+          "mean_return": -0.419608,
+          "win_rate": 0.505608,
+          "net_expectancy": -2.139608,
+          "profit_factor": 0.9476,
+          "t_statistic": -4.0951,
+          "p_value": 4.2e-05,
+          "break_even_cost": 15.0092
+        }
+      }
+    }
+  },
+  "combinations": {
+    "gap_only": {
+      "filters": [
+        "gap_range"
+      ],
+      "discovery": {
+        "1h": {
+          "n": 598324,
+          "mean_return": 0.012175,
+          "win_rate": 0.49995,
+          "net_expectancy": -1.707825,
+          "profit_factor": 1.003,
+          "t_statistic": 0.7056,
+          "p_value": 0.48041,
+          "break_even_cost": 8.2005
+        },
+        "4h": {
+          "n": 598324,
+          "mean_return": 0.001146,
+          "win_rate": 0.5031,
+          "net_expectancy": -1.718854,
+          "profit_factor": 1.0001,
+          "t_statistic": 0.0334,
+          "p_value": 0.973351,
+          "break_even_cost": 16.5728
+        }
+      },
+      "oos": {
+        "1h": {
+          "n": 188591,
+          "mean_return": 0.036162,
+          "win_rate": 0.502283,
+          "net_expectancy": -1.683838,
+          "profit_factor": 1.01,
+          "t_statistic": 1.3224,
+          "p_value": 0.186038,
+          "break_even_cost": 7.2526
+        },
+        "4h": {
+          "n": 188552,
+          "mean_return": 0.256961,
+          "win_rate": 0.506995,
+          "net_expectancy": -1.463039,
+          "profit_factor": 1.0358,
+          "t_statistic": 4.7783,
+          "p_value": 2e-06,
+          "break_even_cost": 14.6508
+        }
+      }
+    },
+    "gap_plus_jpy": {
+      "filters": [
+        "gap_range",
+        "jpy_crosses"
+      ],
+      "discovery": {
+        "1h": {
+          "n": 143111,
+          "mean_return": 0.060652,
+          "win_rate": 0.508256,
+          "net_expectancy": -1.659348,
+          "profit_factor": 1.0136,
+          "t_statistic": 1.5942,
+          "p_value": 0.110903,
+          "break_even_cost": 8.8652
+        },
+        "4h": {
+          "n": 143111,
+          "mean_return": 0.23351,
+          "win_rate": 0.514684,
+          "net_expectancy": -1.48649,
+          "profit_factor": 1.0254,
+          "t_statistic": 3.0471,
+          "p_value": 0.002311,
+          "break_even_cost": 18.2953
+        }
+      },
+      "oos": {
+        "1h": {
+          "n": 43846,
+          "mean_return": 0.194661,
+          "win_rate": 0.515623,
+          "net_expectancy": -1.525339,
+          "profit_factor": 1.0387,
+          "t_statistic": 2.5021,
+          "p_value": 0.012351,
+          "break_even_cost": 10.1317
+        },
+        "4h": {
+          "n": 43835,
+          "mean_return": 1.174514,
+          "win_rate": 0.533569,
+          "net_expectancy": -0.545486,
+          "profit_factor": 1.1188,
+          "t_statistic": 7.5468,
+          "p_value": 0.0,
+          "break_even_cost": 20.7348
+        }
+      }
+    },
+    "gap_jpy_session": {
+      "filters": [
+        "gap_range",
+        "jpy_crosses",
+        "session_overlap"
+      ],
+      "discovery": {
+        "1h": {
+          "n": 24153,
+          "mean_return": 0.186316,
+          "win_rate": 0.508715,
+          "net_expectancy": -1.533684,
+          "profit_factor": 1.0318,
+          "t_statistic": 1.5957,
+          "p_value": 0.110573,
+          "break_even_cost": 11.8917
+        },
+        "4h": {
+          "n": 24153,
+          "mean_return": 0.349567,
+          "win_rate": 0.51919,
+          "net_expectancy": -1.370433,
+          "profit_factor": 1.0336,
+          "t_statistic": 1.6965,
+          "p_value": 0.089801,
+          "break_even_cost": 20.7171
+        }
+      },
+      "oos": {
+        "1h": {
+          "n": 7275,
+          "mean_return": 0.186859,
+          "win_rate": 0.510378,
+          "net_expectancy": -1.533141,
+          "profit_factor": 1.0292,
+          "t_statistic": 0.8318,
+          "p_value": 0.405574,
+          "break_even_cost": 12.9159
+        },
+        "4h": {
+          "n": 7275,
+          "mean_return": 2.748825,
+          "win_rate": 0.555464,
+          "net_expectancy": 1.028825,
+          "profit_factor": 1.2776,
+          "t_statistic": 6.8954,
+          "p_value": 0.0,
+          "break_even_cost": 22.7749
+        }
+      }
+    },
+    "gap_jpy_session_trend": {
+      "filters": [
+        "gap_range",
+        "jpy_crosses",
+        "session_overlap",
+        "trend_alignment"
+      ],
+      "discovery": {
+        "1h": {
+          "n": 13186,
+          "mean_return": 0.397497,
+          "win_rate": 0.511224,
+          "net_expectancy": -1.322503,
+          "profit_factor": 1.0732,
+          "t_statistic": 2.6464,
+          "p_value": 0.008145,
+          "break_even_cost": 11.4036
+        },
+        "4h": {
+          "n": 13186,
+          "mean_return": 0.447672,
+          "win_rate": 0.525027,
+          "net_expectancy": -1.272328,
+          "profit_factor": 1.045,
+          "t_statistic": 1.6627,
+          "p_value": 0.096396,
+          "break_even_cost": 19.8122
+        }
+      },
+      "oos": {
+        "1h": {
+          "n": 4405,
+          "mean_return": 0.271782,
+          "win_rate": 0.515551,
+          "net_expectancy": -1.448218,
+          "profit_factor": 1.0476,
+          "t_statistic": 1.0431,
+          "p_value": 0.296963,
+          "break_even_cost": 11.6126
+        },
+        "4h": {
+          "n": 4405,
+          "mean_return": 1.633485,
+          "win_rate": 0.54597,
+          "net_expectancy": -0.086515,
+          "profit_factor": 1.1759,
+          "t_statistic": 3.7708,
+          "p_value": 0.000165,
+          "break_even_cost": 20.0038
+        }
+      }
+    }
+  },
+  "classifications": {
+    "gap_range_1h": "C. OOS NEGATIVE",
+    "gap_range_4h": "C. OOS NEGATIVE",
+    "jpy_crosses_1h": "C. OOS NEGATIVE",
+    "jpy_crosses_4h": "C. OOS NEGATIVE",
+    "session_overlap_1h": "C. OOS NEGATIVE",
+    "session_overlap_4h": "C. OOS NEGATIVE",
+    "trend_alignment_1h": "C. OOS NEGATIVE",
+    "trend_alignment_4h": "C. OOS NEGATIVE",
+    "volatility_low_1h": "D. INSUFFICIENT OOS DATA",
+    "volatility_low_4h": "D. INSUFFICIENT OOS DATA",
+    "currency_structure_1h": "C. OOS NEGATIVE",
+    "currency_structure_4h": "C. OOS NEGATIVE",
+    "combo_gap_only_1h": "C. OOS NEGATIVE",
+    "combo_gap_only_4h": "C. OOS NEGATIVE",
+    "combo_gap_plus_jpy_1h": "C. OOS NEGATIVE",
+    "combo_gap_plus_jpy_4h": "C. OOS NEGATIVE",
+    "combo_gap_jpy_session_1h": "C. OOS NEGATIVE",
+    "combo_gap_jpy_session_4h": "A. OOS POSITIVE AND SIGNIFICANT",
+    "combo_gap_jpy_session_trend_1h": "C. OOS NEGATIVE",
+    "combo_gap_jpy_session_trend_4h": "C. OOS NEGATIVE"
+  },
+  "research_decision": "PROCEED \u2014 at least one filter shows significant OOS edge",
+  "runtime_seconds": 131.3944091796875
+}

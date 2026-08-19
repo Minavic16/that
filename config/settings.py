@@ -195,6 +195,10 @@ class DataConfig:
     data_dir: str = ""
     mt5_data_cache: str = ""
     mt5_bars_to_fetch: int = 100000
+    timeframe: str = "1h"
+    timeframes: tuple[str, ...] = ("1min", "5min", "15min", "30min", "1h", "4h")
+    primary_tf: str = "1h"
+    macro_tf: str = "4h"
 
 
 @dataclass(frozen=True)

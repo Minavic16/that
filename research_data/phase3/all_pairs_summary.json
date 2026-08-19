@@ -1,0 +1,322 @@
+{
+  "EUR/USD": {
+    "bars": 3928770,
+    "z_dist": {
+      "n": 3928660,
+      "mean": 0.00662,
+      "std": 1.28884
+    },
+    "corr_60": -0.015869,
+    "mean_long_zlt_neg2": 2.795e-05,
+    "mean_short_zgt_pos2": -2.496e-05,
+    "hit_long": 52.39,
+    "hit_short": 51.98,
+    "n_extreme": 406302,
+    "exp_pips_cost_free": 0.2646,
+    "hit_pips_cost_free": 52.19
+  },
+  "GBP/USD": {
+    "bars": 3929378,
+    "z_dist": {
+      "n": 3929232,
+      "mean": 0.00454,
+      "std": 1.28891
+    },
+    "corr_60": -0.012765,
+    "mean_long_zlt_neg2": 2.447e-05,
+    "mean_short_zgt_pos2": -2.819e-05,
+    "hit_long": 52.53,
+    "hit_short": 52.14,
+    "n_extreme": 410287,
+    "exp_pips_cost_free": 0.2632,
+    "hit_pips_cost_free": 52.34
+  },
+  "USD/JPY": {
+    "bars": 3927558,
+    "z_dist": {
+      "n": 3927464,
+      "mean": 0.02378,
+      "std": 1.28925
+    },
+    "corr_60": -0.006857,
+    "mean_long_zlt_neg2": 2.071e-05,
+    "mean_short_zgt_pos2": -1.276e-05,
+    "hit_long": 53.64,
+    "hit_short": 50.84,
+    "n_extreme": 411498,
+    "exp_pips_cost_free": 0.1675,
+    "hit_pips_cost_free": 52.24
+  },
+  "AUD/USD": {
+    "bars": 3924479,
+    "z_dist": {
+      "n": 3924381,
+      "mean": 0.00806,
+      "std": 1.28834
+    },
+    "corr_60": -0.015171,
+    "mean_long_zlt_neg2": 3.608e-05,
+    "mean_short_zgt_pos2": -3.578e-05,
+    "hit_long": 52.51,
+    "hit_short": 51.53,
+    "n_extreme": 406812,
+    "exp_pips_cost_free": 0.3593,
+    "hit_pips_cost_free": 52.02
+  },
+  "USD/CHF": {
+    "bars": 3909167,
+    "z_dist": {
+      "n": 3908991,
+      "mean": 0.00876,
+      "std": 1.28964
+    },
+    "corr_60": -0.020263,
+    "mean_long_zlt_neg2": 3.445e-05,
+    "mean_short_zgt_pos2": -3.653e-05,
+    "hit_long": 52.67,
+    "hit_short": 51.77,
+    "n_extreme": 411193,
+    "exp_pips_cost_free": 0.3549,
+    "hit_pips_cost_free": 52.22
+  },
+  "EUR/GBP": {
+    "bars": 3925760,
+    "z_dist": {
+      "n": 3925678,
+      "mean": 0.0029,
+      "std": 1.27645
+    },
+    "corr_60": -0.025154,
+    "mean_long_zlt_neg2": 5.058e-05,
+    "mean_short_zgt_pos2": -3.353e-05,
+    "hit_long": 53.65,
+    "hit_short": 53.64,
+    "n_extreme": 397613,
+    "exp_pips_cost_free": 0.4208,
+    "hit_pips_cost_free": 53.65
+  },
+  "EUR/CHF": {
+    "bars": 3914487,
+    "z_dist": {
+      "n": 3914261,
+      "mean": 0.01114,
+      "std": 1.27947
+    },
+    "corr_60": -0.034711,
+    "mean_long_zlt_neg2": 4.281e-05,
+    "mean_short_zgt_pos2": -4.33e-05,
+    "hit_long": 54.29,
+    "hit_short": 53.33,
+    "n_extreme": 398454,
+    "exp_pips_cost_free": 0.4306,
+    "hit_pips_cost_free": 53.81
+  },
+  "EUR/CAD": {
+    "bars": 3929538,
+    "z_dist": {
+      "n": 3929455,
+      "mean": 0.00489,
+      "std": 1.27945
+    },
+    "corr_60": -0.025482,
+    "mean_long_zlt_neg2": 5.162e-05,
+    "mean_short_zgt_pos2": -3.948e-05,
+    "hit_long": 53.58,
+    "hit_short": 53.02,
+    "n_extreme": 400326,
+    "exp_pips_cost_free": 0.4556,
+    "hit_pips_cost_free": 53.3
+  },
+  "EUR/AUD": {
+    "bars": 3931231,
+    "z_dist": {
+      "n": 3931133,
+      "mean": -0.00554,
+      "std": 1.27912
+    },
+    "corr_60": -0.019866,
+    "mean_long_zlt_neg2": 5.427e-05,
+    "mean_short_zgt_pos2": -3.22e-05,
+    "hit_long": 52.68,
+    "hit_short": 53.05,
+    "n_extreme": 398684,
+    "exp_pips_cost_free": 0.4325,
+    "hit_pips_cost_free": 52.86
+  },
+  "GBP/JPY": {
+    "bars": 3930671,
+    "z_dist": {
+      "n": 3930589,
+      "mean": 0.02234,
+      "std": 1.28153
+    },
+    "corr_60": -0.010694,
+    "mean_long_zlt_neg2": 3.425e-05,
+    "mean_short_zgt_pos2": -3.013e-05,
+    "hit_long": 54.2,
+    "hit_short": 51.64,
+    "n_extreme": 406074,
+    "exp_pips_cost_free": 0.3219,
+    "hit_pips_cost_free": 52.92
+  },
+  "GBP/CAD": {
+    "bars": 3921803,
+    "z_dist": {
+      "n": 3921724,
+      "mean": 0.00647,
+      "std": 1.27924
+    },
+    "corr_60": -0.025436,
+    "mean_long_zlt_neg2": 5.788e-05,
+    "mean_short_zgt_pos2": -4.547e-05,
+    "hit_long": 54.06,
+    "hit_short": 53.36,
+    "n_extreme": 399672,
+    "exp_pips_cost_free": 0.5171,
+    "hit_pips_cost_free": 53.72
+  },
+  "GBP/AUD": {
+    "bars": 3922742,
+    "z_dist": {
+      "n": 3922663,
+      "mean": -0.0033,
+      "std": 1.27757
+    },
+    "corr_60": -0.025969,
+    "mean_long_zlt_neg2": 6.791e-05,
+    "mean_short_zgt_pos2": -4.92e-05,
+    "hit_long": 53.52,
+    "hit_short": 53.89,
+    "n_extreme": 396539,
+    "exp_pips_cost_free": 0.5859,
+    "hit_pips_cost_free": 53.7
+  },
+  "AUD/JPY": {
+    "bars": 3932934,
+    "z_dist": {
+      "n": 3932854,
+      "mean": 0.02387,
+      "std": 1.28219
+    },
+    "corr_60": -0.009208,
+    "mean_long_zlt_neg2": 3.326e-05,
+    "mean_short_zgt_pos2": -3.158e-05,
+    "hit_long": 53.84,
+    "hit_short": 51.22,
+    "n_extreme": 405357,
+    "exp_pips_cost_free": 0.3243,
+    "hit_pips_cost_free": 52.54
+  },
+  "AUD/CAD": {
+    "bars": 3930928,
+    "z_dist": {
+      "n": 3930849,
+      "mean": 0.00993,
+      "std": 1.27844
+    },
+    "corr_60": -0.032374,
+    "mean_long_zlt_neg2": 6.671e-05,
+    "mean_short_zgt_pos2": -5.67e-05,
+    "hit_long": 53.96,
+    "hit_short": 52.7,
+    "n_extreme": 396496,
+    "exp_pips_cost_free": 0.6175,
+    "hit_pips_cost_free": 53.34
+  },
+  "AUD/CHF": {
+    "bars": 3926980,
+    "z_dist": {
+      "n": 3926901,
+      "mean": 0.01362,
+      "std": 1.27985
+    },
+    "corr_60": -0.02235,
+    "mean_long_zlt_neg2": 6.47e-05,
+    "mean_short_zgt_pos2": -5.501e-05,
+    "hit_long": 53.34,
+    "hit_short": 51.81,
+    "n_extreme": 399422,
+    "exp_pips_cost_free": 0.5993,
+    "hit_pips_cost_free": 52.58
+  },
+  "NZD/USD": {
+    "bars": 3918078,
+    "z_dist": {
+      "n": 3917992,
+      "mean": 0.00258,
+      "std": 1.292
+    },
+    "corr_60": -0.014815,
+    "mean_long_zlt_neg2": 4.062e-05,
+    "mean_short_zgt_pos2": -3.027e-05,
+    "hit_long": 52.03,
+    "hit_short": 51.51,
+    "n_extreme": 410822,
+    "exp_pips_cost_free": 0.3548,
+    "hit_pips_cost_free": 51.77
+  },
+  "NZD/JPY": {
+    "bars": 3928623,
+    "z_dist": {
+      "n": 3928544,
+      "mean": 0.0173,
+      "std": 1.2846
+    },
+    "corr_60": -0.015199,
+    "mean_long_zlt_neg2": 5.389e-05,
+    "mean_short_zgt_pos2": -4.232e-05,
+    "hit_long": 53.56,
+    "hit_short": 51.48,
+    "n_extreme": 405406,
+    "exp_pips_cost_free": 0.4815,
+    "hit_pips_cost_free": 52.53
+  },
+  "NZD/CHF": {
+    "bars": 3922514,
+    "z_dist": {
+      "n": 3922421,
+      "mean": 0.00791,
+      "std": 1.28336
+    },
+    "corr_60": -0.026555,
+    "mean_long_zlt_neg2": 7.85e-05,
+    "mean_short_zgt_pos2": -5.968e-05,
+    "hit_long": 52.99,
+    "hit_short": 51.95,
+    "n_extreme": 401813,
+    "exp_pips_cost_free": 0.6923,
+    "hit_pips_cost_free": 52.48
+  },
+  "CAD/JPY": {
+    "bars": 3932979,
+    "z_dist": {
+      "n": 3932900,
+      "mean": 0.0223,
+      "std": 1.28562
+    },
+    "corr_60": -0.00924,
+    "mean_long_zlt_neg2": 2.708e-05,
+    "mean_short_zgt_pos2": -2.023e-05,
+    "hit_long": 53.25,
+    "hit_short": 50.93,
+    "n_extreme": 408390,
+    "exp_pips_cost_free": 0.2366,
+    "hit_pips_cost_free": 52.1
+  },
+  "CAD/CHF": {
+    "bars": 3918653,
+    "z_dist": {
+      "n": 3918574,
+      "mean": 0.01261,
+      "std": 1.28034
+    },
+    "corr_60": -0.027622,
+    "mean_long_zlt_neg2": 6.25e-05,
+    "mean_short_zgt_pos2": -5.193e-05,
+    "hit_long": 53.59,
+    "hit_short": 52.35,
+    "n_extreme": 399455,
+    "exp_pips_cost_free": 0.5728,
+    "hit_pips_cost_free": 52.98
+  }
+}

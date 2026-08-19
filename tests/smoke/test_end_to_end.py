@@ -1,4 +1,7 @@
-"""Smoke test: minimal end-to-end pipeline verification."""
+"""Smoke test: minimal end-to-end pipeline verification.
+
+Includes multi-timeframe smoke tests for 1h, 4h, 15m using synthetic data.
+"""
 from __future__ import annotations
 
 import json
@@ -9,7 +12,26 @@ import pytest
 from costs.model import apply_spread_to_entry, apply_spread_to_exit, compute_costs
 from data_validation.validate import validate_market_data
 from zscore.contracts import CostModel, MarketData
-from zscore.zscore import compute_zscore_causal, zscore_to_array
+from zscore.zscore import compute_zscore_causal, zscore_to_array, _zscore_causal_core
+from zscore.regime import classify_regime_chunked
+from zscore.features import compute_features, causal_realized_volatility
+
+
+def _make_ohlcv(n: int, freq: str, seed: int = 42) -> pd.DataFrame:
+    """Generate synthetic OHLCV data."""
+    rng = np.random.default_rng(seed)
+    ts = pd.date_range("2024-01-02", periods=n, freq=freq, tz="UTC")
+    returns = rng.normal(0, 0.0005, n)
+    close = 1.1000 + np.cumsum(returns)
+    high = close + np.abs(rng.normal(0, 0.0001, n))
+    low = close - np.abs(rng.normal(0, 0.0001, n))
+    open_ = close + rng.normal(0, 0.00005, n)
+    high = np.maximum(high, np.maximum(open_, close))
+    low = np.minimum(low, np.minimum(open_, close))
+    volume = rng.integers(100, 1000, n).astype(float)
+    return pd.DataFrame({
+        "open": open_, "high": high, "low": low, "close": close, "volume": volume
+    }, index=ts)
 
 
 @pytest.fixture
@@ -166,3 +188,148 @@ class TestSmokePipeline:
         with open(report_path) as f:
             loaded = json.load(f)
         assert loaded['status'] == 'smoke_test_pass'
+
+
+# ---------------------------------------------------------------------------
+# Multi-timeframe smoke tests
+# ---------------------------------------------------------------------------
+
+TIMEFRAME_CONFIGS = [
+    ("15min", 96, 500),
+    ("1h", 24, 500),
+    ("4h", 6, 500),
+]
+
+
+class TestSmokeMultiTimeframe:
+    """End-to-end smoke tests for 15m, 1h, 4h timeframes using synthetic data."""
+
+    @pytest.mark.parametrize("tf,bpd,n", TIMEFRAME_CONFIGS)
+    def test_zscore_pipeline(self, tf: str, bpd: int, n: int):
+        """Full Z-score pipeline works at this timeframe."""
+        df = _make_ohlcv(n, tf)
+        close = df["close"].values.astype(np.float64)
+
+        z, mean, std = _zscore_causal_core(close, lookback=20)
+
+        assert len(z) == n
+        assert np.all(np.isnan(z[:20]))
+        assert np.all(np.isfinite(z[20:]))
+
+    @pytest.mark.parametrize("tf,bpd,n", TIMEFRAME_CONFIGS)
+    def test_regime_pipeline(self, tf: str, bpd: int, n: int):
+        """Full regime pipeline works at this timeframe."""
+        df = _make_ohlcv(n, tf)
+        close = df["close"].values.astype(np.float64)
+        high = df["high"].values.astype(np.float64)
+        low = df["low"].values.astype(np.float64)
+
+        regimes = classify_regime_chunked(
+            close, high, low, df.index, "TEST/USD",
+            chunk_size=500, ema_span=200, atr_period=14
+        )
+
+        assert len(regimes) == n
+        # After warmup, regimes should be non-empty
+        non_warmup = [r for r in regimes if r.volatility != "unknown"]
+        assert len(non_warmup) > 0
+
+    @pytest.mark.parametrize("tf,bpd,n", TIMEFRAME_CONFIGS)
+    def test_feature_pipeline(self, tf: str, bpd: int, n: int):
+        """Full feature pipeline works at this timeframe."""
+        df = _make_ohlcv(n, tf)
+        close = df["close"].values.astype(np.float64)
+        high = df["high"].values.astype(np.float64)
+        low = df["low"].values.astype(np.float64)
+        open_ = df["open"].values.astype(np.float64)
+
+        features = compute_features(
+            pair="TEST/USD",
+            timestamps=df.index,
+            open=open_, high=high, low=low, close=close,
+            bars_per_day=bpd,
+        )
+
+        assert features.pair == "TEST/USD"
+        assert features.n == n
+        assert len(features.atr_pct) == n
+        assert len(features.rv_20) == n
+        assert len(features.dist_ema200) == n
+        assert len(features.dist_ema50) == n
+
+    @pytest.mark.parametrize("tf,bpd,n", TIMEFRAME_CONFIGS)
+    def test_forward_returns_causal(self, tf: str, bpd: int, n: int):
+        """Forward returns at this timeframe do not depend on future data."""
+        df = _make_ohlcv(n, tf)
+        close = df["close"].values.astype(np.float64)
+        test_idx = n // 2
+        h = 10
+
+        fr_original = (close[test_idx + h] - close[test_idx]) / close[test_idx]
+
+        close_mod = close.copy()
+        close_mod[test_idx + h + 1:] += 0.1
+        fr_modified = (close_mod[test_idx + h] - close_mod[test_idx]) / close_mod[test_idx]
+
+        assert fr_original == fr_modified
+
+    @pytest.mark.parametrize("tf,bpd,n", TIMEFRAME_CONFIGS)
+    def test_causality_violation_detection(self, tf: str, bpd: int, n: int):
+        """Modifying future data does not change past Z-score, regime, or RV."""
+        df = _make_ohlcv(n, tf)
+        close = df["close"].values.astype(np.float64)
+        high = df["high"].values.astype(np.float64)
+        low = df["low"].values.astype(np.float64)
+        ts = df.index
+        test_idx = n // 2
+
+        # Z-score causality
+        z_orig, _, _ = _zscore_causal_core(close, 20)
+        close_mod = close.copy()
+        close_mod[test_idx + 1:] += 0.01
+        z_mod, _, _ = _zscore_causal_core(close_mod, 20)
+        assert z_orig[test_idx] == z_mod[test_idx]
+
+        # Regime causality
+        regimes_orig = classify_regime_chunked(
+            close, high, low, ts, "TEST/USD",
+            chunk_size=500, ema_span=200, atr_period=14
+        )
+        high_mod = high.copy()
+        high_mod[test_idx + 1:] += 0.01
+        low_mod = low.copy()
+        low_mod[test_idx + 1:] -= 0.01
+        regimes_mod = classify_regime_chunked(
+            close_mod, high_mod, low_mod, ts, "TEST/USD",
+            chunk_size=500, ema_span=200, atr_period=14
+        )
+        assert regimes_orig[test_idx].trend == regimes_mod[test_idx].trend
+        assert regimes_orig[test_idx].volatility == regimes_mod[test_idx].volatility
+
+        # RV causality
+        rv_orig = causal_realized_volatility(close, 20, bars_per_day=bpd)
+        close_mod2 = close.copy()
+        close_mod2[test_idx + 1:] *= 1.05
+        rv_mod = causal_realized_volatility(close_mod2, 20, bars_per_day=bpd)
+        assert rv_orig[test_idx] == rv_mod[test_idx]
+
+    @pytest.mark.parametrize("tf,bpd,n", TIMEFRAME_CONFIGS)
+    def test_research_output_shape(self, tf: str, bpd: int, n: int):
+        """FeatureSet carries correct metadata at this timeframe."""
+        df = _make_ohlcv(n, tf)
+        close = df["close"].values.astype(np.float64)
+        high = df["high"].values.astype(np.float64)
+        low = df["low"].values.astype(np.float64)
+        open_ = df["open"].values.astype(np.float64)
+
+        features = compute_features(
+            pair="TEST/USD",
+            timestamps=df.index,
+            open=open_, high=high, low=low, close=close,
+            bars_per_day=bpd,
+        )
+
+        # FeatureSet should have correct lengths
+        assert features.n == n
+        assert len(features.atr_pct) == n
+        assert len(features.rv_20) == n
