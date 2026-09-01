@@ -86,7 +86,22 @@ class DataLoader:
             return None
 
         try:
-            df = pd.read_pickle(file_path)
+            obj = pd.read_pickle(file_path)
+            # Dukascopy downloader stores {pair: DataFrame} dict per file
+            if isinstance(obj, dict):
+                if pair in obj:
+                    df = obj[pair]
+                elif len(obj) == 1:
+                    df = next(iter(obj.values()))
+                else:
+                    # Try slash/underscore variants
+                    alt = pair.replace("/", "_")
+                    if alt in obj:
+                        df = obj[alt]
+                    else:
+                        return None
+            else:
+                df = obj
             if not isinstance(df.index, pd.DatetimeIndex):
                 df.index = pd.to_datetime(df.index)
             return df
