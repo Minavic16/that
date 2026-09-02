@@ -313,11 +313,19 @@ class TestClosePosition:
         mock_urlopen.return_value = resp
 
         client = MT5Client()
-        result = client.close_position(12345)
+        result = client.close_position(
+            ticket=12345,
+            position_type=0,
+            symbol="EURUSD",
+            volume=0.1,
+        )
 
         assert result.ok is True
         body = json.loads(mock_urlopen.call_args[0][0].data)
         assert body["position"]["ticket"] == 12345
+        assert body["position"]["type"] == 0
+        assert body["position"]["symbol"] == "EURUSD"
+        assert body["position"]["volume"] == 0.1
 
 
 # ---------------------------------------------------------------------------

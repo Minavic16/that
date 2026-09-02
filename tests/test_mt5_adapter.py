@@ -390,20 +390,14 @@ class TestHealthCheck:
 
 
 class TestAccountInfo:
-    def test_get_account_info(self):
-        account_data = {
-            "balance": 5000000,
-            "equity": 5001234.56,
-            "margin": 1234.56,
-            "leverage": 100,
-        }
+    def test_get_account_info_returns_none(self):
+        """Bridge returns 404 for /get_account, so adapter returns None."""
         client = _mock_client(
-            get_account_info=_response(ok=True, data=account_data)
+            get_account_info=_response(ok=False, error="Not Found")
         )
         adapter = MT5ExecutionAdapter(client=client)
         info = adapter.get_account_info()
-        assert info is not None
-        assert info["balance"] == 5000000
+        assert info is None
 
     def test_get_account_info_failure(self):
         client = _mock_client(

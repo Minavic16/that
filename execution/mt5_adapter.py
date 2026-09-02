@@ -212,14 +212,21 @@ class MT5ExecutionAdapter(BaseExecutionAdapter):
 
         The Flask bridge returns:
         {
-            "retcode": 10009,
-            "price": 1.1002,
-            "order": 12345,
-            "volume": 0.10,
-            ...
+            "message": "Order executed successfully",
+            "result": {
+                "retcode": 10009,
+                "price": 1.1002,
+                "order": 12345,
+                "volume": 0.10,
+                ...
+            }
         }
         """
         data = response.data
+
+        # Bridge wraps result in nested "result" object
+        if "result" in data and isinstance(data["result"], dict):
+            data = data["result"]
 
         retcode = data.get("retcode", -1)
         fill_price = data.get("price")
@@ -271,12 +278,9 @@ class MT5ExecutionAdapter(BaseExecutionAdapter):
     def get_account_info(self) -> Optional[dict]:
         """Get MT5 account information.
 
-        Returns:
-            Account info dict or None if unavailable.
+        Note: Bridge returns 404 for /get_account. This method returns None
+        until the bridge exposes an account endpoint.
         """
-        response = self._client.get_account_info()
-        if response.ok:
-            return response.data
         return None
 
     def get_positions(self) -> list[dict]:

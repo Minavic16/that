@@ -222,8 +222,13 @@ class MT5Client:
 
         Returns:
             MT5Response with data containing list of positions.
+            Bridge returns bare list when positions exist, or
+            {"positions":[]} when empty.
         """
-        return self._request("GET", "/get_positions")
+        resp = self._request("GET", "/get_positions")
+        if resp.ok and isinstance(resp.data, list):
+            return MT5Response(ok=True, data={"positions": resp.data}, status_code=resp.status_code)
+        return resp
 
     def get_account_info(self) -> MT5Response:
         """Get MT5 account information.
@@ -288,17 +293,31 @@ class MT5Client:
 
         return self._request("POST", "/order", payload)
 
-    def close_position(self, ticket: int) -> MT5Response:
+    def close_position(
+        self,
+        ticket: int,
+        position_type: int,
+        symbol: str,
+        volume: float,
+    ) -> MT5Response:
         """Close a position by ticket number.
 
         Args:
             ticket: MT5 position ticket number.
+            position_type: MT5 position type (0=BUY, 1=SELL).
+            symbol: MT5 symbol name (e.g., "EURUSD").
+            volume: Lot size of the position.
 
         Returns:
             MT5Response with close result.
         """
         return self._request("POST", "/close_position", {
-            "position": {"ticket": ticket}
+            "position": {
+                "type": position_type,
+                "ticket": ticket,
+                "symbol": symbol,
+                "volume": volume,
+            }
         })
 
     def close_all_positions(self, symbol: Optional[str] = None) -> MT5Response:
