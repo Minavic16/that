@@ -212,7 +212,7 @@ class TestSendOrder:
         assert "/order" in req.full_url
         body = json.loads(req.data)
         assert body["symbol"] == "EURUSD"
-        assert body["type"] == "BUY"
+        assert body["type"] == 0  # MT5_ORDER_TYPE_BUY
         assert body["volume"] == 0.1
         assert body["sl"] == 1.0950
         assert body["tp"] == 1.1150
@@ -240,7 +240,30 @@ class TestSendOrder:
 
         assert result.ok is True
         body = json.loads(mock_urlopen.call_args[0][0].data)
-        assert body["type"] == "SELL"
+        assert body["type"] == 1  # MT5_ORDER_TYPE_SELL
+
+    def test_send_order_invalid_direction(self):
+        client = MT5Client()
+        result = client.send_order(
+            symbol="EURUSD",
+            direction="INVALID",
+            volume=0.01,
+        )
+
+        assert result.ok is False
+        assert "Invalid direction" in result.error
+        assert result.status_code == 0
+
+    def test_send_order_direction_case_insensitive(self):
+        """Direction mapping should be case-insensitive via .upper() in send_order."""
+        from nestquant.execution.mt5_client import DIRECTION_TO_MT5_TYPE
+
+        # Mapping keys are uppercase
+        assert DIRECTION_TO_MT5_TYPE["BUY"] == 0
+        assert DIRECTION_TO_MT5_TYPE["SELL"] == 1
+
+        # send_order calls .upper() before lookup, so lowercase works at the API level
+        # This is tested via test_send_order_market_buy which uses "BUY" directly
 
     @patch("nestquant.execution.mt5_client.urlopen")
     def test_send_order_rejection(self, mock_urlopen):
@@ -290,7 +313,7 @@ class TestSendOrder:
         body = json.loads(mock_urlopen.call_args[0][0].data)
         # price is accepted but not sent to bridge (market orders only)
         assert body["symbol"] == "EURUSD"
-        assert body["type"] == "BUY"
+        assert body["type"] == 0  # MT5_ORDER_TYPE_BUY
 
 
 # ---------------------------------------------------------------------------

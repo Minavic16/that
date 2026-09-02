@@ -38,6 +38,23 @@ DEFAULT_RETRY_DELAY = 1.0
 
 
 # ---------------------------------------------------------------------------
+# MT5 Order Type Constants
+# ---------------------------------------------------------------------------
+# The Flask bridge requires integer order-type values matching MT5 constants.
+# These are NOT imported from MetaTrader5 to keep this module broker-agnostic.
+
+MT5_ORDER_TYPE_BUY = 0
+MT5_ORDER_TYPE_SELL = 1
+
+# Direction string → MT5 integer type mapping
+# Keys are stored uppercase; lookup is done after .upper()
+DIRECTION_TO_MT5_TYPE: dict[str, int] = {
+    "BUY": MT5_ORDER_TYPE_BUY,
+    "SELL": MT5_ORDER_TYPE_SELL,
+}
+
+
+# ---------------------------------------------------------------------------
 # Result types
 # ---------------------------------------------------------------------------
 
@@ -276,9 +293,20 @@ class MT5Client:
         Returns:
             MT5Response with order result.
         """
+        # Map direction string to MT5 integer order type
+        direction_upper = direction.upper()
+        if direction_upper not in DIRECTION_TO_MT5_TYPE:
+            return MT5Response(
+                ok=False,
+                data={},
+                error=f"Invalid direction '{direction}'. Must be 'BUY' or 'SELL'.",
+                status_code=0,
+            )
+        mt5_type = DIRECTION_TO_MT5_TYPE[direction_upper]
+
         payload: dict[str, Any] = {
             "symbol": symbol,
-            "type": direction.upper(),
+            "type": mt5_type,
             "volume": volume,
             "deviation": deviation,
         }
