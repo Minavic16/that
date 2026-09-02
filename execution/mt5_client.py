@@ -82,12 +82,13 @@ class MT5Client:
     """HTTP client for the MT5 Flask bridge.
 
     The Flask bridge runs at 127.0.0.1:5001 and exposes:
-      - GET  /health          → connection status
-      - GET  /get_positions   → open positions
-      - GET  /last_error      → last MT5 error
-      - POST /send_order      → submit an order
-      - POST /close_position  → close a position
-      - GET  /get_account     → account info
+      - GET  /health              → connection status
+      - GET  /get_positions       → open positions (bare list)
+      - GET  /last_error          → last MT5 error
+      - POST /order               → submit a market order
+      - POST /close_position      → close a position (nested payload)
+      - POST /close_all_positions → close all positions
+      - GET  /get_account         → account info
 
     This client translates these into typed Python calls.
     """
@@ -253,32 +254,29 @@ class MT5Client:
         deviation: int = 10,
         order_type: str = "MARKET",
     ) -> MT5Response:
-        """Send an order to MT5 via the Flask bridge.
+        """Send a market order to MT5 via the Flask bridge.
 
         Args:
             symbol: MT5 symbol name (e.g., "EURUSD").
             direction: "BUY" or "SELL".
             volume: Lot size (e.g., 0.01).
-            price: Limit price (None for market orders).
+            price: Limit price (None for market orders, ignored).
             sl: Stop loss price.
             tp: Take profit price.
             magic: Magic number for EA identification.
             comment: Order comment.
             deviation: Max allowed slippage in points.
-            order_type: "MARKET" or "LIMIT".
+            order_type: Ignored (bridge only supports market orders).
 
         Returns:
             MT5Response with order result.
         """
         payload: dict[str, Any] = {
             "symbol": symbol,
-            "direction": direction.upper(),
+            "type": direction.upper(),
             "volume": volume,
-            "order_type": order_type,
             "deviation": deviation,
         }
-        if price is not None:
-            payload["price"] = price
         if sl is not None:
             payload["sl"] = sl
         if tp is not None:
@@ -288,7 +286,7 @@ class MT5Client:
         if comment:
             payload["comment"] = comment
 
-        return self._request("POST", "/send_order", payload)
+        return self._request("POST", "/order", payload)
 
     def close_position(self, ticket: int) -> MT5Response:
         """Close a position by ticket number.
@@ -299,20 +297,20 @@ class MT5Client:
         Returns:
             MT5Response with close result.
         """
-        return self._request("POST", "/close_position", {"ticket": ticket})
+        return self._request("POST", "/close_position", {
+            "position": {"ticket": ticket}
+        })
 
     def close_all_positions(self, symbol: Optional[str] = None) -> MT5Response:
         """Close all positions, optionally filtered by symbol.
 
         Args:
-            symbol: If provided, only close positions for this symbol.
+            symbol: If provided, only close positions for this symbol (ignored by bridge).
 
         Returns:
             MT5Response with close result.
         """
-        payload: dict[str, Any] = {}
-        if symbol:
-            payload["symbol"] = symbol
+        payload: dict[str, Any] = {"order_type": "all"}
         return self._request("POST", "/close_all_positions", payload)
 
     def __repr__(self) -> str:

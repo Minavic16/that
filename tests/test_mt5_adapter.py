@@ -47,8 +47,8 @@ def _success_response(**overrides) -> MT5Response:
     defaults = dict(
         ok=True,
         data={
-            "status": "success",
-            "ticket": 12345,
+            "retcode": 10009,
+            "order": 12345,
             "price": 1.1002,
             "volume": 0.10,
         },
@@ -150,8 +150,8 @@ class TestSuccessfulExecution:
         client = _mock_client(
             send_order=_success_response(
                 data={
-                    "status": "success",
-                    "ticket": 12345,
+                    "retcode": 10009,
+                    "order": 12345,
                     "price": 1.1002,
                     "volume": 0.10,
                 }
@@ -169,8 +169,8 @@ class TestSuccessfulExecution:
         client = _mock_client(
             send_order=_success_response(
                 data={
-                    "status": "success",
-                    "ticket": 12346,
+                    "retcode": 10009,
+                    "order": 12346,
                     "price": 1.2805,
                     "volume": 0.05,
                 }
@@ -196,8 +196,8 @@ class TestSuccessfulExecution:
         client = _mock_client(
             send_order=_success_response(
                 data={
-                    "status": "success",
-                    "ticket": 12347,
+                    "retcode": 10009,
+                    "order": 12347,
                     "price": 1.1003,  # 3 pips above requested 1.1000
                     "volume": 0.10,
                 }
@@ -214,8 +214,8 @@ class TestSuccessfulExecution:
         client = _mock_client(
             send_order=_success_response(
                 data={
-                    "status": "success",
-                    "ticket": 12348,
+                    "retcode": 10009,
+                    "order": 12348,
                     "price": 1.1000,
                     "volume": 0.10,
                 }
@@ -316,19 +316,19 @@ class TestErrorHandling:
         assert result.is_error
         assert "Connection failed" in result.rejection_reason
 
-    def test_missing_ticket_in_response(self):
+    def test_missing_order_in_response(self):
         client = _mock_client(
             send_order=MT5Response(
                 ok=True,
-                data={"status": "success"},
+                data={"retcode": 10009},
                 status_code=200,
             )
         )
         adapter = MT5ExecutionAdapter(client=client)
         result = adapter.execute(_valid_request())
 
-        assert result.is_error
-        assert "Missing fill data" in result.rejection_reason
+        assert result.is_rejected
+        assert "MT5 retcode" in result.rejection_reason
 
 
 # ---------------------------------------------------------------------------
@@ -420,13 +420,26 @@ class TestAccountInfo:
 
 
 class TestGetPositions:
-    def test_get_positions(self):
+    def test_get_positions_wrapped(self):
         positions = [
             {"ticket": 1, "symbol": "EURUSD", "volume": 0.1},
             {"ticket": 2, "symbol": "GBPUSD", "volume": 0.05},
         ]
         client = _mock_client(
             get_positions=_response(ok=True, data={"positions": positions})
+        )
+        adapter = MT5ExecutionAdapter(client=client)
+        result = adapter.get_positions()
+        assert len(result) == 2
+
+    def test_get_positions_bare_list(self):
+        """Bridge returns bare list, not wrapped in {"positions": [...]}."""
+        positions = [
+            {"ticket": 1, "symbol": "EURUSD", "volume": 0.1},
+            {"ticket": 2, "symbol": "GBPUSD", "volume": 0.05},
+        ]
+        client = _mock_client(
+            get_positions=_response(ok=True, data=positions)
         )
         adapter = MT5ExecutionAdapter(client=client)
         result = adapter.get_positions()

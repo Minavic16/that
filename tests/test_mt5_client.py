@@ -184,8 +184,8 @@ class TestSendOrder:
         resp = MagicMock()
         resp.status = 200
         resp.read.return_value = json.dumps({
-            "status": "success",
-            "ticket": 12345,
+            "retcode": 10009,
+            "order": 12345,
             "price": 1.1002,
             "volume": 0.1,
         }).encode()
@@ -203,16 +203,16 @@ class TestSendOrder:
         )
 
         assert result.ok is True
-        assert result.data["ticket"] == 12345
+        assert result.data["order"] == 12345
         assert result.data["price"] == 1.1002
 
         # Verify the request was made correctly
         call_args = mock_urlopen.call_args
         req = call_args[0][0]
-        assert "/send_order" in req.full_url
+        assert "/order" in req.full_url
         body = json.loads(req.data)
         assert body["symbol"] == "EURUSD"
-        assert body["direction"] == "BUY"
+        assert body["type"] == "BUY"
         assert body["volume"] == 0.1
         assert body["sl"] == 1.0950
         assert body["tp"] == 1.1150
@@ -222,8 +222,8 @@ class TestSendOrder:
         resp = MagicMock()
         resp.status = 200
         resp.read.return_value = json.dumps({
-            "status": "success",
-            "ticket": 12346,
+            "retcode": 10009,
+            "order": 12346,
             "price": 1.2805,
             "volume": 0.05,
         }).encode()
@@ -240,7 +240,7 @@ class TestSendOrder:
 
         assert result.ok is True
         body = json.loads(mock_urlopen.call_args[0][0].data)
-        assert body["direction"] == "SELL"
+        assert body["type"] == "SELL"
 
     @patch("nestquant.execution.mt5_client.urlopen")
     def test_send_order_rejection(self, mock_urlopen):
@@ -269,8 +269,8 @@ class TestSendOrder:
         resp = MagicMock()
         resp.status = 200
         resp.read.return_value = json.dumps({
-            "status": "success",
-            "ticket": 12347,
+            "retcode": 10009,
+            "order": 12347,
             "price": 1.0995,
             "volume": 0.1,
         }).encode()
@@ -288,8 +288,9 @@ class TestSendOrder:
         )
 
         body = json.loads(mock_urlopen.call_args[0][0].data)
-        assert body["price"] == 1.0995
-        assert body["order_type"] == "LIMIT"
+        # price is accepted but not sent to bridge (market orders only)
+        assert body["symbol"] == "EURUSD"
+        assert body["type"] == "BUY"
 
 
 # ---------------------------------------------------------------------------
@@ -316,7 +317,7 @@ class TestClosePosition:
 
         assert result.ok is True
         body = json.loads(mock_urlopen.call_args[0][0].data)
-        assert body["ticket"] == 12345
+        assert body["position"]["ticket"] == 12345
 
 
 # ---------------------------------------------------------------------------

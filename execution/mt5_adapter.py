@@ -212,28 +212,28 @@ class MT5ExecutionAdapter(BaseExecutionAdapter):
 
         The Flask bridge returns:
         {
-            "status": "success",
-            "ticket": 12345,
+            "retcode": 10009,
             "price": 1.1002,
+            "order": 12345,
             "volume": 0.10,
-            "sl": 1.0950,
-            "tp": 1.1150
+            ...
         }
         """
         data = response.data
 
-        ticket = data.get("ticket")
+        retcode = data.get("retcode", -1)
         fill_price = data.get("price")
-        fill_volume = data.get("volume", request.lot_size)
+        order_id = data.get("order")
 
-        if ticket is None or fill_price is None:
+        if retcode != 10009 or fill_price is None:
+            comment = data.get("comment", f"MT5 error code {retcode}")
             return ExecutionResult(
-                status=ExecutionStatus.ERROR,
+                status=ExecutionStatus.REJECTED,
                 order_id=None,
                 requested_price=request.entry_price,
                 fill_price=None,
                 slippage_pips=0.0,
-                rejection_reason=f"Missing fill data: ticket={ticket}, price={fill_price}",
+                rejection_reason=f"MT5 retcode {retcode}: {comment}",
             )
 
         # Calculate slippage in pips
@@ -241,11 +241,9 @@ class MT5ExecutionAdapter(BaseExecutionAdapter):
         price_diff = abs(fill_price - request.entry_price)
         slippage_pips = price_diff / pip if pip > 0 else 0.0
 
-        order_id = str(ticket)
-
         return ExecutionResult(
             status=ExecutionStatus.FILLED,
-            order_id=order_id,
+            order_id=str(order_id) if order_id else None,
             requested_price=request.entry_price,
             fill_price=fill_price,
             slippage_pips=slippage_pips,
@@ -289,8 +287,13 @@ class MT5ExecutionAdapter(BaseExecutionAdapter):
         """
         response = self._client.get_positions()
         if response.ok:
-            positions = response.data.get("positions", [])
-            return positions if isinstance(positions, list) else []
+            data = response.data
+            # Bridge returns bare list; some versions wrap in {"positions": [...]}
+            if isinstance(data, list):
+                return data
+            if isinstance(data, dict):
+                positions = data.get("positions", [])
+                return positions if isinstance(positions, list) else []
         return []
 
     def __repr__(self) -> str:
