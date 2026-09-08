@@ -5,7 +5,8 @@ import { getUser } from "@/lib/db";
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { username, password } = body;
+    const username = (body.username || "").trim();
+    const password = (body.password || "").trim();
 
     if (!username || !password) {
       return NextResponse.json({ error: "missing username or password" }, { status: 400 });
