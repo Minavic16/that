@@ -7,6 +7,8 @@ export function middleware(req: NextRequest) {
   if (pathname.startsWith("/login")) return NextResponse.next();
   if (pathname.startsWith("/_next")) return NextResponse.next();
   if (pathname === "/favicon.ico") return NextResponse.next();
+  if (pathname === "/nqts.apk") return NextResponse.next();
+  if (pathname.startsWith("/download")) return NextResponse.next();
 
   const session = req.cookies.get("__Host-session");
   if (!session) {
