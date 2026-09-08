@@ -348,6 +348,35 @@ class MT5Client:
             }
         })
 
+    def modify_position(
+        self,
+        ticket: int,
+        sl: Optional[float] = None,
+        tp: Optional[float] = None,
+    ) -> MT5Response:
+        """Modify an existing position's SL and/or TP.
+
+        Calls the bridge's /modify_position endpoint which uses
+        mt5.order_send() with TRADE_ACTION_SLTP internally.
+
+        Args:
+            ticket: MT5 position ticket number.
+            sl: New stop loss price. None = keep current.
+            tp: New take profit price. None = keep current.
+
+        Returns:
+            MT5Response with modification result.
+        """
+        payload: dict[str, Any] = {
+            "position": ticket,
+        }
+        if sl is not None:
+            payload["sl"] = sl
+        if tp is not None:
+            payload["tp"] = tp
+
+        return self._request("POST", "/modify_position", payload)
+
     def close_all_positions(self, symbol: Optional[str] = None) -> MT5Response:
         """Close all positions, optionally filtered by symbol.
 
@@ -362,3 +391,55 @@ class MT5Client:
 
     def __repr__(self) -> str:
         return f"<MT5Client(base_url={self._base_url})>"
+
+
+# ---------------------------------------------------------------------------
+# Data endpoints
+# ---------------------------------------------------------------------------
+
+    def fetch_candles(
+        self,
+        symbol: str,
+        timeframe: str = "H4",
+        num_bars: int = 100,
+    ) -> MT5Response:
+        """Fetch historical candle data from MT5 via the Flask bridge.
+
+        Calls the bridge's /fetch_data_pos endpoint which uses
+        mt5.copy_rates_from_pos() internally.
+
+        Args:
+            symbol: MT5 symbol name (e.g., "EURUSD").
+            timeframe: MT5 timeframe string (e.g., "M1", "M5", "M15", "M30", "H1", "H4", "D1").
+            num_bars: Number of bars to fetch (most recent).
+
+        Returns:
+            MT5Response with data containing list of candle dicts:
+            [{time, open, high, low, close, tick_volume, spread, real_volume}, ...]
+        """
+        path = f"/fetch_data_pos?symbol={symbol}&timeframe={timeframe}&num_bars={num_bars}"
+        return self._request("GET", path)
+
+    def fetch_candles_range(
+        self,
+        symbol: str,
+        timeframe: str = "H4",
+        start: str = "",
+        end: str = "",
+    ) -> MT5Response:
+        """Fetch candle data within a date range from MT5 via the Flask bridge.
+
+        Calls the bridge's /fetch_data_range endpoint which uses
+        mt5.copy_rates_range() internally.
+
+        Args:
+            symbol: MT5 symbol name (e.g., "EURUSD").
+            timeframe: MT5 timeframe string (e.g., "H4").
+            start: ISO format datetime string (e.g., "2026-01-01T00:00:00").
+            end: ISO format datetime string.
+
+        Returns:
+            MT5Response with data containing list of candle dicts.
+        """
+        path = f"/fetch_data_range?symbol={symbol}&timeframe={timeframe}&start={start}&end={end}"
+        return self._request("GET", path)

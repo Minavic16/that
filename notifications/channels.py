@@ -166,6 +166,51 @@ class TelegramChannel(NotificationChannel):
             parts.append(f"\n{event.message}")
         return "\n".join(parts)
 
+    def send_report(self, title: str, content: str, chat_id: Optional[str] = None) -> bool:
+        """Send a longer report message to Telegram.
+
+        Splits content into chunks if needed (Telegram 4096 char limit).
+        """
+        import os
+        token = self._bot_token or os.environ.get("TELEGRAM_BOT_TOKEN")
+        cid = chat_id or self._chat_id or os.environ.get("TELEGRAM_CHAT_ID")
+
+        if not token or not cid:
+            logger.warning("Telegram credentials not configured — report suppressed")
+            return False
+
+        try:
+            import urllib.request
+            import urllib.parse
+
+            full_text = f"<b>{title}</b>\n\n{content}"
+            # Split into 4000-char chunks (leave margin for HTML)
+            chunks = []
+            while len(full_text) > 4000:
+                split_at = full_text.rfind("\n", 0, 4000)
+                if split_at == -1:
+                    split_at = 4000
+                chunks.append(full_text[:split_at])
+                full_text = full_text[split_at:].lstrip("\n")
+            chunks.append(full_text)
+
+            url = f"https://api.telegram.org/bot{token}/sendMessage"
+            for chunk in chunks:
+                data = urllib.parse.urlencode({
+                    "chat_id": cid,
+                    "text": chunk,
+                    "parse_mode": "HTML",
+                }).encode("utf-8")
+                req = urllib.request.Request(url, data=data, method="POST")
+                with urllib.request.urlopen(req, timeout=15) as resp:
+                    if resp.status != 200:
+                        return False
+            return True
+
+        except Exception as e:
+            logger.error(f"Telegram report send failed: {e}")
+            return False
+
 
 # ---------------------------------------------------------------------------
 # Log Channel (always available)

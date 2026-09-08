@@ -275,6 +275,88 @@ class MT5ExecutionAdapter(BaseExecutionAdapter):
         except Exception:
             return False
 
+    def modify_position_stop(
+        self,
+        request: "PositionModificationRequest",
+    ) -> "ModificationResult":
+        """Modify an existing position's stop loss via MT5.
+
+        Args:
+            request: The modification request with trade_id and new_sl.
+
+        Returns:
+            ModificationResult with success status and broker confirmation.
+        """
+        from datetime import datetime, timezone
+        from strategy.lifecycle.contracts import ModificationResult
+
+        try:
+            ticket = int(request.trade_id)
+        except (ValueError, TypeError):
+            return ModificationResult(
+                success=False,
+                trade_id=request.trade_id,
+                requested_sl=request.new_sl,
+                broker_sl=None,
+                timestamp=datetime.now(timezone.utc),
+                error=f"Invalid ticket: {request.trade_id}",
+            )
+
+        try:
+            response = self._client.modify_position(
+                ticket=ticket,
+                sl=request.new_sl,
+            )
+        except Exception as exc:
+            return ModificationResult(
+                success=False,
+                trade_id=request.trade_id,
+                requested_sl=request.new_sl,
+                broker_sl=None,
+                timestamp=datetime.now(timezone.utc),
+                error=f"Connection failed: {exc}",
+            )
+
+        if not response.ok:
+            return ModificationResult(
+                success=False,
+                trade_id=request.trade_id,
+                requested_sl=request.new_sl,
+                broker_sl=None,
+                timestamp=datetime.now(timezone.utc),
+                error=response.error or "Modify failed",
+            )
+
+        # Parse response
+        data = response.data
+        if "result" in data and isinstance(data["result"], dict):
+            data = data["result"]
+
+        retcode = data.get("retcode", -1)
+        if retcode != 10009:
+            comment = data.get("comment", f"MT5 error code {retcode}")
+            return ModificationResult(
+                success=False,
+                trade_id=request.trade_id,
+                requested_sl=request.new_sl,
+                broker_sl=None,
+                timestamp=datetime.now(timezone.utc),
+                error=f"MT5 retcode {retcode}: {comment}",
+            )
+
+        # Success — broker confirmed modification
+        # MT5 returns the modified position's SL
+        broker_sl = data.get("sl", request.new_sl)
+
+        return ModificationResult(
+            success=True,
+            trade_id=request.trade_id,
+            requested_sl=request.new_sl,
+            broker_sl=broker_sl,
+            timestamp=datetime.now(timezone.utc),
+            error=None,
+        )
+
     def get_account_info(self) -> Optional[dict]:
         """Get MT5 account information.
 

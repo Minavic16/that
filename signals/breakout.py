@@ -6,10 +6,18 @@ from __future__ import annotations
 
 import pandas as pd
 
-from nestquant.config.settings import ATR_SL_MULTIPLIER
 from nestquant.indicators.atr import calculate_atr
 from nestquant.indicators.swing import swing_high_series, swing_low_series
 from nestquant.signals.base import BaseSignal, SignalResult
+
+
+# Research-validated defaults (S0-S6: ATR_SL_MULT=2.0, RRR=3.5)
+RESEARCH_DEFAULTS = {
+    "lookback": 5,
+    "atr_period": 14,
+    "atr_sl_multiplier": 2.0,
+    "rrr": 3.5,
+}
 
 
 class BreakoutSignal(BaseSignal):
@@ -24,12 +32,14 @@ class BreakoutSignal(BaseSignal):
         self,
         lookback: int = 5,
         atr_period: int = 14,
-        atr_sl_multiplier: float = ATR_SL_MULTIPLIER,
+        atr_sl_multiplier: float = 2.0,
+        rrr: float = 3.5,
     ):
         super().__init__("breakout")
         self.lookback = lookback
         self.atr_period = atr_period
         self.atr_sl_multiplier = atr_sl_multiplier
+        self.rrr = rrr
 
     def generate(self, df: pd.DataFrame, pair: str) -> SignalResult:
         """
@@ -69,13 +79,13 @@ class BreakoutSignal(BaseSignal):
             direction = "BUY"
             entry_price = current_high
             sl_price = entry_price - (current_atr * self.atr_sl_multiplier)
-            tp_price = entry_price + (current_atr * self.atr_sl_multiplier * 2.0)
+            tp_price = entry_price + (current_atr * self.atr_sl_multiplier * self.rrr)
 
         elif not pd.isna(current_low) and prev_close >= current_low > current_close:
             direction = "SELL"
             entry_price = current_low
             sl_price = entry_price + (current_atr * self.atr_sl_multiplier)
-            tp_price = entry_price - (current_atr * self.atr_sl_multiplier * 2.0)
+            tp_price = entry_price - (current_atr * self.atr_sl_multiplier * self.rrr)
 
         return SignalResult(
             pair=pair,

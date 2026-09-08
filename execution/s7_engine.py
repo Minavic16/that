@@ -37,6 +37,9 @@ from nestquant.execution.risk_guard import RiskGuard, RiskGuardConfig
 from nestquant.execution.trade_logger import TradeLogger
 from nestquant.risk.circuit_breakers import BreakerSuite
 
+# S8 experiment identity (lazy import to avoid circular dependency)
+_experiment_config = None
+
 
 # ---------------------------------------------------------------------------
 # S7 Configuration
@@ -72,6 +75,11 @@ class S7Config:
 
     # Policy
     policy_version: str = "s7-1.0.0"
+
+    # S8 experiment identity
+    experiment_id: str = ""
+    strategy_version: str = ""
+    config_hash: str = ""
 
 
 # ---------------------------------------------------------------------------
@@ -159,6 +167,9 @@ class S7Engine:
             max_consecutive_failures=int(os.environ.get("NESTQUANT_MAX_FAILURES", "3")),
             log_dir=os.environ.get("NESTQUANT_LOG_DIR", "/tmp/nestquant_s7_logs"),
             policy_version=os.environ.get("NESTQUANT_POLICY_VERSION", "s7-1.0.0"),
+            experiment_id=os.environ.get("NESTQUANT_EXPERIMENT_ID", ""),
+            strategy_version=os.environ.get("NESTQUANT_STRATEGY_VERSION", ""),
+            config_hash=os.environ.get("NESTQUANT_CONFIG_HASH", ""),
         )
 
     # ------------------------------------------------------------------
@@ -189,13 +200,14 @@ class S7Engine:
     def health_monitor(self) -> HealthMonitor:
         return self._health_monitor
 
-    def execute(self, intent: TradeIntent) -> ExecutionResult:
+    def execute(self, intent: TradeIntent, signal_id: str = "") -> ExecutionResult:
         """Execute a trade intent through the full pipeline.
 
         Flow: intent → risk guard → order → MT5 → result
 
         Args:
             intent: The strategy's trade signal.
+            signal_id: Optional signal ID for traceability (links to TradeLogger signal record).
 
         Returns:
             ExecutionResult from the execution pipeline.
@@ -206,8 +218,8 @@ class S7Engine:
         # Execute through the coordinator
         result = self._coordinator.orchestrate(intent)
 
-        # Log the result
-        self._log_execution(intent, result)
+        # Log the result with signal_id propagation
+        self._log_execution(intent, result, signal_id=signal_id)
 
         # Update risk guard with any new state
         self._sync_positions()
@@ -266,11 +278,22 @@ class S7Engine:
         except Exception:
             pass  # Position sync failure is non-fatal
 
-    def _log_execution(self, intent: TradeIntent, result: ExecutionResult) -> None:
-        """Log an execution attempt."""
+    def _log_execution(
+        self,
+        intent: TradeIntent,
+        result: ExecutionResult,
+        signal_id: str = "",
+    ) -> None:
+        """Log an execution attempt.
+
+        Args:
+            intent: The original trade intent.
+            result: The execution result.
+            signal_id: Signal ID for traceability (links signal → order → fill).
+        """
         if result.is_filled:
             self._trade_logger.create_order(
-                signal_id="",
+                signal_id=signal_id,
                 order_id=result.order_id or "",
                 symbol=intent.pair,
                 direction=intent.direction.value,
@@ -283,8 +306,8 @@ class S7Engine:
             )
         elif result.is_rejected or result.is_error:
             self._trade_logger.log_infrastructure_event(
-                event_type="ERROR",
-                description=f"Execution failed: {result.rejection_reason}",
+                event_type="EXECUTION_FAILED",
+                description=f"Signal {signal_id}: {result.rejection_reason}",
                 impact="MISSED_SIGNAL",
             )
 

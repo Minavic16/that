@@ -36,7 +36,7 @@ from typing import Any, Optional
 
 @dataclass(frozen=True)
 class SignalRecord:
-    """S7 section 3.1: Per-signal record."""
+    """S7 section 3.1: Per-signal record. Extended for S8 experiment identity."""
 
     signal_id: str
     timestamp: str
@@ -50,6 +50,10 @@ class SignalRecord:
     expected_tp: float
     atr_at_signal: float
     spread_at_signal: float
+    # S8 experiment identity fields
+    experiment_id: str = ""
+    strategy_version: str = ""
+    config_hash: str = ""
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -248,6 +252,9 @@ class TradeLogger:
         atr_at_signal: float,
         spread_at_signal: float,
         strategy_params: Optional[dict] = None,
+        experiment_id: str = "",
+        strategy_version: str = "",
+        config_hash: str = "",
     ) -> SignalRecord:
         """Create and log a signal record."""
         record = SignalRecord(
@@ -263,6 +270,9 @@ class TradeLogger:
             expected_tp=expected_tp,
             atr_at_signal=atr_at_signal,
             spread_at_signal=spread_at_signal,
+            experiment_id=experiment_id,
+            strategy_version=strategy_version,
+            config_hash=config_hash,
         )
         self.log_signal(record)
         return record

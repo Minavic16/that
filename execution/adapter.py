@@ -35,6 +35,11 @@ from nestquant.execution.contracts import (
     OrderRequest,
 )
 
+# Forward reference for lifecycle contracts
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from strategy.lifecycle.contracts import ModificationResult, PositionModificationRequest
+
 
 # ---------------------------------------------------------------------------
 # Adapter exceptions
@@ -145,6 +150,32 @@ class BaseExecutionAdapter(ABC):
         """
         ...
 
+    def modify_position_stop(
+        self,
+        request: "PositionModificationRequest",
+    ) -> "ModificationResult":
+        """Modify an existing position's stop loss.
+
+        Default implementation raises NotImplementedError.
+        Subclasses must override this method.
+
+        Args:
+            request: The modification request.
+
+        Returns:
+            ModificationResult with success status and broker confirmation.
+        """
+        from strategy.lifecycle.contracts import ModificationResult
+        from datetime import datetime, timezone
+        return ModificationResult(
+            success=False,
+            trade_id=request.trade_id,
+            requested_sl=request.new_sl,
+            broker_sl=None,
+            timestamp=datetime.now(timezone.utc),
+            error="modify_position_stop not implemented",
+        )
+
     def __repr__(self) -> str:
         return f"<{self.__class__.__name__}(name={self._name})>"
 
@@ -233,3 +264,22 @@ class FakeExecutionAdapter(BaseExecutionAdapter):
                 slippage_pips=0.0,
                 rejection_reason=self._rejection_reason or "Execution failed",
             )
+
+    def modify_position_stop(
+        self,
+        request: "PositionModificationRequest",
+    ) -> "ModificationResult":
+        """Simulate SL modification for testing.
+
+        Always succeeds and returns requested_sl as broker_sl.
+        """
+        from strategy.lifecycle.contracts import ModificationResult
+        from datetime import datetime, timezone
+        return ModificationResult(
+            success=True,
+            trade_id=request.trade_id,
+            requested_sl=request.new_sl,
+            broker_sl=request.new_sl,
+            timestamp=datetime.now(timezone.utc),
+            error=None,
+        )
