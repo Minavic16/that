@@ -114,6 +114,12 @@ def _make_runtime_with_mocks(**kwargs) -> S8Runtime:
     runtime._coordinator = MagicMock()
     runtime._adapter = MagicMock()
     runtime._strategy = MagicMock()
+    runtime._strategy.rrr = 3.5
+    runtime._strategy.atr_sl_multiplier = 2.0
+    runtime._lifecycle_registry = MagicMock()
+    runtime._lifecycle_registry.active_count = 0
+    runtime._protection = MagicMock()
+    runtime._protection.breaker_open = False
     return runtime
 
 
@@ -185,6 +191,7 @@ class TestS8Runtime:
         mock_signal.entry_price = 1.0850
         mock_signal.sl_price = 1.0820
         mock_signal.tp_price = 1.0950
+        mock_signal.metadata = {"atr": 0.0030, "swing_high": 1.0850, "swing_low": 1.0800, "lookback": 5}
         runtime._get_strategy_signal = MagicMock(return_value=mock_signal)
 
         mock_intent = MagicMock()
@@ -222,6 +229,7 @@ class TestS8Runtime:
         mock_signal.entry_price = 1.0850
         mock_signal.sl_price = 1.0820
         mock_signal.tp_price = 1.0950
+        mock_signal.metadata = {"atr": 0.0030, "swing_high": 1.0850, "swing_low": 1.0800, "lookback": 5}
         runtime._get_strategy_signal = MagicMock(return_value=mock_signal)
 
         mock_intent = MagicMock()
