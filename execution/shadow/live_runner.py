@@ -28,6 +28,10 @@ from nestquant.execution.shadow.logger import ShadowLogger
 from nestquant.execution.shadow.safety import install_hard_guard, verify_zero_orders
 from nestquant.execution.shadow.signal_generator import ShadowCausalSignalGenerator
 from nestquant.execution.shadow.state import ShadowState
+try:
+    from notifications.signal_notifier import send_signal_alert
+except ImportError:
+    send_signal_alert = None
 
 
 def _parse_iso(ts: str) -> datetime:
@@ -134,6 +138,14 @@ class LiveShadowRunner:
         return False
 
     def run(self) -> dict[str, Any]:
+        # Load Telegram credentials from .env.telegram
+        _env_file = Path("/root/nestquant/.env.telegram")
+        if _env_file.exists():
+            for line in _env_file.read_text().splitlines():
+                if line.strip() and not line.startswith("#") and "=" in line:
+                    k, v = line.split("=", 1)
+                    import os
+                    os.environ.setdefault(k.strip(), v.strip())
         self.logger.log_infrastructure("STARTUP", f"live shadow start pairs={self.pairs} tf={self.timeframe} poll={self.poll_interval_sec}s adapter={self.adapter.name}")
         self.health.heartbeat()
 
@@ -307,6 +319,22 @@ class LiveShadowRunner:
                             spread_at_submission=bar.spread,
                         )
                         self._signals += 1
+                        # Send Telegram notification
+                        if send_signal_alert:
+                            try:
+                                send_signal_alert(
+                                    symbol=pair,
+                                    direction=rec.direction,
+                                    entry=rec.expected_entry,
+                                    sl=rec.expected_sl,
+                                    tp=rec.expected_tp,
+                                    atr=rec.atr_at_signal,
+                                    latency_ms=rec.generation_latency_ms,
+                                    signal_id=rec.signal_id,
+                                    broker_timestamp=bar.broker_timestamp,
+                                )
+                            except Exception as e:
+                                self.logger.log_infrastructure("WARNING", f"Telegram notification failed: {e}", impact="NO_IMPACT")
                         self.health.record_signal(latency_ms=latency_ms)
                         self.state.inc("signals_emitted", 1)
 
