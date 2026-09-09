@@ -20,6 +20,11 @@ interface HealthData {
   p95_latency_ms: number;
   gaps_detected: number;
   integrity_violations: number;
+  execution_mode: string;
+  mt5_connected: boolean;
+  orders_submitted: number;
+  orders_blocked: number;
+  open_positions: number;
   notes: string[];
 }
 
@@ -184,16 +189,21 @@ export default function AdminPage() {
                 <StatusDot ok={isHealthy} />
                 <span className="font-medium text-sm">{health?.status || "Unknown"}</span>
                 {health?.data_stale && <span className="text-xs text-amber-400 ml-auto">Stale</span>}
+                <span className={`text-xs px-2 py-0.5 rounded ml-auto ${health?.execution_mode === "SHADOW" ? "bg-amber-900 text-amber-300" : health?.execution_mode === "LIVE" ? "bg-red-900 text-red-300" : "bg-zinc-800 text-zinc-400"}`}>
+                  {health?.execution_mode || "UNKNOWN"}
+                </span>
               </div>
               <div className="grid grid-cols-2 gap-3 text-sm">
                 <div><p className="text-zinc-500 text-xs">Uptime</p><p className="font-mono">{health ? `${Math.floor(health.uptime_seconds / 3600)}h ${Math.floor((health.uptime_seconds % 3600) / 60)}m` : "-"}</p></div>
-                <div><p className="text-zinc-500 text-xs">Bars</p><p className="font-mono">{health?.bars_processed ?? "-"}</p></div>
-                <div><p className="text-zinc-500 text-xs">Signals</p><p className="font-mono">{health?.signals_emitted ?? "-"}</p></div>
-                <div><p className="text-zinc-500 text-xs">Latency p50</p><p className="font-mono">{health?.avg_latency_ms ? `${health.avg_latency_ms.toFixed(1)}ms` : "-"}</p></div>
-                <div><p className="text-zinc-500 text-xs">Latency p95</p><p className="font-mono">{health?.p95_latency_ms ? `${health.p95_latency_ms.toFixed(1)}ms` : "-"}</p></div>
-                <div><p className="text-zinc-500 text-xs">Gaps</p><p className="font-mono">{health?.gaps_detected ?? "-"}</p></div>
-                <div><p className="text-zinc-500 text-xs">Integrity</p><p className="font-mono">{health?.integrity_violations ?? 0}</p></div>
-                <div><p className="text-zinc-500 text-xs">Kill Switch</p><p className="font-mono">{health?.kill_switch_active ? <span className="text-red-400">ON</span> : <span className="text-emerald-400">off</span>}</p></div>
+                <div><p className="text-zinc-500 text-xs">MT5</p><p className="font-mono">{health?.mt5_connected ? <span className="text-emerald-400">Connected</span> : <span className="text-red-400">Disconnected</span>}</p></div>
+                <div><p className="text-zinc-500 text-xs">Bars Processed</p><p className="font-mono">{health?.bars_processed ?? "-"}</p></div>
+                <div><p className="text-zinc-500 text-xs">Signals Emitted</p><p className="font-mono">{health?.signals_emitted ?? "-"}</p></div>
+                <div><p className="text-zinc-500 text-xs">Open Positions</p><p className="font-mono">{health?.open_positions ?? 0}</p></div>
+                <div><p className="text-zinc-500 text-xs">Orders Submitted</p><p className="font-mono">{health?.orders_submitted ?? 0}</p></div>
+                <div><p className="text-zinc-500 text-xs">Orders Blocked</p><p className="font-mono">{health?.orders_blocked ?? 0}</p></div>
+                <div><p className="text-zinc-500 text-xs">Gaps Detected</p><p className="font-mono">{health?.gaps_detected ?? 0}</p></div>
+                <div><p className="text-zinc-500 text-xs">Integrity Warnings</p><p className="font-mono">{health?.integrity_violations ?? 0}</p></div>
+                <div><p className="text-zinc-500 text-xs">Kill Switch</p><p className="font-mono">{health?.kill_switch_active ? <span className="text-red-400">ACTIVE</span> : <span className="text-emerald-400">off</span>}</p></div>
               </div>
             </div>
 

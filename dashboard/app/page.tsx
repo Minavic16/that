@@ -16,6 +16,10 @@ interface HealthData {
   signals_emitted: number;
   kill_switch_active: boolean;
   data_stale: boolean;
+  execution_mode: string;
+  mt5_connected: boolean;
+  open_positions: number;
+  orders_submitted: number;
   notes: string[];
 }
 
@@ -154,6 +158,9 @@ export default function DashboardPage() {
             {health?.data_stale && (
               <span className="text-xs text-amber-400 ml-auto">Stale</span>
             )}
+            <span className={`text-xs px-2 py-0.5 rounded ml-auto ${health?.execution_mode === "SHADOW" ? "bg-amber-900 text-amber-300" : health?.execution_mode === "LIVE" ? "bg-red-900 text-red-300" : "bg-zinc-800 text-zinc-400"}`}>
+              {health?.execution_mode || "UNKNOWN"}
+            </span>
           </div>
 
           <div className="grid grid-cols-2 gap-3 text-sm">
@@ -166,12 +173,26 @@ export default function DashboardPage() {
               </p>
             </div>
             <div>
+              <p className="text-zinc-500 text-xs">MT5</p>
+              <p className="font-mono">
+                {health?.mt5_connected ? (
+                  <span className="text-emerald-400">Connected</span>
+                ) : (
+                  <span className="text-red-400">Disconnected</span>
+                )}
+              </p>
+            </div>
+            <div>
               <p className="text-zinc-500 text-xs">Bars Processed</p>
               <p className="font-mono">{health?.bars_processed ?? "-"}</p>
             </div>
             <div>
               <p className="text-zinc-500 text-xs">Signals Emitted</p>
               <p className="font-mono">{health?.signals_emitted ?? "-"}</p>
+            </div>
+            <div>
+              <p className="text-zinc-500 text-xs">Open Positions</p>
+              <p className="font-mono">{health?.open_positions ?? 0}</p>
             </div>
             <div>
               <p className="text-zinc-500 text-xs">Kill Switch</p>
@@ -183,16 +204,6 @@ export default function DashboardPage() {
                 )}
               </p>
             </div>
-          </div>
-        </div>
-
-        <div className="bg-zinc-900 rounded-xl p-4 border border-zinc-800">
-          <h2 className="text-sm font-medium mb-2">Zero Orders Guard</h2>
-          <div className="flex items-center gap-3">
-            <StatusDot ok={(zeroOrders?.orders_submitted ?? 0) === 0} />
-            <span className="font-mono text-sm">
-              {zeroOrders?.orders_submitted ?? 0} / {zeroOrders?.blocked_attempts ?? 0}
-            </span>
           </div>
         </div>
 
