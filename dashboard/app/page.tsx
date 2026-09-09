@@ -38,6 +38,7 @@ export default function DashboardPage() {
   const [health, setHealth] = useState<HealthData | null>(null);
   const [zeroOrders, setZeroOrders] = useState<ZeroOrders | null>(null);
   const [lastUpdate, setLastUpdate] = useState<string>("");
+  const [currentTime, setCurrentTime] = useState<string>("");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -97,6 +98,15 @@ export default function DashboardPage() {
     return () => clearInterval(interval);
   }, [session]);
 
+  useEffect(() => {
+    function updateTime() {
+      setCurrentTime(new Date().toLocaleString());
+    }
+    updateTime();
+    const timeInterval = setInterval(updateTime, 1000);
+    return () => clearInterval(timeInterval);
+  }, []);
+
   async function handleLogout() {
     await fetch("/api/auth/logout", { method: "POST" });
     router.push("/login");
@@ -126,9 +136,12 @@ export default function DashboardPage() {
             Sign out
           </button>
         </div>
-        <p className="text-xs text-zinc-600 mt-0.5">
-          {session.username} &middot; Shadow Observer
-        </p>
+        <div className="flex items-center justify-between mt-0.5">
+          <p className="text-xs text-zinc-600">
+            {session.username} &middot; Shadow Observer
+          </p>
+          <p className="text-xs text-zinc-600 font-mono">{currentTime || "-"}</p>
+        </div>
       </header>
 
       <main className="flex-1 px-4 py-4 space-y-4 max-w-lg mx-auto w-full">
@@ -197,7 +210,7 @@ export default function DashboardPage() {
         )}
 
         <p className="text-xs text-zinc-700 text-center">
-          Last updated: {lastUpdate}
+          Last updated: {lastUpdate} &middot; {currentTime}
         </p>
       </main>
 

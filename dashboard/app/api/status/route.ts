@@ -1,9 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { withAuth } from "@/lib/rbac";
-import { readFileSync, existsSync } from "fs";
+import { readFileSync, existsSync, appendFileSync } from "fs";
 import { join } from "path";
 
 const LOG_DIR = "/root/nestquant/logs/shadow_live";
+const API_LOG = join(LOG_DIR, "api_access.log");
+
+function logAccess(endpoint: string, user: string) {
+  try {
+    const ts = new Date().toISOString();
+    appendFileSync(API_LOG, JSON.stringify({ ts, endpoint, user }) + "\n");
+  } catch { /* ignore */ }
+}
 
 export const GET = withAuth(async (req: NextRequest) => {
   try {
@@ -37,6 +45,7 @@ export const GET = withAuth(async (req: NextRequest) => {
       }).filter(Boolean);
     }
 
+    logAccess("status", "authenticated");
     return NextResponse.json({
       state,
       zero_orders: zeroOrders,

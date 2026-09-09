@@ -24,13 +24,25 @@ interface HealthData {
 }
 
 interface Signal {
+  signal_id?: string;
   timestamp?: string;
-  pair?: string;
+  symbol?: string;
   direction?: string;
-  z_score?: number;
+  strategy_params?: Record<string, unknown>;
+  swing_level?: number;
+  signal_bar_close?: number;
+  expected_entry?: number;
+  expected_sl?: number;
+  expected_tp?: number;
+  atr_at_signal?: number;
+  spread_at_signal?: number;
+  generation_latency_ms?: number;
+  policy_version?: string;
   broker_timestamp?: string;
   receipt_timestamp?: string;
-  latency_ms?: number;
+  bid?: number;
+  ask?: number;
+  live_spread?: number;
 }
 
 interface User {
@@ -58,6 +70,7 @@ export default function AdminPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [config, setConfig] = useState<Record<string, string>>({});
   const [lastUpdate, setLastUpdate] = useState("");
+  const [currentTime, setCurrentTime] = useState("");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -106,6 +119,15 @@ export default function AdminPage() {
     return () => clearInterval(interval);
   }, [session]);
 
+  useEffect(() => {
+    function updateTime() {
+      setCurrentTime(new Date().toLocaleString());
+    }
+    updateTime();
+    const timeInterval = setInterval(updateTime, 1000);
+    return () => clearInterval(timeInterval);
+  }, []);
+
   async function handleLogout() {
     await fetch("/api/auth/logout", { method: "POST" });
     router.push("/login");
@@ -148,7 +170,10 @@ export default function AdminPage() {
           <h1 className="text-lg font-bold">NestQuant Admin</h1>
           <button onClick={handleLogout} className="text-sm text-zinc-500 hover:text-zinc-300">Sign out</button>
         </div>
-        <p className="text-xs text-zinc-600 mt-0.5">{session.username} &middot; Admin</p>
+        <div className="flex items-center justify-between mt-0.5">
+          <p className="text-xs text-zinc-600">{session.username} &middot; Admin</p>
+          <p className="text-xs text-zinc-600 font-mono">{currentTime || "-"}</p>
+        </div>
       </header>
 
       <main className="flex-1 px-4 py-4 max-w-lg mx-auto w-full">
@@ -183,19 +208,30 @@ export default function AdminPage() {
 
         {tab === "signals" && (
           <div className="space-y-3">
-            <p className="text-sm text-zinc-500">{signals.length} recent signals</p>
+            <div className="flex items-center justify-between">
+              <p className="text-sm text-zinc-500">{signals.length} recent signals</p>
+              <p className="text-xs text-zinc-600 font-mono">{currentTime || "-"}</p>
+            </div>
             {signals.length === 0 && <p className="text-sm text-zinc-600 text-center py-8">No signals yet</p>}
             {signals.map((s, i) => (
-              <div key={i} className="bg-zinc-900 rounded-lg p-3 border border-zinc-800 text-sm">
+              <div key={s.signal_id || i} className="bg-zinc-900 rounded-lg p-3 border border-zinc-800 text-sm">
                 <div className="flex justify-between">
-                  <span className="font-mono">{s.pair || "-"}</span>
+                  <span className="font-mono">{s.symbol || "-"}</span>
                   <span className={`font-medium ${s.direction === "BUY" ? "text-emerald-400" : "text-red-400"}`}>{s.direction || "-"}</span>
                 </div>
                 <div className="flex justify-between text-xs text-zinc-500 mt-1">
-                  <span>z={s.z_score?.toFixed(2) ?? "-"}</span>
-                  <span>{s.latency_ms?.toFixed(1) ?? "-"}ms</span>
-                  <span>{s.timestamp ? new Date(s.timestamp).toLocaleTimeString() : "-"}</span>
+                  <span>entry={s.expected_entry?.toFixed(5) ?? "-"}</span>
+                  <span>atr={s.atr_at_signal?.toFixed(5) ?? "-"}</span>
+                  <span>{s.generation_latency_ms?.toFixed(1) ?? "-"}ms</span>
                 </div>
+                <div className="flex justify-between text-xs text-zinc-600 mt-1">
+                  <span>SL={s.expected_sl?.toFixed(5) ?? "-"}</span>
+                  <span>TP={s.expected_tp?.toFixed(5) ?? "-"}</span>
+                  <span>{s.broker_timestamp ? new Date(s.broker_timestamp).toLocaleString() : (s.timestamp ? new Date(s.timestamp).toLocaleString() : "-")}</span>
+                </div>
+                {s.signal_id && (
+                  <div className="text-[10px] text-zinc-700 mt-1 font-mono truncate">{s.signal_id}</div>
+                )}
               </div>
             ))}
           </div>
@@ -244,7 +280,7 @@ export default function AdminPage() {
           </div>
         )}
 
-        <p className="text-xs text-zinc-700 text-center mt-4">Last updated: {lastUpdate}</p>
+        <p className="text-xs text-zinc-700 text-center mt-4">Last updated: {lastUpdate} &middot; {currentTime}</p>
       </main>
 
       <nav className="fixed bottom-0 inset-x-0 bg-zinc-900 border-t border-zinc-800 flex justify-around py-2 px-4">
