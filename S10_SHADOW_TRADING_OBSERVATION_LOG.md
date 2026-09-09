@@ -166,3 +166,46 @@ The system is operational against live market data. All 20 pairs are receiving 4
 4. EUR/AUD SELL @ 1.6088, SL 1.6137, TP 1.5918, ATR 0.002432
 
 **Verdict**: GREEN. Event chain integrity verified. All signals correctly generated, logged, and blocked from real execution.
+
+### Phase 5: Failure/Recovery Observation
+
+| Check | Result |
+|-------|--------|
+| Service restarts | **0** in 13+ hours |
+| Session persistence | **VERIFIED** — cookie survives multiple requests |
+| Dashboard refresh | **VERIFIED** — data consistent across requests |
+| MT5 connection | **STABLE** — no disconnections observed |
+| Shadow service PID | **UNCHANGED** — PID 387331 since startup |
+| Memory growth | **STABLE** — 50MB consistent |
+| Duplicate detection | **WORKING** — 18,259 duplicates correctly skipped |
+| No deliberate damage | **CONFIRMED** — observation only |
+
+### Phase 7: Demo Exit Criteria
+
+| Criterion | Status | Evidence |
+|-----------|--------|----------|
+| System remained operational | **GREEN** | 13+ hours, 0 restarts |
+| MT5 connected/recovered | **GREEN** | Bridge healthy, no disconnections |
+| Market data fresh | **GREEN** | 08:00 UTC bars for all 20 pairs |
+| Strategy processed live data | **GREEN** | 121 bars, 4 signals generated |
+| No critical unhandled exceptions | **GREEN** | 0 errors on Sep 9 |
+| No duplicate execution | **GREEN** | 18,259 duplicates correctly skipped |
+| Lifecycle events coherent | **GREEN** | 4 signals → 4 orders, 100% ID match |
+| Protection mechanisms correct | **GREEN** | Zero orders submitted, hard guard active |
+| Dashboard usable | **GREEN** | Auth, status, config, session persistence |
+| APK auth stable | **GREEN** | trim fix verified, login working |
+| State persisted | **GREEN** | state.json, bars.jsonl, signals.jsonl, intended_orders.jsonl |
+| Infrastructure healthy | **GREEN** | All 4 services active, memory stable |
+
+**FINAL DEMO VERDICT: GREEN — 12/12 criteria verified**
+
+The NestQuant Shadow Trading system has demonstrated:
+- Stable operation against live MT5 market data for 13+ hours
+- Correct signal generation (4 SELL signals with valid SL/TP)
+- Proper shadow-only execution (zero real orders)
+- Full event chain integrity (signal → order → logging)
+- Robust duplicate detection (18,259 duplicates handled)
+- Persistent dashboard sessions
+- No service restarts or crashes
+
+**System is ready for extended observation.**
