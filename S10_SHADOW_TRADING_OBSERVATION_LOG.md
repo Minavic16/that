@@ -111,3 +111,58 @@ The system is operational against live market data. All 20 pairs are receiving 4
 | Notification pipeline | Operational (Telegram not configured) |
 
 **Notes**: The "missed bar" and "clock mismatch" events are expected consequences of the 9-day gap between the previous shadow run (Aug 30) and today. Once the runner processes the current 16:00 UTC bar and waits for the next 4H bar (20:00 UTC), these gap-related events will cease. The system is functioning correctly.
+
+### Observation Period 2: 2026-09-08 20:26 UTC (Health Check)
+
+| Metric | Value |
+|--------|-------|
+| All services | **active** (dashboard, caddy, docker, shadow-live) |
+| MT5 bridge | `{"mt5_connected":true,"mt5_initialized":true,"status":"healthy"}` |
+| Shadow service PID | 387331, Memory 50MB |
+| Shadow state | 41 bars, 0 signals, updated 20:18 UTC |
+| Dashboard auth | `{"ok":true,"username":"Mindavic","role":"admin"}` |
+| Memory | 1351MB / 7941MB (17%) |
+| Disk | 31GB / 96GB (33%) |
+
+**Verdict**: All systems GREEN. No anomalies.
+
+### Observation Period 3: 2026-09-09 11:54 UTC (13h runtime)
+
+| Metric | Value |
+|--------|-------|
+| Engine uptime | 13+ hours (PID 387331, no restarts) |
+| MT5 status | Connected, healthy |
+| Market data | Fresh (08:00 UTC bars for all 20 pairs) |
+| Bars processed | 121 |
+| Signals generated | **4** (EUR/GBP, EUR/CHF, EUR/CAD, EUR/AUD — all SELL) |
+| Shadow trades | 4 intended orders (SHADOW_ONLY) |
+| Orders submitted | **0** (correct: shadow mode) |
+| Lifecycle events | 18,305 infrastructure events (18,259 duplicates expected) |
+| Errors on Sep 9 | **0** (all 20 errors from Aug 30 gap) |
+| Restarts | 0 |
+| Dashboard | Accessible, showing bars=121, signals=4 |
+| APK | Auth working |
+| Memory | 50MB (shadow service) |
+
+### Event Integrity (Phase 4)
+
+| Check | Result |
+|-------|--------|
+| Signal count | 4 |
+| Intended order count | 4 |
+| Signal → Order ID match | **100%** |
+| SL validity (SELL: SL > entry) | **4/4 valid** |
+| TP validity (SELL: TP < entry) | **4/4 valid** |
+| Strategy params consistent | **4/4** (lookback=5, atr=14, sl_mult=2.0, rrr=3.5) |
+| All SHADOW_ONLY | **4/4** |
+| Signal latency | 6.3–9.3ms (excellent) |
+| Generation latency | 7.9–9.3ms |
+| Zero orders submitted | **CONFIRMED** |
+
+**Signal Details:**
+1. EUR/GBP SELL @ 0.8582, SL 0.8599, TP 0.8523, ATR 0.000844
+2. EUR/CHF SELL @ 0.9395, SL 0.9424, TP 0.9291, ATR 0.001486
+3. EUR/CAD SELL @ 1.6006, SL 1.6048, TP 1.5859, ATR 0.002107
+4. EUR/AUD SELL @ 1.6088, SL 1.6137, TP 1.5918, ATR 0.002432
+
+**Verdict**: GREEN. Event chain integrity verified. All signals correctly generated, logged, and blocked from real execution.
