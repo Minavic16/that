@@ -108,9 +108,22 @@ All 4 are different EUR cross pairs, triggered on the same 4H bar (2026-09-08 20
 
 ---
 
-## Telegram Notification Wiring (Pending)
+## Telegram Notification Wiring (Complete)
 
 - Bot: @NQTSbot (ID: 8658869685)
-- Token: configured on VPS
-- Chat ID: **needs confirmation** — bot shows 0 updates despite user messaging
-- Next step: confirm chat ID and wire into notification pipeline
+- Token: configured
+- Chat ID: `7170946902` (David Christian)
+- Service: `nqts-bot.service` (active, running since Sep 8)
+- Signal notifier: `notifications/signal_notifier.py`
+- Integration: wired into `execution/shadow/live_runner.py`
+- Test message: sent and verified (message_id: 21)
+
+### Notification format:
+```
+🔴 SELL EUR/GBP
+Entry: 0.85820
+SL: 0.85989 | TP: 0.85229
+ATR: 0.000844 | Latency: 7.9ms
+Time: 2026-09-08T20:00:00+00:00
+ID: 8634f612-1f7c...
+```
