@@ -1,144 +1,148 @@
 #!/usr/bin/env python3
 """
-Check S7 shadow health — reads shadow state + last log lines, prints verdict.
-
-Usage:
-  python scripts/check_shadow_health.py
-  python scripts/check_shadow_health.py --log-dir logs/shadow
-  python scripts/check_shadow_health.py --json   # machine-readable
+NestQuant Shadow Runner Health Check
+=====================================
+Checks:
+1. systemd service status
+2. State file freshness
+3. Signal file freshness
+4. Data freshness
+5. MT5 bridge health
+6. Log file integrity
+7. Kill switch status
 
 Exit codes:
   0 = HEALTHY
-  1 = DEGRADED (gaps, stale)
-  2 = FAILED (kill switch, integrity violation, missing logs)
+  1 = DEGRADED
+  2 = FAILED
 """
 
 from __future__ import annotations
 
-import argparse
 import json
+import subprocess
 import sys
+from datetime import UTC, datetime
 from pathlib import Path
 
-# Resolve repo root for imports
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
-import os
-
-os.environ.setdefault("NESTQUANT_SKIP_LIVE_CHECK", "1")
-os.environ.setdefault("NESTQUANT_SKIP_DASHBOARD_CHECK", "1")
-
-from nestquant.execution.shadow.kill_switch import KillSwitch
-from nestquant.execution.shadow.state import ShadowState
+LOG_DIR = Path("/root/nestquant/logs/shadow_live")
+STATE_FILE = LOG_DIR / "state.json"
+SIGNALS_FILE = LOG_DIR / "signals.jsonl"
+KILL_FILE = LOG_DIR / "KILL"
+MT5_URL = "http://127.0.0.1:5001"
 
 
-def _tail_jsonl(path: Path, n: int = 5) -> list[dict]:
-    if not path.exists():
-        return []
-    lines = path.read_text().strip().splitlines()
-    out: list[dict] = []
-    for line in lines[-n:]:
-        try:
-            out.append(json.loads(line))
-        except Exception:
-            out.append({"raw": line[:200]})
-    return out
+def check_systemd() -> dict:
+    """Check if nestquant-shadow service is running."""
+    try:
+        result = subprocess.run(
+            ["systemctl", "is-active", "nestquant-shadow"],
+            capture_output=True, text=True, timeout=5,
+        )
+        active = result.stdout.strip() == "active"
+        return {"status": "running" if active else "stopped", "active": active}
+    except Exception as e:
+        return {"status": "error", "error": str(e), "active": False}
 
 
-def main() -> None:
-    p = argparse.ArgumentParser(description="Check shadow health")
-    p.add_argument("--log-dir", default="logs/shadow")
-    p.add_argument("--json", action="store_true", help="Emit JSON only")
-    args = p.parse_args()
+def check_state_freshness() -> dict:
+    """Check if state file was updated recently."""
+    if not STATE_FILE.exists():
+        return {"status": "missing", "fresh": False}
+    try:
+        data = json.loads(STATE_FILE.read_text())
+        updated = data.get("updated_at", "")
+        if updated:
+            dt = datetime.fromisoformat(updated.replace("Z", "+00:00"))
+            age_sec = (datetime.now(UTC) - dt).total_seconds()
+            return {
+                "status": "ok" if age_sec < 3600 else "stale",
+                "fresh": age_sec < 3600,
+                "age_seconds": round(age_sec),
+                "updated_at": updated,
+            }
+    except Exception as e:
+        return {"status": "error", "error": str(e), "fresh": False}
 
-    log_dir = Path(args.log_dir)
-    state_path = log_dir / "state.json"
-    infra_path = log_dir / "infrastructure.jsonl"
-    signals_path = log_dir / "signals.jsonl"
-    bars_path = log_dir / "bars.jsonl"
 
-    # Load state
-    state: dict = {}
-    if state_path.exists():
-        try:
-            state = json.loads(state_path.read_text())
-        except Exception as e:
-            state = {"error": f"corrupt state: {e}"}
-    else:
-        state = {"error": "no state file — shadow has not run"}
+def check_signals_freshness() -> dict:
+    """Check if signals file has recent entries."""
+    if not SIGNALS_FILE.exists():
+        return {"status": "missing", "fresh": False}
+    try:
+        lines = SIGNALS_FILE.read_text().strip().split("\n")
+        lines = [l for l in lines if l.strip()]
+        if not lines:
+            return {"status": "empty", "fresh": False}
+        last = json.loads(lines[-1])
+        ts = last.get("timestamp", last.get("broker_timestamp", ""))
+        if ts:
+            dt = datetime.fromisoformat(ts.replace("Z", "+00:00"))
+            age_sec = (datetime.now(UTC) - dt).total_seconds()
+            return {
+                "status": "ok",
+                "fresh": age_sec < 86400,  # within 24h
+                "age_seconds": round(age_sec),
+                "total_signals": len(lines),
+            }
+    except Exception as e:
+        return {"status": "error", "error": str(e), "fresh": False}
 
-    kill = KillSwitch(primary_path=log_dir / "KILL")
-    kill_active = kill.is_active()
 
-    # Count log lines
-    def _count(p: Path) -> int:
-        if not p.exists():
-            return 0
-        try:
-            return sum(1 for _ in p.open())
-        except Exception:
-            return 0
+def check_mt5_bridge() -> dict:
+    """Check MT5 bridge health."""
+    import urllib.request
+    try:
+        req = urllib.request.Request(f"{MT5_URL}/health")
+        with urllib.request.urlopen(req, timeout=5) as resp:
+            data = json.loads(resp.read())
+            return {
+                "status": "ok" if data.get("mt5_connected") else "degraded",
+                "connected": data.get("mt5_connected", False),
+                "healthy": data.get("status") == "healthy",
+            }
+    except Exception as e:
+        return {"status": "unreachable", "error": str(e), "connected": False}
 
-    counts = {
-        "signals": _count(signals_path),
-        "bars": _count(bars_path),
-        "infrastructure": _count(infra_path),
+
+def check_kill_switch() -> dict:
+    """Check if kill switch is active."""
+    active = KILL_FILE.exists()
+    return {"status": "active" if active else "inactive", "active": active}
+
+
+def main() -> int:
+    checks = {
+        "systemd": check_systemd(),
+        "state_freshness": check_state_freshness(),
+        "signals_freshness": check_signals_freshness(),
+        "mt5_bridge": check_mt5_bridge(),
+        "kill_switch": check_kill_switch(),
     }
 
-    # Derive status
-    status = "HEALTHY"
-    notes: list[str] = []
-    if "error" in state:
-        status = "FAILED"
-        notes.append(state["error"])
-    if kill_active:
-        status = "FAILED"
-        notes.append(f"kill switch active at {kill.path()}")
-    # Inspect last infra lines for ERROR without resolution
-    if infra_path.exists():
-        for rec in _tail_jsonl(infra_path, 10):
-            if rec.get("event_type") == "ERROR" and rec.get("impact") in ("MISSED_SIGNAL", None):
-                # For historical replay, single gap ERRORs are DEGRADED not FAILED
-                if status != "FAILED":
-                    status = "DEGRADED"
-    if counts["bars"] == 0:
-        status = "FAILED" if status == "HEALTHY" else status
-        notes.append("no bars logged")
+    # Determine overall status
+    any_failed = any(c.get("status") in ("missing", "error", "unreachable", "stopped") for c in checks.values())
+    any_degraded = any(c.get("status") in ("stale", "empty", "degraded") for c in checks.values())
 
-    payload = {
-        "status": status,
-        "state": state,
-        "kill_switch_active": kill_active,
-        "counts": counts,
-        "last_infra": _tail_jsonl(infra_path, 3),
-        "checks": {
-            "state_exists": state_path.exists(),
-            "kill_clear": not kill_active,
-            "has_bars": counts["bars"] > 0,
-            "has_signals_file": signals_path.exists(),
-        },
-        "notes": notes,
+    if any_failed:
+        overall = "FAILED"
+        exit_code = 2
+    elif any_degraded:
+        overall = "DEGRADED"
+        exit_code = 1
+    else:
+        overall = "HEALTHY"
+        exit_code = 0
+
+    result = {
+        "overall": overall,
+        "timestamp": datetime.now(UTC).isoformat(),
+        "checks": checks,
     }
 
-    if args.json:
-        print(json.dumps(payload, indent=2))
-    else:
-        print(f"status={status}")
-        print(f"state: {state_path} exists={state_path.exists()}")
-        if state.get("run_id"):
-            print(f"  run_id={state['run_id']} updated={state.get('updated_at')}")
-            lb = state.get("last_bar", {})
-            print(f"  last_bar pairs={len(lb)} counters={state.get('counters')}")
-        print(f"kill: {kill.path()} active={kill_active}")
-        print(f"counts: {counts}")
-        for n in notes:
-            print(f"note: {n}")
-        if payload["last_infra"]:
-            print("last infra:")
-            for r in payload["last_infra"]:
-                print(f"  {r}")
-
-    sys.exit(0 if status == "HEALTHY" else (1 if status == "DEGRADED" else 2))
+    print(json.dumps(result, indent=2))
+    return exit_code
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

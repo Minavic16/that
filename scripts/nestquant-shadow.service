@@ -1,0 +1,33 @@
+[Unit]
+Description=NestQuant Shadow Signal Runner
+After=network.target docker.service
+Wants=docker.service
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/root/nestquant
+ExecStart=/usr/bin/python3 /root/nestquant/scripts/run_live_shadow.py --use-wine-flask --log-dir /root/nestquant/logs/shadow_live --poll 60
+Restart=on-failure
+RestartSec=30
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=nestquant-shadow
+
+# Environment
+Environment=NESTQUANT_SKIP_LIVE_CHECK=1
+Environment=NESTQUANT_SKIP_DASHBOARD_CHECK=1
+Environment=PYTHONUNBUFFERED=1
+
+# Safety limits
+LimitNOFILE=65536
+MemoryMax=512M
+CPUQuota=50%
+
+# Shutdown
+TimeoutStopSec=30
+KillMode=mixed
+KillSignal=SIGTERM
+
+[Install]
+WantedBy=multi-user.target
