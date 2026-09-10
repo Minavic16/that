@@ -15,8 +15,9 @@ export const GET = withAuth(async (req: NextRequest) => {
       try { metrics = JSON.parse(readFileSync(METRICS_FILE, "utf8")); } catch { /* ignore */ }
     }
 
-    // Fetch MT5 health
+    // Fetch MT5 health + account info
     let mt5: Record<string, unknown> = { mt5_connected: false, status: "unreachable" };
+    let mt5Account: Record<string, unknown> = {};
     try {
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 5000);
@@ -27,6 +28,18 @@ export const GET = withAuth(async (req: NextRequest) => {
       clearTimeout(timeout);
       if (res.ok) mt5 = await res.json();
     } catch { /* MT5 unreachable */ }
+
+    // Fetch account info from MT5 bridge
+    try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 5000);
+      const res = await fetch(`${MT5_URL}/account`, {
+        signal: controller.signal,
+        cache: "no-store",
+      });
+      clearTimeout(timeout);
+      if (res.ok) mt5Account = await res.json();
+    } catch { /* account endpoint unreachable */ }
 
     // Read shadow runner state
     let state: Record<string, unknown> = {};
@@ -110,16 +123,22 @@ export const GET = withAuth(async (req: NextRequest) => {
       orders_blocked: zeroOrders.blocked_attempts,
       open_positions: (trading.open_positions as number) || 0,
 
-      // Real account metrics (replaces hardcoded zeros)
-      equity: (account.current_equity as number) || 0,
-      balance: (account.current_balance as number) || 0,
-      peak_equity: (account.peak_equity as number) || 0,
-      starting_capital: (account.starting_capital as number) || 0,
+      // Real account metrics — prefer live MT5 data, fallback to Python metrics
+      equity: (mt5Account.equity as number) || (account.current_equity as number) || 0,
+      balance: (mt5Account.balance as number) || (account.current_balance as number) || 0,
+      peak_equity: (account.peak_equity as number) || (mt5Account.equity as number) || 0,
+      starting_capital: (account.starting_capital as number) || (mt5Account.balance as number) || 0,
 
       // P&L
-      total_pnl: (pnl.total_pnl as number) || 0,
+      total_pnl: (mt5Account.profit as number) || (pnl.total_pnl as number) || 0,
       daily_pnl: (pnl.daily_pnl as number) || 0,
       total_return_pct: (pnl.total_return_pct as number) || 0,
+
+      // Margin
+      margin_used: (mt5Account.margin as number) || 0,
+      free_margin: (mt5Account.free_margin as number) || 0,
+      leverage: (mt5Account.leverage as number) || 0,
+      margin_level: (mt5Account.margin_level as number) || 0,
 
       // Drawdown
       current_drawdown_pct: (dd.current_drawdown_pct as number) || 0,
