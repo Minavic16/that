@@ -22,7 +22,7 @@ from typing import Optional
 
 import pandas as pd
 
-from nestquant.execution.contracts import Direction, OrderRequest
+from nestquant.execution.contracts import Direction, OrderRequest, TradeIntent, RiskDecision
 from nestquant.execution.shadow.health import HealthMonitor
 from nestquant.execution.shadow.kill_switch import KillSwitch
 from nestquant.execution.shadow.logger import ShadowLogger
@@ -39,6 +39,8 @@ from nestquant.execution.shadow.signal_generator import (
 )
 from nestquant.execution.shadow.state import ShadowState
 from nestquant.execution.shadow.wine_flask_adapter import WineFlaskExecutionAdapter
+from nestquant.execution.risk_guard import RiskGuard, RiskGuardConfig
+from nestquant.config.constitution import CONSTITUTION
 
 logger = logging.getLogger(__name__)
 
@@ -67,7 +69,7 @@ class LiveExecutionRunner:
         pairs: list[str],
         poll_interval: int = 5,
         log_dir: str = "logs/shadow_live",
-        risk_per_trade: float = 0.003,
+        risk_per_trade: float = CONSTITUTION.risk_per_trade_pct,
         initial_balance: float = 200.0,
         enable_execution: bool = False,
     ) -> None:
@@ -86,11 +88,20 @@ class LiveExecutionRunner:
         self.logger = ShadowLogger(str(self.log_dir))
 
         self.generator = ShadowCausalSignalGenerator()
+
+        # Risk gate — constitution-derived, enforced on every signal
+        risk_config = RiskGuardConfig(
+            account_balance=initial_balance,
+            risk_pct=risk_per_trade,
+        )
+        self.risk_guard = RiskGuard(config=risk_config)
+
         self._iteration = 0
         self._open_positions: dict[str, dict] = {}  # pair → position info
         self._order_count = 0
         self._filled_count = 0
         self._rejected_count = 0
+        self._risk_rejected_count = 0
         self._closed_count = 0
 
     def _is_weekend_gap(self, current_broker: datetime, last_broker: datetime) -> bool:
@@ -204,12 +215,38 @@ class LiveExecutionRunner:
                 )
 
     def _execute_signal(self, signal: ShadowSignalRecord) -> None:
-        """Convert signal to order and execute."""
-        # Build OrderRequest
+        """Convert signal to order and execute — RISK GATE ENFORCED."""
+        # Build TradeIntent for risk evaluation
+        intent = TradeIntent(
+            pair=signal.symbol,
+            direction=Direction.BUY if signal.direction == "BUY" else Direction.SELL,
+            signal_strength=1.0,
+            entry_price=signal.expected_entry,
+            stop_loss=signal.expected_sl,
+            take_profit=signal.expected_tp,
+            strategy="breakout",
+            policy_version="constitution-1.0.0",
+            timestamp=datetime.now(timezone.utc),
+        )
+
+        # RISK GATE — evaluate before any order
+        risk_decision = self.risk_guard.evaluate(intent)
+
+        if not risk_decision.approved:
+            self._risk_rejected_count += 1
+            self.logger.log_infrastructure(
+                "WARNING",
+                f"RISK_REJECTED: {signal.direction} {signal.symbol} "
+                f"reason={risk_decision.reason}",
+                impact="ORDER_BLOCKED",
+            )
+            return
+
+        # Build OrderRequest with risk-approved lot size
         request = OrderRequest(
             pair=signal.symbol,
             direction=Direction.BUY if signal.direction == "BUY" else Direction.SELL,
-            lot_size=self._compute_lot_size(signal.expected_entry, signal.expected_sl),
+            lot_size=risk_decision.lot_size,
             entry_price=signal.expected_entry,
             stop_loss=signal.expected_sl,
             take_profit=signal.expected_tp,
@@ -424,6 +461,7 @@ class LiveExecutionRunner:
             "pairs": len(self.pairs),
             "adapter": self.adapter.name,
             "risk_per_trade": self.risk_per_trade,
+            "risk_source": "constitution",
             "magic": MAGIC_NUMBER,
         })
 
@@ -468,6 +506,7 @@ class LiveExecutionRunner:
             "orders_submitted": self._order_count,
             "orders_filled": self._filled_count,
             "orders_rejected": self._rejected_count,
+            "risk_rejected": self._risk_rejected_count,
             "positions_closed": self._closed_count,
         })
 
@@ -477,6 +516,7 @@ class LiveExecutionRunner:
             "orders_submitted": self._order_count,
             "orders_filled": self._filled_count,
             "orders_rejected": self._rejected_count,
+            "risk_rejected": self._risk_rejected_count,
             "positions_closed": self._closed_count,
             "health": self.health.snapshot(),
         }
