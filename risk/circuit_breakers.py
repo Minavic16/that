@@ -2,15 +2,25 @@
 Circuit breaker suite for live trading risk management.
 Each breaker is independent: "pause" blocks new entries but leaves existing trades
 to run to SL/TP. "hard_stop" flattens all and halts.
+
+State persistence: breaker state is persisted to a JSON file via atomic
+writes (temp + rename). On restart, state is loaded from the file.
+Corrupted state is logged and start-fresh (corrupt file preserved for forensics).
 """
 
 from __future__ import annotations
 
+import json
+import logging
+import tempfile
 from collections import deque
 from datetime import UTC, datetime
+from pathlib import Path
 from typing import Optional
 
 import numpy as np
+
+logger = logging.getLogger(__name__)
 
 
 class BaseBreaker:
@@ -39,20 +49,21 @@ class BaseBreaker:
         return list(self._events)
 
     def _trigger(self, event_type: str, msg: str, value: float) -> None:
-        self._events.append(
-            {
-                "breaker": self.name,
-                "type": event_type,
-                "message": msg,
-                "value": value,
-                "timestamp": datetime.now(UTC).isoformat(),
-            }
-        )
+        event = {
+            "breaker": self.name,
+            "type": event_type,
+            "message": msg,
+            "value": value,
+            "timestamp": datetime.now(UTC).isoformat(),
+        }
+        self._events.append(event)
+        logger.warning("CIRCUIT_BREAKER_TRIGGERED: %s [%s] %s", self.name, event_type, msg)
 
     def reset(self) -> None:
         self._paused = False
         self._hard_stopped = False
         self._events.clear()
+        logger.info("CIRCUIT_BREAKER_RESET: %s", self.name)
 
     def pause(self) -> None:
         self._paused = True
@@ -75,6 +86,21 @@ class BaseBreaker:
             "events": self._events[-5:] if self._events else [],
             "event_count": len(self._events),
         }
+
+    def to_dict(self) -> dict:
+        """Serialize breaker state for persistence."""
+        return {
+            "name": self.name,
+            "paused": self._paused,
+            "hard_stopped": self._hard_stopped,
+            "events": self._events[-20:],  # keep last 20 events
+        }
+
+    def load_dict(self, data: dict) -> None:
+        """Restore breaker state from persistence."""
+        self._paused = data.get("paused", False)
+        self._hard_stopped = data.get("hard_stopped", False)
+        self._events = data.get("events", [])
 
 
 class WinRateBreaker(BaseBreaker):
@@ -120,6 +146,17 @@ class WinRateBreaker(BaseBreaker):
         )
         s["total_trades_recorded"] = len(self._results)
         return s
+
+    def to_dict(self) -> dict:
+        d = super().to_dict()
+        d["results"] = list(self._results)
+        d["window_20"] = self.window_20
+        d["window_30"] = self.window_30
+        return d
+
+    def load_dict(self, data: dict) -> None:
+        super().load_dict(data)
+        self._results = deque(data.get("results", []), maxlen=30)
 
 
 class SlippageBreaker(BaseBreaker):
@@ -181,6 +218,20 @@ class SlippageBreaker(BaseBreaker):
         )
         return s
 
+    def to_dict(self) -> dict:
+        d = super().to_dict()
+        d["slippages"] = list(self._slippages)
+        d["consecutive_streak"] = self._consecutive_streak
+        d["consecutive_threshold"] = self.consecutive_threshold
+        d["consecutive_count"] = self.consecutive_count
+        d["avg_10_threshold"] = self.avg_10_threshold
+        return d
+
+    def load_dict(self, data: dict) -> None:
+        super().load_dict(data)
+        self._slippages = deque(data.get("slippages", []), maxlen=10)
+        self._consecutive_streak = data.get("consecutive_streak", 0)
+
 
 class DrawdownPaceBreaker(BaseBreaker):
     """Hard stop if DD arrives too fast (the real failure signature).
@@ -231,6 +282,21 @@ class DrawdownPaceBreaker(BaseBreaker):
         s["current_dd"] = round(self._current_dd, 2)
         return s
 
+    def to_dict(self) -> dict:
+        d = super().to_dict()
+        d["trade_count"] = self._trade_count
+        d["current_dd"] = self._current_dd
+        d["soft_dd"] = self.soft_dd
+        d["soft_trades"] = self.soft_trades
+        d["hard_dd"] = self.hard_dd
+        d["hard_trades"] = self.hard_trades
+        return d
+
+    def load_dict(self, data: dict) -> None:
+        super().load_dict(data)
+        self._trade_count = data.get("trade_count", 0)
+        self._current_dd = data.get("current_dd", 0.0)
+
 
 class ProfitFactorBreaker(BaseBreaker):
     """Pauses if trailing PF drops below 1.0 (edge may be gone)."""
@@ -268,6 +334,17 @@ class ProfitFactorBreaker(BaseBreaker):
         s["trades_in_window"] = len(self._pnls)
         return s
 
+    def to_dict(self) -> dict:
+        d = super().to_dict()
+        d["pnls"] = list(self._pnls)
+        d["threshold"] = self.threshold
+        d["window"] = self.window
+        return d
+
+    def load_dict(self, data: dict) -> None:
+        super().load_dict(data)
+        self._pnls = deque(data.get("pnls", []), maxlen=self.window)
+
 
 class CorrelationBreaker(BaseBreaker):
     """Pauses trading when average pair correlation spikes (diversification collapses).
@@ -302,6 +379,16 @@ class CorrelationBreaker(BaseBreaker):
         s["avg_correlation"] = self._avg_correlation
         s["threshold"] = self.threshold
         return s
+
+    def to_dict(self) -> dict:
+        d = super().to_dict()
+        d["avg_correlation"] = self._avg_correlation
+        d["threshold"] = self.threshold
+        return d
+
+    def load_dict(self, data: dict) -> None:
+        super().load_dict(data)
+        self._avg_correlation = data.get("avg_correlation")
 
 
 class DrawdownDriftBreaker(BaseBreaker):
@@ -349,15 +436,31 @@ class DrawdownDriftBreaker(BaseBreaker):
         s["effective_threshold"] = round(max(self.expected_dd_pct * 2.0, self.max_drift_pct), 2)
         return s
 
+    def to_dict(self) -> dict:
+        d = super().to_dict()
+        d["current_dd"] = self._current_dd
+        d["peak"] = self._peak
+        d["balance"] = self._balance
+        d["expected_dd_pct"] = self.expected_dd_pct
+        d["max_drift_pct"] = self.max_drift_pct
+        return d
+
+    def load_dict(self, data: dict) -> None:
+        super().load_dict(data)
+        self._current_dd = data.get("current_dd", 0.0)
+        self._peak = data.get("peak", 0.0)
+        self._balance = data.get("balance", 0.0)
+
 
 class BreakerSuite:
-    """Orchestrates all circuit breakers."""
+    """Orchestrates all circuit breakers with optional file persistence."""
 
     def __init__(
         self,
         dd_expected_pct: float = 0.0,
         dd_drift_max_pct: float = 0.0,
         breaker_overrides: Optional[dict] = None,
+        persistence_path: Optional[str | Path] = None,
     ):
         overrides = breaker_overrides or {}
         wc = dict(overrides.get("winrate", {}))
@@ -377,6 +480,11 @@ class BreakerSuite:
         self.dd_drift = DrawdownDriftBreaker(**dd_conf)
         self._any_paused = False
         self._any_hard_stopped = False
+        self._persistence_path = Path(persistence_path) if persistence_path else None
+
+        # Load persisted state if available
+        if self._persistence_path:
+            self._load_state()
 
     def record_trade(
         self,
@@ -391,12 +499,14 @@ class BreakerSuite:
         self.dd_drift.record_state(equity, peak)
         if slippage_pips > 0:
             self.slippage.record_slippage(slippage_pips)
+        self._save_state()
 
     def record_dd_state(self, balance: float, peak: float) -> None:
         self.dd_drift.record_state(balance, peak)
 
     def update_correlation(self, corr_matrix: np.ndarray) -> None:
         self.correlation.update_matrix(corr_matrix)
+        self._save_state()
 
     def check_all(self) -> list[dict]:
         """Run all breaker checks. Returns list of trigger events."""
@@ -413,6 +523,8 @@ class BreakerSuite:
                 events.extend(b.events[-1:])
         self._any_paused = any(b.paused for b in self.breakers)
         self._any_hard_stopped = any(b.hard_stopped for b in self.breakers)
+        if events:
+            self._save_state()
         return events
 
     @property
@@ -436,10 +548,73 @@ class BreakerSuite:
             "any_paused": self._any_paused,
             "any_hard_stopped": self._any_hard_stopped,
             "breakers": {b.name: b.status() for b in self.breakers},
+            "persistence_path": str(self._persistence_path) if self._persistence_path else None,
         }
+
+    def save(self) -> None:
+        """Explicitly persist current state to disk."""
+        self._save_state()
+
+    def load(self) -> None:
+        """Explicitly load state from disk."""
+        self._load_state()
 
     def reset(self) -> None:
         for b in self.breakers:
             b.reset()
         self._any_paused = False
         self._any_hard_stopped = False
+        if self._persistence_path:
+            self._save_state()
+        logger.info("CIRCUIT_BREAKER_SUITE_RESET: all breakers reset")
+
+    # ------------------------------------------------------------------
+    # Persistence
+    # ------------------------------------------------------------------
+
+    def _save_state(self) -> None:
+        """Persist all breaker state to file via atomic write."""
+        if not self._persistence_path:
+            return
+        payload = {
+            "version": 1,
+            "saved_at": datetime.now(UTC).isoformat(),
+            "breakers": {b.name: b.to_dict() for b in self.breakers},
+        }
+        self._persistence_path.parent.mkdir(parents=True, exist_ok=True)
+        try:
+            with tempfile.NamedTemporaryFile(
+                mode="w", delete=False, dir=str(self._persistence_path.parent), encoding="utf-8"
+            ) as tmp:
+                json.dump(payload, tmp, indent=2, default=str)
+                tmp_path = Path(tmp.name)
+            tmp_path.replace(self._persistence_path)
+        except Exception as e:
+            logger.error("CIRCUIT_BREAKER_PERSIST_FAILED: %s", e)
+
+    def _load_state(self) -> None:
+        """Load breaker state from file. Corrupted state → start fresh."""
+        if not self._persistence_path or not self._persistence_path.exists():
+            return
+        try:
+            data = json.loads(self._persistence_path.read_text())
+            if data.get("version") != 1:
+                logger.warning("CIRCUIT_BREAKER_STATE_VERSION_MISMATCH: starting fresh")
+                return
+            breaker_data = data.get("breakers", {})
+            for b in self.breakers:
+                if b.name in breaker_data:
+                    b.load_dict(breaker_data[b.name])
+            self._any_paused = any(b.paused for b in self.breakers)
+            self._any_hard_stopped = any(b.hard_stopped for b in self.breakers)
+            logger.info(
+                "CIRCUIT_BREAKER_STATE_LOADED: paused=%s hard_stopped=%s saved_at=%s",
+                self._any_paused, self._any_hard_stopped, data.get("saved_at"),
+            )
+        except (json.JSONDecodeError, KeyError, TypeError) as e:
+            logger.error("CIRCUIT_BREAKER_STATE_CORRUPT: %s — starting fresh, preserving corrupt file", e)
+            try:
+                corrupt_path = self._persistence_path.with_suffix(".corrupt.json")
+                self._persistence_path.rename(corrupt_path)
+            except Exception:
+                pass
