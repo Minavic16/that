@@ -20,6 +20,22 @@ interface HealthData {
   mt5_connected: boolean;
   open_positions: number;
   orders_submitted: number;
+  equity: number;
+  balance: number;
+  peak_equity: number;
+  starting_capital: number;
+  total_pnl: number;
+  daily_pnl: number;
+  total_return_pct: number;
+  current_drawdown_pct: number;
+  max_drawdown_pct: number;
+  total_trades: number;
+  win_rate: number;
+  profit_factor: number;
+  risk_per_trade_pct: number;
+  max_drawdown_limit_pct: number;
+  runner_health: string;
+  last_evaluation: string | null;
   notes: string[];
 }
 
@@ -149,6 +165,7 @@ export default function DashboardPage() {
       </header>
 
       <main className="flex-1 px-4 py-4 space-y-4 max-w-lg mx-auto w-full">
+        {/* System Status */}
         <div className="bg-zinc-900 rounded-xl p-4 border border-zinc-800">
           <div className="flex items-center gap-2 mb-3">
             <StatusDot ok={isHealthy} />
@@ -203,6 +220,104 @@ export default function DashboardPage() {
                   <span className="text-emerald-400">off</span>
                 )}
               </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Account Overview */}
+        <div className="bg-zinc-900 rounded-xl p-4 border border-zinc-800">
+          <h2 className="text-sm font-medium mb-3">Account</h2>
+          <div className="grid grid-cols-2 gap-3 text-sm">
+            <div>
+              <p className="text-zinc-500 text-xs">Equity</p>
+              <p className="font-mono text-lg">${(health?.equity ?? 0).toLocaleString()}</p>
+            </div>
+            <div>
+              <p className="text-zinc-500 text-xs">Balance</p>
+              <p className="font-mono">${(health?.balance ?? 0).toLocaleString()}</p>
+            </div>
+            <div>
+              <p className="text-zinc-500 text-xs">Starting Capital</p>
+              <p className="font-mono">${(health?.starting_capital ?? 0).toLocaleString()}</p>
+            </div>
+            <div>
+              <p className="text-zinc-500 text-xs">Peak Equity</p>
+              <p className="font-mono">${(health?.peak_equity ?? 0).toLocaleString()}</p>
+            </div>
+          </div>
+        </div>
+
+        {/* P&L */}
+        <div className="bg-zinc-900 rounded-xl p-4 border border-zinc-800">
+          <h2 className="text-sm font-medium mb-3">Profit & Loss</h2>
+          <div className="grid grid-cols-2 gap-3 text-sm">
+            <div>
+              <p className="text-zinc-500 text-xs">Total P&L</p>
+              <p className={`font-mono ${(health?.total_pnl ?? 0) >= 0 ? "text-emerald-400" : "text-red-400"}`}>
+                ${(health?.total_pnl ?? 0).toLocaleString()}
+              </p>
+            </div>
+            <div>
+              <p className="text-zinc-500 text-xs">Daily P&L</p>
+              <p className={`font-mono ${(health?.daily_pnl ?? 0) >= 0 ? "text-emerald-400" : "text-red-400"}`}>
+                ${(health?.daily_pnl ?? 0).toLocaleString()}
+              </p>
+            </div>
+            <div>
+              <p className="text-zinc-500 text-xs">Total Return</p>
+              <p className={`font-mono ${(health?.total_return_pct ?? 0) >= 0 ? "text-emerald-400" : "text-red-400"}`}>
+                {(health?.total_return_pct ?? 0).toFixed(2)}%
+              </p>
+            </div>
+            <div>
+              <p className="text-zinc-500 text-xs">Open P&L</p>
+              <p className="font-mono">${(health?.open_positions ?? 0) > 0 ? "—" : "0"}</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Drawdown */}
+        <div className="bg-zinc-900 rounded-xl p-4 border border-zinc-800">
+          <h2 className="text-sm font-medium mb-3">Drawdown</h2>
+          <div className="grid grid-cols-2 gap-3 text-sm">
+            <div>
+              <p className="text-zinc-500 text-xs">Current DD</p>
+              <p className="font-mono text-amber-400">{(health?.current_drawdown_pct ?? 0).toFixed(2)}%</p>
+            </div>
+            <div>
+              <p className="text-zinc-500 text-xs">Max DD</p>
+              <p className="font-mono text-amber-400">{(health?.max_drawdown_pct ?? 0).toFixed(2)}%</p>
+            </div>
+            <div>
+              <p className="text-zinc-500 text-xs">DD Limit</p>
+              <p className="font-mono">{(health?.max_drawdown_limit_pct ?? 8).toFixed(1)}%</p>
+            </div>
+            <div>
+              <p className="text-zinc-500 text-xs">DD Remaining</p>
+              <p className="font-mono">{Math.max(0, (health?.max_drawdown_limit_pct ?? 8) - (health?.current_drawdown_pct ?? 0)).toFixed(2)}%</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Trading */}
+        <div className="bg-zinc-900 rounded-xl p-4 border border-zinc-800">
+          <h2 className="text-sm font-medium mb-3">Trading</h2>
+          <div className="grid grid-cols-2 gap-3 text-sm">
+            <div>
+              <p className="text-zinc-500 text-xs">Total Trades</p>
+              <p className="font-mono">{health?.total_trades ?? 0}</p>
+            </div>
+            <div>
+              <p className="text-zinc-500 text-xs">Win Rate</p>
+              <p className="font-mono">{(health?.win_rate ?? 0).toFixed(1)}%</p>
+            </div>
+            <div>
+              <p className="text-zinc-500 text-xs">Profit Factor</p>
+              <p className="font-mono">{(health?.profit_factor ?? 0).toFixed(3)}</p>
+            </div>
+            <div>
+              <p className="text-zinc-500 text-xs">Risk/Trade</p>
+              <p className="font-mono">{((health?.risk_per_trade_pct ?? 0.0015) * 100).toFixed(2)}%</p>
             </div>
           </div>
         </div>
