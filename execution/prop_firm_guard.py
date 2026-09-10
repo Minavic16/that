@@ -23,9 +23,9 @@ from dataclasses import dataclass
 from datetime import UTC, date, datetime
 from typing import Optional
 
-from config.constitution import CONSTITUTION
-from execution.risk_guard import RiskGuard, RiskGuardConfig
-from risk.circuit_breakers import BreakerSuite
+from nestquant.config.constitution import CONSTITUTION
+from nestquant.execution.risk_guard import RiskGuard, RiskGuardConfig
+from nestquant.risk.circuit_breakers import BreakerSuite
 
 
 # ---------------------------------------------------------------------------
