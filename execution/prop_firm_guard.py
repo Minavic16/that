@@ -23,55 +23,57 @@ from dataclasses import dataclass
 from datetime import UTC, date, datetime
 from typing import Optional
 
+from config.constitution import CONSTITUTION
 from execution.risk_guard import RiskGuard, RiskGuardConfig
 from risk.circuit_breakers import BreakerSuite
 
 
 # ---------------------------------------------------------------------------
-# Prop Firm Risk Guard Configuration
+# Prop Firm Risk Guard Configuration — derives from constitution
 # ---------------------------------------------------------------------------
 
 
 @dataclass(frozen=True)
 class PropFirmConfig:
-    """Configuration calibrated for a $200K prop firm evaluation.
+    """Configuration calibrated for a prop firm evaluation.
 
-    Standard rules:
-      - Starting balance: $200,000
-      - Max daily loss: 4% ($8,000)
-      - Max total drawdown: 10% ($20,000)
-      - Profit target: 10% ($20,000)
-      - Min trading days: 5
-      - Max risk per trade: 1% of current equity
+    Shared limits are derived from the constitution.
+    Prop-firm-specific limits (absolute $, profit target, etc.) are
+    defined here.
     """
 
     starting_balance: float = 200_000.0
     leverage: int = 100
 
-    # Risk per trade
-    risk_pct: float = 0.01  # 1% of current equity per trade
+    # Risk per trade — FROM CONSTITUTION (not prop firm's 1%)
+    risk_pct: float = CONSTITUTION.risk_per_trade_pct
 
-    # Daily loss limit (prop firm rule)
-    max_daily_loss_absolute: float = 8_000.0  # $8,000 = 4% of $200K
-    max_daily_loss_pct: float = 0.04  # 4% of equity
+    # Daily loss limit — FROM CONSTITUTION (percentage)
+    max_daily_loss_pct: float = CONSTITUTION.max_daily_loss_pct
+    # Prop firm absolute dollar limit (derived from constitution pct × balance)
+    max_daily_loss_absolute: float = 0.0  # computed in __post_init__
 
-    # Total drawdown limit (prop firm rule)
-    max_total_drawdown_absolute: float = 20_000.0  # $20,000 = 10% of $200K
-    max_total_drawdown_pct: float = 0.10  # 10% of equity
+    # Total drawdown limit — FROM CONSTITUTION (percentage)
+    max_total_drawdown_pct: float = CONSTITUTION.max_drawdown_pct
+    # Prop firm absolute dollar limit (derived from constitution pct × balance)
+    max_total_drawdown_absolute: float = 0.0  # computed in __post_init__
 
-    # Profit target
-    profit_target_absolute: float = 20_000.0  # $20,000 = 10% of $200K
+    # Profit target (prop-firm specific)
+    profit_target_absolute: float = 20_000.0
     profit_target_pct: float = 0.10
 
-    # Consistency rule: max daily profit as % of total profit
-    max_daily_profit_pct_of_total: float = 0.50  # No single day > 50% of total profit
+    # Consistency rule
+    max_daily_profit_pct_of_total: float = 0.50
 
-    # Position limits
-    max_concurrent_positions: int = 5
-    max_position_size_per_pair: float = 1.0
-    max_total_exposure: float = 5.0
+    # Position limits — FROM CONSTITUTION
+    max_concurrent_positions: int = CONSTITUTION.max_concurrent_positions
+    max_position_size_per_pair: float = CONSTITUTION.max_position_size_per_pair
+    max_total_exposure: float = CONSTITUTION.max_total_exposure
 
-    # Consecutive losing days
+    # Trade frequency — FROM CONSTITUTION
+    max_trades_per_day: int = CONSTITUTION.max_trades_per_day
+
+    # Consecutive losing days (prop-firm specific)
     max_consecutive_losing_days: int = 5
 
     # Margin safety
@@ -122,12 +124,14 @@ class PropFirmState:
     @property
     def daily_loss_remaining(self) -> float:
         """How much more can be lost today before hitting limit."""
-        return max(0.0, abs(self.daily_pnl) - 0.0) if self.daily_pnl < 0 else 0.0
+        if self.daily_pnl >= 0:
+            return 0.0
+        return max(0.0, abs(self.daily_pnl))
 
     @property
     def total_loss_remaining(self) -> float:
         """How much more can be lost total before hitting limit."""
-        return max(0.0, self.drawdown_from_peak - 0.0) if self.drawdown_from_peak > 0 else 0.0
+        return max(0.0, self.drawdown_from_peak)
 
     def record_trade(self, pnl: float) -> None:
         """Record a completed trade."""
@@ -192,9 +196,22 @@ class PropFirmGuard(RiskGuard):
         """
         self._prop_config = prop_config or PropFirmConfig()
 
-        # Map prop config to base RiskGuardConfig
+        # Compute absolute dollar limits from constitution percentages
+        balance = self._prop_config.starting_balance
+        if self._prop_config.max_daily_loss_absolute == 0.0:
+            object.__setattr__(
+                self._prop_config, '_max_daily_loss_absolute_computed',
+                balance * CONSTITUTION.max_daily_loss_pct,
+            )
+        if self._prop_config.max_total_drawdown_absolute == 0.0:
+            object.__setattr__(
+                self._prop_config, '_max_total_drawdown_absolute_computed',
+                balance * CONSTITUTION.max_drawdown_pct,
+            )
+
+        # Map constitution-derived config to base RiskGuardConfig
         base_config = RiskGuardConfig(
-            account_balance=self._prop_config.starting_balance,
+            account_balance=balance,
             leverage=self._prop_config.leverage,
             risk_pct=self._prop_config.risk_pct,
             max_concurrent_positions=self._prop_config.max_concurrent_positions,
@@ -202,6 +219,7 @@ class PropFirmGuard(RiskGuard):
             max_total_exposure=self._prop_config.max_total_exposure,
             max_daily_loss_pct=self._prop_config.max_daily_loss_pct,
             max_drawdown_pct=self._prop_config.max_total_drawdown_pct,
+            max_trades_per_day=self._prop_config.max_trades_per_day,
             margin_safety=self._prop_config.margin_safety,
             lot_step=self._prop_config.lot_step,
             min_lot=self._prop_config.min_lot,
@@ -215,8 +233,8 @@ class PropFirmGuard(RiskGuard):
 
         # Prop-firm specific state
         self._prop_state = PropFirmState(
-            starting_balance=self._prop_config.starting_balance,
-            peak_balance=self._prop_config.starting_balance,
+            starting_balance=balance,
+            peak_balance=balance,
         )
 
     @property
@@ -262,21 +280,25 @@ class PropFirmGuard(RiskGuard):
 
         # --- Prop-firm specific checks ---
 
-        # Check 8: Absolute daily loss limit (base check uses pct, this uses $)
+        # Check 8: Absolute daily loss limit (constitution-derived)
+        daily_loss_abs_limit = self._prop_config.starting_balance * CONSTITUTION.max_daily_loss_pct
         if self._prop_state.daily_pnl < 0:
             daily_loss_abs = abs(self._prop_state.daily_pnl)
-            if daily_loss_abs > self._prop_config.max_daily_loss_absolute:
+            if daily_loss_abs > daily_loss_abs_limit:
                 return self._reject(
-                    f"Prop firm daily loss limit: "
-                    f"${daily_loss_abs:,.0f} > ${self._prop_config.max_daily_loss_absolute:,.0f}"
+                    f"Daily loss limit: "
+                    f"${daily_loss_abs:,.0f} > ${daily_loss_abs_limit:,.0f} "
+                    f"({CONSTITUTION.max_daily_loss_pct:.0%} of ${self._prop_config.starting_balance:,.0f})"
                 )
 
-        # Check 9: Total drawdown from starting balance
+        # Check 9: Total drawdown from starting balance (constitution-derived)
+        total_dd_abs_limit = self._prop_config.starting_balance * CONSTITUTION.max_drawdown_pct
         total_dd_abs = self._prop_state.drawdown_from_peak
-        if total_dd_abs > self._prop_config.max_total_drawdown_absolute:
+        if total_dd_abs > total_dd_abs_limit:
             return self._reject(
-                f"Prop firm total drawdown limit: "
-                f"${total_dd_abs:,.0f} > ${self._prop_config.max_total_drawdown_absolute:,.0f}"
+                f"Total drawdown limit: "
+                f"${total_dd_abs:,.0f} > ${total_dd_abs_limit:,.0f} "
+                f"({CONSTITUTION.max_drawdown_pct:.0%} of ${self._prop_config.starting_balance:,.0f})"
             )
 
         # Check 10: Consecutive losing days
@@ -299,6 +321,8 @@ class PropFirmGuard(RiskGuard):
     def status(self) -> dict:
         """Get comprehensive prop-firm risk status."""
         base_status = super().status()
+        daily_loss_limit = self._prop_config.starting_balance * CONSTITUTION.max_daily_loss_pct
+        total_dd_limit = self._prop_config.starting_balance * CONSTITUTION.max_drawdown_pct
         base_status.update({
             "prop_firm": {
                 "starting_balance": self._prop_config.starting_balance,
@@ -306,17 +330,19 @@ class PropFirmGuard(RiskGuard):
                 "peak_balance": self._prop_state.peak_balance,
                 "total_pnl": self._prop_state.total_pnl,
                 "daily_pnl": self._prop_state.daily_pnl,
-                "daily_loss_limit": self._prop_config.max_daily_loss_absolute,
-                "daily_loss_remaining": self._prop_config.max_daily_loss_absolute - abs(self._prop_state.daily_pnl) if self._prop_state.daily_pnl < 0 else self._prop_config.max_daily_loss_absolute,
+                "daily_loss_limit": daily_loss_limit,
+                "daily_loss_remaining": max(0, daily_loss_limit - abs(self._prop_state.daily_pnl)) if self._prop_state.daily_pnl < 0 else daily_loss_limit,
                 "total_drawdown": self._prop_state.drawdown_from_peak,
-                "total_drawdown_limit": self._prop_config.max_total_drawdown_absolute,
-                "total_drawdown_remaining": self._prop_config.max_total_drawdown_absolute - self._prop_state.drawdown_from_peak,
+                "total_drawdown_limit": total_dd_limit,
+                "total_drawdown_remaining": max(0, total_dd_limit - self._prop_state.drawdown_from_peak),
                 "profit_target": self._prop_config.profit_target_absolute,
                 "profit_progress": self._prop_state.total_pnl / self._prop_config.profit_target_absolute if self._prop_config.profit_target_absolute > 0 else 0.0,
                 "consecutive_losing_days": self._prop_state.consecutive_losing_days,
                 "max_consecutive_losing_days": self._prop_config.max_consecutive_losing_days,
                 "trade_count_today": self._prop_state.trade_count_today,
+                "max_trades_per_day": self._prop_config.max_trades_per_day,
                 "daily_reset_date": str(self._prop_state.daily_reset_date) if self._prop_state.daily_reset_date else None,
+                "constitution_source": "config.constitution.CONSTITUTION",
             },
         })
         return base_status

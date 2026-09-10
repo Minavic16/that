@@ -18,10 +18,12 @@ This module does NOT:
 
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from typing import Optional
 
+from nestquant.config.constitution import CONSTITUTION, ConstitutionRiskConfig
 from nestquant.execution.contracts import (
     RiskDecision,
     TradeIntent,
@@ -34,32 +36,41 @@ from nestquant.portfolio.position_sizer import (
 )
 from nestquant.risk.circuit_breakers import BreakerSuite
 
+logger = logging.getLogger(__name__)
+
 
 # ---------------------------------------------------------------------------
-# Risk Guard Configuration
+# Risk Guard Configuration — derives from constitution
 # ---------------------------------------------------------------------------
 
 
 @dataclass(frozen=True)
 class RiskGuardConfig:
-    """Configuration for the risk guard."""
+    """Configuration for the risk guard.
 
-    # Account
+    Defaults are derived from the constitution. Override only for
+    account-specific values (balance, leverage) that are NOT part
+    of the constitution.
+    """
+
+    # Account (not part of constitution — account-specific)
     account_balance: float = 5_000_000.0
     leverage: int = 100
 
-    # Risk per trade
-    risk_pct: float = 0.003  # 0.30% = $15,000 per 1R on $5M
+    # Risk per trade — FROM CONSTITUTION
+    risk_pct: float = CONSTITUTION.risk_per_trade_pct
 
-    # Position limits (S7 protocol section 6)
-    max_concurrent_positions: int = 10
-    max_position_size_per_pair: float = 1.0  # lots
-    max_total_exposure: float = 10.0  # lots total
+    # Position limits — FROM CONSTITUTION
+    max_concurrent_positions: int = CONSTITUTION.max_concurrent_positions
+    max_position_size_per_pair: float = CONSTITUTION.max_position_size_per_pair
+    max_total_exposure: float = CONSTITUTION.max_total_exposure
 
-    # Loss limits
-    max_daily_loss_pct: float = 0.03  # 3% of equity
-    max_drawdown_pct: float = 0.10  # 10% of equity
-    max_single_trade_loss_pct: float = 0.003  # 0.30% of equity
+    # Loss limits — FROM CONSTITUTION
+    max_daily_loss_pct: float = CONSTITUTION.max_daily_loss_pct
+    max_drawdown_pct: float = CONSTITUTION.max_drawdown_pct
+
+    # Trade frequency — FROM CONSTITUTION
+    max_trades_per_day: int = CONSTITUTION.max_trades_per_day
 
     # Margin safety
     margin_safety: float = 0.5  # Reject if margin > 50% of available
@@ -177,6 +188,13 @@ class RiskGuard:
         Returns:
             RiskDecision with approval status, lot_size, and reason.
         """
+        # Gate 0: Max trades per day
+        if self._trade_count_today >= self._config.max_trades_per_day:
+            return self._reject(
+                f"Max trades per day reached: "
+                f"{self._trade_count_today}/{self._config.max_trades_per_day}"
+            )
+
         # Gate 1: Circuit breakers
         can_trade, breaker_reason = self._breakers.can_trade
         if not can_trade:
@@ -198,7 +216,6 @@ class RiskGuard:
             )
 
         # Gate 4: Max drawdown
-        # Track current equity as starting balance + daily PnL
         current_equity = self._config.account_balance + self._daily_pnl
         current_dd = (
             (self._peak_equity - current_equity) / self._peak_equity
@@ -261,7 +278,8 @@ class RiskGuard:
         )
 
     def _reject(self, reason: str) -> RiskDecision:
-        """Create a rejection decision."""
+        """Create a rejection decision with logging."""
+        logger.warning("RISK_REJECTED: %s", reason)
         return RiskDecision(
             approved=False,
             reason=reason,
@@ -286,7 +304,14 @@ class RiskGuard:
             "daily_loss_limit": self._config.max_daily_loss_pct,
             "peak_equity": self._peak_equity,
             "trade_count_today": self._trade_count_today,
+            "max_trades_per_day": self._config.max_trades_per_day,
+            "trades_remaining_today": max(0, self._config.max_trades_per_day - self._trade_count_today),
+            "risk_per_trade_pct": self._config.risk_pct,
+            "max_drawdown_pct": self._config.max_drawdown_pct,
+            "max_total_exposure": self._config.max_total_exposure,
+            "max_position_size_per_pair": self._config.max_position_size_per_pair,
             "policy_version": self._policy_version,
+            "constitution_source": "config.constitution.CONSTITUTION",
             "breakers": self._breakers.status(),
         }
 
