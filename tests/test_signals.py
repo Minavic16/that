@@ -8,7 +8,6 @@ import pytest
 
 from nestquant.signals.base import BaseSignal, SignalResult
 from nestquant.signals.breakout import BreakoutSignal
-from nestquant.signals.structured_entry import StructuredEntrySignal
 
 
 class TestSignalResult:
@@ -82,22 +81,3 @@ class TestBreakoutSignal:
         r2 = sig.generate(sample_ohlcv, "EUR/USD")
         assert r1.direction == r2.direction
         assert r1.entry_price == r2.entry_price
-
-
-class TestStructuredEntrySignal:
-    def test_neutral_on_short_data(self):
-        df = pd.DataFrame(
-            {"open": [1.0] * 5, "high": [1.1] * 5, "low": [0.9] * 5,
-             "close": [1.0] * 5, "volume": [100] * 5},
-            index=pd.date_range("2024-01-01", periods=5, freq="1h"),
-        )
-        sig = StructuredEntrySignal()
-        result = sig.generate(df, "EUR/USD")
-        assert result.direction == "NEUTRAL"
-
-    def test_returns_signal_result(self, sample_ohlcv):
-        sig = StructuredEntrySignal()
-        result = sig.generate(sample_ohlcv, "EUR/USD")
-        assert isinstance(result, SignalResult)
-        assert result.pair == "EUR/USD"
-        assert result.direction in ("BUY", "SELL", "NEUTRAL")

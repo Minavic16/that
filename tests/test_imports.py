@@ -26,7 +26,6 @@ _SUBMODULES = [
     "nestquant.signals",
     "nestquant.signals.base",
     "nestquant.signals.breakout",
-    "nestquant.signals.structured_entry",
     "nestquant.engines",
     "nestquant.engines.base_engine",
     "nestquant.engines.backtest_engine",
