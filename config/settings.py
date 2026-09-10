@@ -286,7 +286,38 @@ def get_config() -> NestQuantConfig:
 
 
 # ── Legacy compatibility aliases ──────────────────────────────────────────────
-# These allow existing code to import from config without changes during migration
+# These allow existing code to import from config without changes during migration.
+#
+# ARCHITECTURE NOTE (2026-09-09):
+# The constants below were originally shared across all strategy families.
+# After the Strategy Identity Remediation, the canonical strategy parameters
+# are defined in:
+#   - signals/breakout.py RESEARCH_DEFAULTS (signal generation)
+#   - execution/shadow/signal_generator.py STRATEGY_PARAMS (shadow pipeline)
+#   - monitoring/canonical_identity.py (canonical contract)
+#
+# The constants in this section are LEGACY. Most are NOT imported by any
+# production execution code. They exist for backward compatibility with
+# research scripts and archived backtests.
+#
+# PRODUCTION-USED constants from this section:
+#   - SESSION_OPEN_UTC, SESSION_CLOSE_UTC (used by indicators/session.py, utils/time_utils.py)
+#
+# DEAD constants (not imported by any production code):
+#   - ATR_SL_MULTIPLIER (=3.0), RRR (=2.0), BREAKEVEN_RATIO (=1.5)
+#     These are WRONG for the canonical strategy (canonical: 2.0/3.5/0.8).
+#     Only consumer was signals/structured_entry.py (now archived).
+#   - ATR_PERIOD, MACRO_EMA_PERIOD, MACRO_TF — not imported by production
+#   - All MR_* constants — mean-reversion strategy, not breakout
+#   - All Z_* constants — Z-score strategy, not breakout
+#   - ENABLE_MACRO_FILTER, ENABLE_REGIME_FLIP, REGIME_* — not in canonical
+#   - MIN_DIVERGENCE, COMMISSION_PER_LOT, MIN_LOT_SIZE, MAX_LOT_SIZE — not imported by production
+#   - MAX_LEVERAGE, MAX_MARGIN_USAGE_PCT — not imported by production
+#   - INITIAL_BALANCE, FLOATING_LOSS_KILL_THRESHOLD, MAX_DD_PCT, etc. — not imported by production
+#
+# DO NOT REMOVE these constants without verifying every consumer.
+# If a constant's status is uncertain, DOCUMENT it rather than remove it.
+# ──────────────────────────────────────────────────────────────────────────────
 
 def _get_config_value(attr: str, default=None):
     """Get a config value, supporting both old and new import styles."""
