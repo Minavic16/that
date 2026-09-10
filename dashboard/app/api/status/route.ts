@@ -5,6 +5,7 @@ import { join } from "path";
 
 const LOG_DIR = "/root/nestquant/logs/shadow_live";
 const API_LOG = join(LOG_DIR, "api_access.log");
+const METRICS_FILE = join(LOG_DIR, "metrics.json");
 
 function logAccess(endpoint: string, user: string) {
   try {
@@ -27,6 +28,12 @@ export const GET = withAuth(async (req: NextRequest) => {
       zeroOrders = JSON.parse(readFileSync(zeroFile, "utf8"));
     }
 
+    // Read aggregated metrics
+    let metrics: Record<string, unknown> | null = null;
+    if (existsSync(METRICS_FILE)) {
+      try { metrics = JSON.parse(readFileSync(METRICS_FILE, "utf8")); } catch { /* ignore */ }
+    }
+
     let lastSignals: unknown[] = [];
     const signalsFile = join(LOG_DIR, "signals.jsonl");
     if (existsSync(signalsFile)) {
@@ -45,12 +52,21 @@ export const GET = withAuth(async (req: NextRequest) => {
       }).filter(Boolean);
     }
 
+    // Read circuit breaker status
+    let breakerStatus: Record<string, unknown> | null = null;
+    const breakerFile = join(LOG_DIR, "breaker_state.json");
+    if (existsSync(breakerFile)) {
+      try { breakerStatus = JSON.parse(readFileSync(breakerFile, "utf8")); } catch { /* ignore */ }
+    }
+
     logAccess("status", "authenticated");
     return NextResponse.json({
       state,
       zero_orders: zeroOrders,
       recent_signals: lastSignals,
       recent_bars: lastBars,
+      metrics,
+      circuit_breakers: breakerStatus,
     });
   } catch (e: unknown) {
     const msg = e instanceof Error ? e.message : "unknown error";

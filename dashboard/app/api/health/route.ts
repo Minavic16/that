@@ -5,9 +5,16 @@ import { join } from "path";
 
 const MT5_URL = process.env.MT5_API_URL || "http://127.0.0.1:5001";
 const LOG_DIR = "/root/nestquant/logs/shadow_live";
+const METRICS_FILE = join(LOG_DIR, "metrics.json");
 
 export const GET = withAuth(async (req: NextRequest) => {
   try {
+    // Read aggregated metrics (from Python monitoring layer)
+    let metrics: Record<string, unknown> | null = null;
+    if (existsSync(METRICS_FILE)) {
+      try { metrics = JSON.parse(readFileSync(METRICS_FILE, "utf8")); } catch { /* ignore */ }
+    }
+
     // Fetch MT5 health
     let mt5: Record<string, unknown> = { mt5_connected: false, status: "unreachable" };
     try {
@@ -78,25 +85,59 @@ export const GET = withAuth(async (req: NextRequest) => {
     const killFile = join(LOG_DIR, "KILL");
     if (existsSync(killFile)) killSwitchActive = true;
 
-    // Determine execution mode
-    const executionMode = "SHADOW"; // Currently always shadow
+    // Use metrics from Python monitoring layer if available
+    const account = (metrics?.account || {}) as Record<string, unknown>;
+    const pnl = (metrics?.pnl || {}) as Record<string, unknown>;
+    const dd = (metrics?.drawdown || {}) as Record<string, unknown>;
+    const trading = (metrics?.trading || {}) as Record<string, unknown>;
+    const risk = (metrics?.risk || {}) as Record<string, unknown>;
+    const execution = (metrics?.execution || {}) as Record<string, unknown>;
 
     return NextResponse.json({
-      status: mt5.status === "healthy" ? "HEALTHY" : "DEGRADED",
+      status: metrics?.health_status === "RED" ? "ERROR" : mt5.status === "healthy" ? "HEALTHY" : "DEGRADED",
       uptime_seconds: uptimeSeconds,
       bars_processed: barsProcessed,
       signals_emitted: signalsEmitted,
-      kill_switch_active: killSwitchActive,
-      data_stale: false,
+      kill_switch_active: killSwitchActive || (risk.kill_switch_active as boolean),
+      data_stale: !execution.data_freshness,
       avg_latency_ms: 0,
       p95_latency_ms: 0,
       gaps_detected: gapsDetected,
       integrity_violations: integrityViolations,
-      execution_mode: executionMode,
-      mt5_connected: mt5.mt5_connected,
+      execution_mode: (execution.execution_mode as string) || "SHADOW",
+      mt5_connected: mt5.mt5_connected || (execution.mt5_connected as boolean),
       orders_submitted: zeroOrders.orders_submitted,
       orders_blocked: zeroOrders.blocked_attempts,
-      open_positions: 0,
+      open_positions: (trading.open_positions as number) || 0,
+
+      // Real account metrics (replaces hardcoded zeros)
+      equity: (account.current_equity as number) || 0,
+      balance: (account.current_balance as number) || 0,
+      peak_equity: (account.peak_equity as number) || 0,
+      starting_capital: (account.starting_capital as number) || 0,
+
+      // P&L
+      total_pnl: (pnl.total_pnl as number) || 0,
+      daily_pnl: (pnl.daily_pnl as number) || 0,
+      total_return_pct: (pnl.total_return_pct as number) || 0,
+
+      // Drawdown
+      current_drawdown_pct: (dd.current_drawdown_pct as number) || 0,
+      max_drawdown_pct: (dd.maximum_drawdown_pct as number) || 0,
+
+      // Trading
+      total_trades: (trading.total_trades as number) || 0,
+      win_rate: (trading.win_rate as number) || 0,
+      profit_factor: (trading.profit_factor as number) || 0,
+
+      // Risk
+      risk_per_trade_pct: (risk.risk_per_trade_pct as number) || 0,
+      max_drawdown_limit_pct: (risk.max_drawdown_limit_pct as number) || 0,
+
+      // Runner
+      runner_health: (execution.runner_health as string) || "unknown",
+      last_evaluation: (execution.last_evaluation as string) || null,
+
       notes: [],
     });
   } catch (e: unknown) {
