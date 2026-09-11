@@ -1,5 +1,2 @@
-"""NestQuant knowledge base module."""
-
-from nestquant.knowledge.experiment_tracker import ExperimentTracker
-
-__all__ = ["ExperimentTracker"]
+"""Backward-compatible re-export. Canonical location: platform/knowledge/"""
+from nestquant.platform.knowledge.experiment_tracker import Experiment, ExperimentTracker
