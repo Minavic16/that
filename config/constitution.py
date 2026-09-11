@@ -1,7 +1,3 @@
-"""Backward-compatible re-export. Canonical location: platform/configuration/constitution.py"""
-from nestquant.platform.configuration.constitution import (
-    ConstitutionRiskConfig,
-    CONSTITUTION,
-)
-
-__all__ = ["ConstitutionRiskConfig", "CONSTITUTION"]
+"""Backward-compatible re-export. Canonical: platform/configuration/constitution.py"""
+from nestquant.platform.configuration.constitution import *
+from nestquant.platform.configuration.constitution import ConstitutionRiskConfig, CONSTITUTION
