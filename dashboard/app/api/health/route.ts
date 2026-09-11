@@ -32,7 +32,7 @@ export const GET = withAuth(async (req: NextRequest) => {
     // Fetch account info from MT5 bridge
     try {
       const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 5000);
+      const timeout = setTimeout(() => controller.abort(), 10000);
       const res = await fetch(`${MT5_URL}/account`, {
         signal: controller.signal,
         cache: "no-store",
