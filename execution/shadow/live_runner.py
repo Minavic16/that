@@ -83,7 +83,7 @@ class LiveShadowRunner:
             s6c = Path("research_data/s6c/S6C_causal_swing_results.json")
             if s6c.exists():
                 try:
-                    pairs = json.loads(s6c.read_text())["config"]["pairs_loaded"]
+                    pairs = _json.loads(s6c.read_text())["config"]["pairs_loaded"]
                 except Exception:
                     pairs = None
             if not pairs:
@@ -139,7 +139,9 @@ class LiveShadowRunner:
 
     def run(self) -> dict[str, Any]:
         # Load Telegram credentials from .env.telegram
-        _env_file = Path("/root/nestquant/.env.telegram")
+        _env_file = Path("/root/that/.env.telegram")
+        if not _env_file.exists():
+            _env_file = Path("/root/nestquant/.env.telegram")
         if _env_file.exists():
             for line in _env_file.read_text().splitlines():
                 if line.strip() and not line.startswith("#") and "=" in line:

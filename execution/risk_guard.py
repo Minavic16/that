@@ -278,8 +278,13 @@ class RiskGuard:
         )
 
     def _reject(self, reason: str) -> RiskDecision:
-        """Create a rejection decision with logging."""
+        """Create a rejection decision with logging and notification."""
         logger.warning("RISK_REJECTED: %s", reason)
+        try:
+            from notifications.signal_notifier import send_risk_block_alert
+            send_risk_block_alert(reason=reason)
+        except Exception:
+            pass
         return RiskDecision(
             approved=False,
             reason=reason,
