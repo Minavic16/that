@@ -112,7 +112,7 @@ export const GET = withAuth(async (req: NextRequest) => {
       bars_processed: barsProcessed,
       signals_emitted: signalsEmitted,
       kill_switch_active: killSwitchActive || (risk.kill_switch_active as boolean),
-      data_stale: !execution.data_freshness,
+      data_stale: !execution.data_freshness && !mt5.mt5_connected,
       avg_latency_ms: 0,
       p95_latency_ms: 0,
       gaps_detected: gapsDetected,
@@ -139,6 +139,10 @@ export const GET = withAuth(async (req: NextRequest) => {
       free_margin: (mt5Account.free_margin as number) || 0,
       leverage: (mt5Account.leverage as number) || 0,
       margin_level: (mt5Account.margin_level as number) || 0,
+      currency: (mt5Account.currency as string) || (account.currency as string) || "USD",
+      account_name: (mt5Account.name as string) || "",
+      account_server: (mt5Account.server as string) || "",
+      account_login: (mt5Account.login as number) || 0,
 
       // Drawdown
       current_drawdown_pct: (dd.current_drawdown_pct as number) || 0,

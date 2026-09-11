@@ -37,6 +37,14 @@ interface HealthData {
   runner_health: string;
   last_evaluation: string | null;
   notes: string[];
+  margin_used: number;
+  free_margin: number;
+  leverage: number;
+  margin_level: number;
+  currency: string;
+  account_name: string;
+  account_server: string;
+  account_login: number;
 }
 
 interface ZeroOrders {
@@ -226,23 +234,34 @@ export default function DashboardPage() {
 
         {/* Account Overview */}
         <div className="bg-zinc-900 rounded-xl p-4 border border-zinc-800">
-          <h2 className="text-sm font-medium mb-3">Account</h2>
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-sm font-medium">Account</h2>
+            {health?.account_login ? <span className="text-[10px] text-zinc-600 font-mono">#{health.account_login} · {health.account_server}</span> : null}
+          </div>
           <div className="grid grid-cols-2 gap-3 text-sm">
             <div>
               <p className="text-zinc-500 text-xs">Equity</p>
-              <p className="font-mono text-lg">${(health?.equity ?? 0).toLocaleString()}</p>
+              <p className="font-mono text-lg">{health?.currency || "$"}{(health?.equity ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
             </div>
             <div>
               <p className="text-zinc-500 text-xs">Balance</p>
-              <p className="font-mono">${(health?.balance ?? 0).toLocaleString()}</p>
+              <p className="font-mono">{health?.currency || "$"}{(health?.balance ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
             </div>
             <div>
               <p className="text-zinc-500 text-xs">Starting Capital</p>
-              <p className="font-mono">${(health?.starting_capital ?? 0).toLocaleString()}</p>
+              <p className="font-mono">{health?.currency || "$"}{(health?.starting_capital ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
             </div>
             <div>
               <p className="text-zinc-500 text-xs">Peak Equity</p>
-              <p className="font-mono">${(health?.peak_equity ?? 0).toLocaleString()}</p>
+              <p className="font-mono">{health?.currency || "$"}{(health?.peak_equity ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+            </div>
+            <div>
+              <p className="text-zinc-500 text-xs">Free Margin</p>
+              <p className="font-mono">{health?.currency || "$"}{(health?.free_margin ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+            </div>
+            <div>
+              <p className="text-zinc-500 text-xs">Leverage</p>
+              <p className="font-mono">{health?.leverage ? `${health.leverage}x` : "-"}</p>
             </div>
           </div>
         </div>
@@ -254,13 +273,13 @@ export default function DashboardPage() {
             <div>
               <p className="text-zinc-500 text-xs">Total P&L</p>
               <p className={`font-mono ${(health?.total_pnl ?? 0) >= 0 ? "text-emerald-400" : "text-red-400"}`}>
-                ${(health?.total_pnl ?? 0).toLocaleString()}
+                {health?.currency || "$"}{(health?.total_pnl ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </p>
             </div>
             <div>
               <p className="text-zinc-500 text-xs">Daily P&L</p>
               <p className={`font-mono ${(health?.daily_pnl ?? 0) >= 0 ? "text-emerald-400" : "text-red-400"}`}>
-                ${(health?.daily_pnl ?? 0).toLocaleString()}
+                {health?.currency || "$"}{(health?.daily_pnl ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </p>
             </div>
             <div>
@@ -270,8 +289,8 @@ export default function DashboardPage() {
               </p>
             </div>
             <div>
-              <p className="text-zinc-500 text-xs">Open P&L</p>
-              <p className="font-mono">${(health?.open_positions ?? 0) > 0 ? "—" : "0"}</p>
+              <p className="text-zinc-500 text-xs">Open Positions</p>
+              <p className="font-mono">{health?.open_positions ?? 0}</p>
             </div>
           </div>
         </div>
