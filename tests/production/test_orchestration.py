@@ -10,7 +10,7 @@ from typing import Optional
 
 import pytest
 
-from nestquant.execution.contracts import (
+from nestquant.core.contracts.execution_contracts import (
     ContractValidationError,
     Direction,
     ExecutionResult,
@@ -19,7 +19,7 @@ from nestquant.execution.contracts import (
     RiskDecision,
     TradeIntent,
 )
-from nestquant.execution.orchestration import (
+from nestquant.production.execution.orchestration import (
     ExecutionAdapter,
     ExecutionCoordinator,
     OrchestrationError,
@@ -656,38 +656,38 @@ class TestInputValidation:
 
 class TestNoForbiddenImports:
     def test_no_mt5_import(self):
-        import nestquant.execution.orchestration as mod
+        import nestquant.production.execution.orchestration as mod
         source = open(mod.__file__).read()
         assert "MetaTrader5" not in source
         assert "import mt5" not in source
 
     def test_no_research_import(self):
-        import nestquant.execution.orchestration as mod
+        import nestquant.production.execution.orchestration as mod
         source = open(mod.__file__).read()
         assert "from nestquant.research" not in source
         assert "import nestquant.research" not in source
 
     def test_no_strategy_import(self):
-        import nestquant.execution.orchestration as mod
+        import nestquant.production.execution.orchestration as mod
         source = open(mod.__file__).read()
         assert "from nestquant.zscore" not in source
         assert "import nestquant.zscore" not in source
 
     def test_no_logging(self):
-        import nestquant.execution.orchestration as mod
+        import nestquant.production.execution.orchestration as mod
         source = open(mod.__file__).read()
         assert "import logging" not in source
         assert "logger" not in source
 
     def test_no_network_calls(self):
-        import nestquant.execution.orchestration as mod
+        import nestquant.production.execution.orchestration as mod
         source = open(mod.__file__).read()
         assert "requests." not in source
         assert "urllib" not in source
         assert "httpx" not in source
 
     def test_no_monitoring(self):
-        import nestquant.execution.orchestration as mod
+        import nestquant.production.execution.orchestration as mod
         source = open(mod.__file__).read()
         # Check for actual monitoring imports/functionality, not comments
         assert "import telemetry" not in source

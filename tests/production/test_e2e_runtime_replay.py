@@ -15,25 +15,23 @@ through the real integration path:
 This is the definitive parity test.
 """
 
-import sys
 import os
 from datetime import datetime, timezone, timedelta
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import pytest
-from strategy.lifecycle import (
+from nestquant.production.strategy.lifecycle import (
     Direction,
     LifecycleAction,
     LifecycleRegistry,
     MarketContext,
     PositionModificationRequest,
 )
-from strategy.lifecycle.registry import LifecycleEvent
-from strategy.trade_management.breakeven import BreakevenConfig
-from strategy.trade_management.max_hold import MaxHoldConfig
-from strategy.trade_management.trailing_stop import TrailingStopConfig
-from execution.adapter import FakeExecutionAdapter
+from nestquant.production.strategy.lifecycle.registry import LifecycleEvent
+from nestquant.production.strategy.trade_management.breakeven import BreakevenConfig
+from nestquant.production.strategy.trade_management.max_hold import MaxHoldConfig
+from nestquant.production.strategy.trade_management.trailing_stop import TrailingStopConfig
+from nestquant.production.execution.adapter import FakeExecutionAdapter
 
 
 def _make_market(

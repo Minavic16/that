@@ -4,7 +4,7 @@ Comprehensive analysis of exit architecture for the Z-score MR strategy.
 Entry logic is FROZEN. This is exit attribution only.
 
 Usage:
-    cd /root/nestquant && .venv/bin/python -u scripts/exit_forensics.py
+    cd /root/that && .venv/bin/python -u scripts/exit_forensics.py
 """
 from __future__ import annotations
 
@@ -22,9 +22,8 @@ import pandas as pd
 from scipy import stats as sp_stats
 
 warnings.filterwarnings("ignore")
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from zscore.zscore import compute_zscore_causal
+from nestquant.research.shared.zscore.zscore import compute_zscore_causal
 
 # ═══════════════════════════════════════════════════════════════
 # FROZEN PARAMETERS
@@ -64,7 +63,7 @@ SPREAD = {
 DEFAULT_USD = {"USD": 1.0, "EUR": 1.08, "GBP": 1.26, "JPY": 0.0067,
                "CHF": 0.88, "AUD": 0.65, "CAD": 0.74, "NZD": 0.60}
 
-OUT_DIR = Path("/root/nestquant/research_data/phase5")
+OUT_DIR = Path("research/output/phase5")
 OUT_DIR.mkdir(parents=True, exist_ok=True)
 
 

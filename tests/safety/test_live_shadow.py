@@ -15,8 +15,8 @@ import pytest
 
 
 def _run_live(tmp_path: Path, **kwargs):
-    from nestquant.execution.shadow.live_adapter import StubLiveAdapter
-    from nestquant.execution.shadow.live_runner import LiveShadowRunner
+    from nestquant.production.execution.shadow.live_adapter import StubLiveAdapter
+    from nestquant.production.execution.shadow.live_runner import LiveShadowRunner
 
     log_dir = tmp_path / "live"
     adapter = kwargs.pop("adapter", None)
@@ -39,7 +39,7 @@ class TestLiveShadowStartup:
 
 class TestLiveShadowReconnect:
     def test_reconnect_on_failure(self, tmp_path: Path):
-        from nestquant.execution.shadow.live_adapter import StubLiveAdapter
+        from nestquant.production.execution.shadow.live_adapter import StubLiveAdapter
 
         adapter = StubLiveAdapter(pairs=["EUR/USD"])
         adapter.fail_next_connect = True
@@ -50,8 +50,8 @@ class TestLiveShadowReconnect:
 
 class TestLiveShadowMissingCandle:
     def test_missing_candle_detected(self, tmp_path: Path):
-        from nestquant.execution.shadow.live_adapter import StubLiveAdapter
-        from nestquant.execution.shadow.live_runner import LiveShadowRunner
+        from nestquant.production.execution.shadow.live_adapter import StubLiveAdapter
+        from nestquant.production.execution.shadow.live_runner import LiveShadowRunner
 
         log_dir = tmp_path / "live"
         adapter = StubLiveAdapter(pairs=["EUR/USD"])
@@ -72,8 +72,8 @@ class TestLiveShadowMissingCandle:
 
 class TestLiveShadowDuplicate:
     def test_duplicate_not_double_counted(self, tmp_path: Path):
-        from nestquant.execution.shadow.live_adapter import StubLiveAdapter
-        from nestquant.execution.shadow.live_runner import LiveShadowRunner
+        from nestquant.production.execution.shadow.live_adapter import StubLiveAdapter
+        from nestquant.production.execution.shadow.live_runner import LiveShadowRunner
 
         log_dir = tmp_path / "live"
         adapter = StubLiveAdapter(pairs=["EUR/USD"])
@@ -91,8 +91,8 @@ class TestLiveShadowDuplicate:
 
 class TestLiveShadowRestart:
     def test_restart_no_duplicate_processing(self, tmp_path: Path):
-        from nestquant.execution.shadow.live_adapter import StubLiveAdapter
-        from nestquant.execution.shadow.live_runner import LiveShadowRunner
+        from nestquant.production.execution.shadow.live_adapter import StubLiveAdapter
+        from nestquant.production.execution.shadow.live_runner import LiveShadowRunner
 
         log_dir = tmp_path / "live"
         adapter = StubLiveAdapter(pairs=["EUR/USD"])
@@ -111,9 +111,9 @@ class TestLiveShadowRestart:
 
 class TestLiveShadowKillSwitch:
     def test_kill_switch_halts(self, tmp_path: Path):
-        from nestquant.execution.shadow.kill_switch import KillSwitch
-        from nestquant.execution.shadow.live_adapter import StubLiveAdapter
-        from nestquant.execution.shadow.live_runner import LiveShadowRunner
+        from nestquant.production.execution.shadow.kill_switch import KillSwitch
+        from nestquant.production.execution.shadow.live_adapter import StubLiveAdapter
+        from nestquant.production.execution.shadow.live_runner import LiveShadowRunner
 
         log_dir = tmp_path / "live"
         ks = KillSwitch(primary_path=log_dir / "KILL")
@@ -130,7 +130,7 @@ class TestLiveShadowKillSwitch:
 
 class TestLiveShadowStaleFeed:
     def test_stale_detected_via_health(self):
-        from nestquant.execution.shadow.health import HealthMonitor
+        from nestquant.production.execution.shadow.health import HealthMonitor
         from datetime import datetime, timezone, timedelta
 
         h = HealthMonitor()
@@ -141,7 +141,7 @@ class TestLiveShadowStaleFeed:
         assert snap.status == "DEGRADED"
 
     def test_stale_not_flagged_in_historical(self):
-        from nestquant.execution.shadow.health import HealthMonitor
+        from nestquant.production.execution.shadow.health import HealthMonitor
         from datetime import datetime, timezone, timedelta
 
         h = HealthMonitor()
@@ -158,7 +158,7 @@ class TestLiveShadowClockMismatch:
         # A bar close at 16:00 with receipt at 18:08 (2h age) is not a clock skew, even with quote skew
         import pandas as pd
         from datetime import timezone
-        from nestquant.execution.shadow.live_adapter import StubLiveAdapter
+        from nestquant.production.execution.shadow.live_adapter import StubLiveAdapter
 
         adapter = StubLiveAdapter(pairs=["EUR/USD"])
         adapter.clock_skew_seconds = 15000
@@ -171,7 +171,7 @@ class TestLiveShadowClockMismatch:
         # With new threshold (4h+10s), bar close vs receipt 2h is not counted as skew
         assert result["clock_mismatches"] == 0
         # Verify that a truly large skew (e.g., quote time vs receipt) would be counted if we inject via health directly
-        from nestquant.execution.shadow.health import HealthMonitor
+        from nestquant.production.execution.shadow.health import HealthMonitor
         from datetime import datetime, timedelta
 
         h = HealthMonitor()
@@ -182,7 +182,7 @@ class TestLiveShadowClockMismatch:
 
 class TestLiveShadowSafetyGuard:
     def test_zero_orders_evidence(self, tmp_path: Path):
-        from nestquant.execution.shadow.safety import verify_zero_orders
+        from nestquant.production.execution.shadow.safety import verify_zero_orders
 
         result, log_dir, _ = _run_live(tmp_path, max_iterations=2)
         zero = verify_zero_orders(log_dir)
@@ -205,13 +205,13 @@ class TestLiveShadowSafetyGuard:
             assert not re.search(r"FakeExecutionAdapter\s*\(", src)
 
     def test_hard_guard_blocks_order_send(self, tmp_path: Path):
-        from nestquant.execution.shadow.safety import install_hard_guard, OrderSubmissionBlocked
+        from nestquant.production.execution.shadow.safety import install_hard_guard, OrderSubmissionBlocked
 
         log_dir = tmp_path / "guard"
         install_hard_guard(log_dir)
         # Simulate blocked call via safety's critical path
         try:
-            from nestquant.execution.shadow.safety import _critical_and_terminate
+            from nestquant.production.execution.shadow.safety import _critical_and_terminate
             _critical_and_terminate(log_dir, "test order attempt")
             assert False, "should have raised"
         except OrderSubmissionBlocked:
@@ -239,7 +239,7 @@ class TestWineFlaskReadOnlyAdapter:
         from unittest.mock import Mock
         import pandas as pd
         from datetime import timezone, datetime
-        from nestquant.execution.shadow.live_adapter import WineFlaskReadOnlyAdapter
+        from nestquant.production.execution.shadow.live_adapter import WineFlaskReadOnlyAdapter
 
         # Mock requests.get to simulate Flask API responses
         def mock_get(url, params=None, timeout=5.0):
@@ -295,7 +295,7 @@ class TestWineFlaskReadOnlyAdapter:
         assert "close" in hist.columns
 
     def test_wine_flask_no_order_path(self, tmp_path: Path):
-        from nestquant.execution.shadow.live_adapter import WineFlaskReadOnlyAdapter
+        from nestquant.production.execution.shadow.live_adapter import WineFlaskReadOnlyAdapter
 
         adapter = WineFlaskReadOnlyAdapter()
         # Ensure adapter has no order methods at all

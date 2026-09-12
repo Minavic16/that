@@ -9,12 +9,12 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from nestquant.execution.health_monitor import (
+from nestquant.production.execution.health_monitor import (
     HealthMonitor,
     HealthMonitorConfig,
     HealthStatus,
 )
-from nestquant.execution.mt5_client import MT5Client, MT5ConnectionError, MT5Response
+from nestquant.production.execution.mt5_client import MT5Client, MT5ConnectionError, MT5Response
 
 
 # ---------------------------------------------------------------------------
@@ -262,7 +262,7 @@ class TestStatusDict:
 
 class TestNoForbiddenImports:
     def test_no_mt5_import(self):
-        import nestquant.execution.health_monitor as mod
+        import nestquant.production.execution.health_monitor as mod
         source = open(mod.__file__).read()
         import_lines = [
             line.strip() for line in source.split("\n")
@@ -272,7 +272,7 @@ class TestNoForbiddenImports:
             assert "MetaTrader5" not in line
 
     def test_no_network_calls(self):
-        import nestquant.execution.health_monitor as mod
+        import nestquant.production.execution.health_monitor as mod
         source = open(mod.__file__).read()
         import_lines = [
             line.strip() for line in source.split("\n")

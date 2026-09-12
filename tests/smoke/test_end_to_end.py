@@ -9,12 +9,12 @@ import json
 import numpy as np
 import pandas as pd
 import pytest
-from costs.model import apply_spread_to_entry, apply_spread_to_exit, compute_costs
-from data_validation.validate import validate_market_data
-from zscore.contracts import CostModel, MarketData
-from zscore.zscore import compute_zscore_causal, zscore_to_array, _zscore_causal_core
-from zscore.regime import classify_regime_chunked
-from zscore.features import compute_features, causal_realized_volatility
+from nestquant.research.shared.costs.model import apply_spread_to_entry, apply_spread_to_exit, compute_costs
+from nestquant.core.data_validation.validate import validate_market_data
+from nestquant.core.contracts.zscore_contracts import CostModel, MarketData
+from nestquant.research.shared.zscore.zscore import compute_zscore_causal, zscore_to_array, _zscore_causal_core
+from nestquant.research.shared.zscore.regime import classify_regime_chunked
+from nestquant.research.shared.zscore.features import compute_features, causal_realized_volatility
 
 
 def _make_ohlcv(n: int, freq: str, seed: int = 42) -> pd.DataFrame:

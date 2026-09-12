@@ -5,17 +5,15 @@ from the S3 base-cost simulation for financial planning.
 from __future__ import annotations
 
 import json
-import sys
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
 from scipy import stats as sp_stats
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from config import ALL_PAIRS
-from indicators.pip import pip_size as get_pip_size
+from nestquant.core.tooling.indicators.pip import pip_size as get_pip_size
 
 DATA_DIR = Path("/root/data")
 
@@ -526,7 +524,7 @@ def main():
     print("Financial Planning Extraction")
     print("=" * 70)
 
-    out_dir = Path("/root/nestquant/research_data/simple_strategies")
+    out_dir = Path("research/output/simple_strategies")
 
     print("\n[0] Loading data...")
     pair_4h = load_and_resample()

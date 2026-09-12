@@ -20,9 +20,9 @@ from typing import Optional
 import numpy as np
 import pandas as pd
 
-from nestquant.regime.labels import RegimeLabel
-from nestquant.indicators.atr import calculate_atr
-from nestquant.indicators.adx import calculate_adx
+from nestquant.research.shared.regime.labels import RegimeLabel
+from nestquant.core.tooling.indicators.atr import calculate_atr
+from nestquant.core.tooling.indicators.adx import calculate_adx
 
 
 @dataclass

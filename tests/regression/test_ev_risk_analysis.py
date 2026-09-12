@@ -13,7 +13,7 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from scripts.ev_risk_analysis import compute_metrics, bootstrap_ci, outlier_sensitivity, pip_value
+from nestquant.research.experiments.ev_risk_analysis import compute_metrics, bootstrap_ci, outlier_sensitivity, pip_value
 
 
 class TestComputeMetrics:

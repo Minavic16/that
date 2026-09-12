@@ -4,7 +4,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-RESULTS_DIR = Path("research_data/phase3")
+RESULTS_DIR = Path("research/output/phase3")
 
 
 def load_json(name: str) -> dict:

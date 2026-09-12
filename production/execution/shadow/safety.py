@@ -48,7 +48,7 @@ def init_zero_orders_file(log_dir: str | Path) -> Path:
 def _critical_and_terminate(log_dir: str | Path, details: str) -> None:
     # Log CRITICAL infrastructure event to the shadow logger if possible
     try:
-        from nestquant.execution.shadow.logger import ShadowLogger
+        from nestquant.production.execution.shadow.logger import ShadowLogger
         lg = ShadowLogger(log_dir=log_dir)
         lg.log_infrastructure("CRITICAL", f"ORDER_SUBMISSION_BLOCKED: {details}", impact="ORDER_BLOCKED", resolution="process terminated")
     except Exception:

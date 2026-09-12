@@ -20,7 +20,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Optional
 
-from nestquant.execution.shadow.signal_generator import ShadowSignalRecord
+from nestquant.production.execution.shadow.signal_generator import ShadowSignalRecord
 
 
 def _utc_now_iso() -> str:

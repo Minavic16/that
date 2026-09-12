@@ -30,16 +30,16 @@ from datetime import UTC, datetime
 from enum import Enum
 from typing import Optional
 
-from execution.data_feed import LiveDataFeed, OHLCV
-from execution.health_monitor import HealthMonitor, HealthMonitorConfig
-from execution.intent_factory import IntentFactory
-from execution.mt5_adapter import MT5ExecutionAdapter
-from execution.mt5_client import MT5Client
-from execution.orchestration import ExecutionCoordinator
-from execution.prop_firm_guard import PropFirmConfig, PropFirmGuard
-from execution.trade_logger import TradeLogger
-from execution.protection import ExecutionProtection, CircuitBreakerConfig, RetryConfig
-from strategy.lifecycle import (
+from nestquant.production.execution.data_feed import LiveDataFeed, OHLCV
+from nestquant.production.execution.health_monitor import HealthMonitor, HealthMonitorConfig
+from nestquant.production.execution.intent_factory import IntentFactory
+from nestquant.production.execution.mt5_adapter import MT5ExecutionAdapter
+from nestquant.production.execution.mt5_client import MT5Client
+from nestquant.production.execution.orchestration import ExecutionCoordinator
+from nestquant.production.execution.prop_firm_guard import PropFirmConfig, PropFirmGuard
+from nestquant.production.execution.trade_logger import TradeLogger
+from nestquant.production.execution.protection import ExecutionProtection, CircuitBreakerConfig, RetryConfig
+from nestquant.production.strategy.lifecycle import (
     Direction as LifecycleDirection,
     LifecycleAction,
     LifecycleRegistry,
@@ -48,9 +48,9 @@ from strategy.lifecycle import (
     PositionModificationRequest,
     StartupReconciliationResult,
 )
-from strategy.trade_management.breakeven import BreakevenConfig
-from strategy.trade_management.max_hold import MaxHoldConfig
-from strategy.trade_management.trailing_stop import TrailingStopConfig
+from nestquant.production.strategy.trade_management.breakeven import BreakevenConfig
+from nestquant.production.strategy.trade_management.max_hold import MaxHoldConfig
+from nestquant.production.strategy.trade_management.trailing_stop import TrailingStopConfig
 
 logger = logging.getLogger(__name__)
 
@@ -153,7 +153,7 @@ class DryRunAdapter:
 
     def execute(self, request) -> "ExecutionResult":
         """Simulate order execution without sending to broker."""
-        from execution.contracts import ExecutionResult, ExecutionStatus
+        from nestquant.core.contracts.execution_contracts import ExecutionResult, ExecutionStatus
 
         logger.info(
             f"DRY-RUN: Would send {request.direction.value} "
@@ -183,7 +183,7 @@ class DryRunAdapter:
     def modify_position_stop(self, request) -> "ModificationResult":
         """Simulate SL modification for dry-run mode."""
         from datetime import datetime, timezone
-        from strategy.lifecycle.contracts import ModificationResult
+        from nestquant.production.strategy.lifecycle.contracts import ModificationResult
 
         self._modified_positions[request.trade_id] = request.new_sl
 
@@ -619,7 +619,7 @@ class S8Runtime:
             pip = self._pip_size(pair)
 
             # Build geometry from actual fill
-            from strategy.lifecycle.contracts import TradeGeometry, RiskReconciliation
+            from nestquant.production.strategy.lifecycle.contracts import TradeGeometry, RiskReconciliation
             geometry = TradeGeometry.from_fill(
                 fill_price=fill_price,
                 stop_distance=stop_distance,
@@ -1267,7 +1267,7 @@ class S8Runtime:
     def _create_default_strategy(self):
         """Create the default BreakoutSignal strategy."""
         try:
-            from signals.breakout import BreakoutSignal, RESEARCH_DEFAULTS
+            from nestquant.production.signals.breakout import BreakoutSignal, RESEARCH_DEFAULTS
             return BreakoutSignal(**RESEARCH_DEFAULTS)
         except Exception as e:
             logger.warning(f"Could not create default strategy: {e}")

@@ -6,8 +6,8 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from nestquant.signals.base import BaseSignal, SignalResult
-from nestquant.signals.breakout import BreakoutSignal
+from nestquant.production.signals.base import BaseSignal, SignalResult
+from nestquant.production.signals.breakout import BreakoutSignal
 
 
 class TestSignalResult:

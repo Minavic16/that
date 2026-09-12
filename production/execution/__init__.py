@@ -1,14 +1,14 @@
 """NestQuant execution module."""
 
-from nestquant.execution.adapter import (
+from nestquant.production.execution.adapter import (
     AdapterConnectionError,
     AdapterError,
     AdapterValidationError,
     BaseExecutionAdapter,
     FakeExecutionAdapter,
 )
-from nestquant.execution.base import BaseExecutor, OrderResult
-from nestquant.execution.contracts import (
+from nestquant.production.execution.base import BaseExecutor, OrderResult
+from nestquant.core.contracts.execution_contracts import (
     ContractValidationError,
     Direction,
     ExecutionResult,
@@ -17,7 +17,7 @@ from nestquant.execution.contracts import (
     RiskDecision,
     TradeIntent,
 )
-from nestquant.execution.orchestration import (
+from nestquant.production.execution.orchestration import (
     ExecutionAdapter,
     ExecutionCoordinator,
     OrchestrationError,

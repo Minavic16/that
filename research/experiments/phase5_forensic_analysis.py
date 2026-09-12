@@ -12,7 +12,6 @@ import pandas as pd
 from collections import defaultdict
 from dataclasses import dataclass, field
 warnings.filterwarnings('ignore')
-sys.path.insert(0, '/root')
 import position_sizing as ps
 
 # ═══════════════════════════════════════════════════════════════
@@ -995,7 +994,7 @@ if __name__ == '__main__':
     print("=" * 60)
     print("MR PHASE 5 — FORENSIC ANALYSIS")
     print("=" * 60)
-    os.makedirs('/root/nestquant/logs', exist_ok=True)
+    os.makedirs('/root/that/logs', exist_ok=True)
     START = pd.Timestamp('2018-01-01', tz='UTC')
     END = pd.Timestamp('2026-06-01', tz='UTC')
     print("\nLoading data...")
@@ -1035,7 +1034,7 @@ if __name__ == '__main__':
         'phase5i_cost_stress': phase5i_result,
     }
 
-    out_path = '/root/nestquant/logs/mr_phase5_metrics.json'
+    out_path = '/root/that/logs/mr_phase5_metrics.json'
     with open(out_path, 'w') as f:
         json.dump(all_results, f, indent=2, default=str)
     print(f"\nResults saved to {out_path}")

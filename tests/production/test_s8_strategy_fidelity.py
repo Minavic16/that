@@ -17,9 +17,6 @@ from unittest.mock import MagicMock
 
 import pytest
 
-NESTQUANT_ROOT = str(Path(__file__).parent.parent)
-if NESTQUANT_ROOT not in os.sys.path:
-    os.sys.path.insert(0, NESTQUANT_ROOT)
 
 # Mock pandas and nestquant.signals.base to avoid import errors
 # (BreakoutSignal needs pandas for type hints but we only test params)
@@ -121,7 +118,7 @@ class TestNoSettingsImport:
     def test_no_settings_import(self):
         source = Path(NESTQUANT_ROOT) / "signals" / "breakout.py"
         text = source.read_text()
-        assert "from nestquant.config.settings import" not in text
+        assert "from nestquant.core.configuration.settings import" not in text
         # ATR_SL_MULTIPLIER should only appear in RESEARCH_DEFAULTS, not as an import
         lines = text.split("\n")
         import_lines = [l for l in lines if l.startswith("from ") or l.startswith("import ")]

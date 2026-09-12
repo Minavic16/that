@@ -5,7 +5,7 @@ Tests for nestquant.backtest.metrics module.
 import numpy as np
 import pytest
 
-from nestquant.backtest.metrics import BacktestMetrics, calculate_metrics
+from nestquant.research.shared.backtest.metrics import BacktestMetrics, calculate_metrics
 
 
 class TestCalculateMetrics:

@@ -9,14 +9,12 @@ C. Broker adapter mock tests — modification success/failure
 D. Deterministic replay test — full bar sequence
 """
 
-import sys
 import os
 from datetime import datetime, timezone, timedelta
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import pytest
-from strategy.lifecycle.contracts import (
+from nestquant.production.strategy.lifecycle.contracts import (
     Direction,
     ExitReason,
     LifecycleAction,
@@ -26,10 +24,10 @@ from strategy.lifecycle.contracts import (
     PositionLifecycleState,
     ReconciliationResult,
 )
-from strategy.lifecycle.registry import LifecycleEvent, LifecycleRegistry
-from strategy.trade_management.breakeven import BreakevenConfig
-from strategy.trade_management.max_hold import MaxHoldConfig
-from strategy.trade_management.trailing_stop import TrailingStopConfig
+from nestquant.production.strategy.lifecycle.registry import LifecycleEvent, LifecycleRegistry
+from nestquant.production.strategy.trade_management.breakeven import BreakevenConfig
+from nestquant.production.strategy.trade_management.max_hold import MaxHoldConfig
+from nestquant.production.strategy.trade_management.trailing_stop import TrailingStopConfig
 
 
 # ═══════════════════════════════════════════════════════════════

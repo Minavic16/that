@@ -14,7 +14,6 @@ HG-1E: ATR Stop Structure
 from __future__ import annotations
 
 import json
-import sys
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -24,12 +23,11 @@ import numpy as np
 import pandas as pd
 from scipy import stats as sp_stats
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from config import ALL_PAIRS, CURRENCIES
 from currency_strength import CurrencyStrengthRanker
-from indicators.atr import calculate_atr
-from indicators.pip import pip_size as get_pip_size
+from nestquant.core.tooling.indicators.atr import calculate_atr
+from nestquant.core.tooling.indicators.pip import pip_size as get_pip_size
 
 DATA_DIR = Path("/root/data")
 RNG_SEED = 42
@@ -884,7 +882,7 @@ def main():
     print("Hypothesis isolation, not strategy development.")
     print("=" * 70)
 
-    out_dir = Path("/root/nestquant/research_data/phase_hg1")
+    out_dir = Path("research/output/phase_hg1")
     out_dir.mkdir(parents=True, exist_ok=True)
 
     # ── Load data ──────────────────────────────────────────────────────

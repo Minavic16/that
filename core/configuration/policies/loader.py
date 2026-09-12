@@ -12,14 +12,14 @@ import json
 from pathlib import Path
 from typing import Any, Dict, Union
 
-from nestquant.config.policies.models import (
+from nestquant.core.configuration.policies.models import (
     ExecutionParams,
     HardLimits,
     LiveParameterPolicy,
     RiskParams,
     StrategyParams,
 )
-from nestquant.config.policies.validator import PolicyValidationError, validate_policy
+from nestquant.core.configuration.policies.validator import PolicyValidationError, validate_policy
 
 
 def _strategy_to_dict(s: StrategyParams) -> Dict[str, Any]:

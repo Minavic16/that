@@ -11,7 +11,6 @@ from __future__ import annotations
 import json
 import os
 import pickle
-import sys
 import time
 from collections import defaultdict
 from dataclasses import dataclass, field
@@ -22,9 +21,8 @@ import numpy as np
 import pandas as pd
 from scipy import stats
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from zscore.zscore import compute_zscore_causal
+from nestquant.research.shared.zscore.zscore import compute_zscore_causal
 
 # ─── Constants ────────────────────────────────────────────────────────────────
 RNG_SEED = 42
@@ -90,7 +88,7 @@ PAIR_GROUPS = [
     ["CAD/JPY", "NZD/JPY", "NZD/CHF", "AUD/CHF", "CAD/CHF"],
 ]
 
-OUT_DIR = Path("/root/nestquant/research_data/phase9")
+OUT_DIR = Path("research/output/phase9")
 OUT_DIR.mkdir(parents=True, exist_ok=True)
 
 

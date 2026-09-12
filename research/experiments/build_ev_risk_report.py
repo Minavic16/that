@@ -1,18 +1,16 @@
 """Build EV/Risk Analysis comparison report across all timeframes.
 
 Reads ev_risk_analysis_{tf}.json files and produces:
-- research_data/phase3/ev_risk_comparison.json
-- research_data/phase3/EV_RISK_ANALYSIS.md
+- research/output/phase3/ev_risk_comparison.json
+- research/output/phase3/EV_RISK_ANALYSIS.md
 """
 from __future__ import annotations
 
 import json
-import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-RESULTS_DIR = Path("research_data/phase3")
+RESULTS_DIR = Path("research/output/phase3")
 TIMEFRAMES = ["1min", "15min", "1h", "4h"]
 PRIMARY_HORIZON = 60
 # Mapping: regime analysis horizon → ev_risk horizon key

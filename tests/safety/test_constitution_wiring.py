@@ -8,16 +8,13 @@ Run: python3 -m pytest tests/test_constitution_wiring.py -v
 
 from __future__ import annotations
 
-import sys
-from pathlib import Path
 
 # Ensure nestquant is importable
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 
 def test_constitution_values():
     """Verify constitution risk parameters match specification."""
-    from config.constitution import CONSTITUTION, ConstitutionRiskConfig
+    from nestquant.core.configuration.constitution import CONSTITUTION, ConstitutionRiskConfig
 
     assert CONSTITUTION.risk_per_trade_pct == 0.0015, "risk_per_trade_pct must be 0.15%"
     assert CONSTITUTION.max_concurrent_positions == 3, "max_concurrent_positions must be 3"
@@ -37,8 +34,8 @@ def test_constitution_values():
 
 def test_risk_guard_config_derives_from_constitution():
     """Verify RiskGuardConfig defaults come from constitution."""
-    from execution.risk_guard import RiskGuardConfig
-    from config.constitution import CONSTITUTION
+    from nestquant.production.execution.risk_guard import RiskGuardConfig
+    from nestquant.core.configuration.constitution import CONSTITUTION
 
     config = RiskGuardConfig()
 
@@ -53,8 +50,8 @@ def test_risk_guard_config_derives_from_constitution():
 
 def test_risk_guard_enforces_max_trades_per_day():
     """Verify max_trades_per_day is enforced."""
-    from execution.risk_guard import RiskGuard, RiskGuardConfig
-    from execution.contracts import TradeIntent, Direction
+    from nestquant.production.execution.risk_guard import RiskGuard, RiskGuardConfig
+    from nestquant.core.contracts.execution_contracts import TradeIntent, Direction
     from datetime import datetime, timezone
 
     config = RiskGuardConfig(
@@ -91,7 +88,7 @@ def test_risk_guard_enforces_max_trades_per_day():
 
 def test_risk_guard_exposes_constitution_source():
     """Verify status() reports constitution as source."""
-    from execution.risk_guard import RiskGuard
+    from nestquant.production.execution.risk_guard import RiskGuard
 
     guard = RiskGuard()
     status = guard.status()
@@ -105,8 +102,8 @@ def test_risk_guard_exposes_constitution_source():
 
 def test_prop_firm_guard_uses_constitution():
     """Verify PropFirmGuard derives from constitution."""
-    from execution.prop_firm_guard import PropFirmGuard, PropFirmConfig
-    from config.constitution import CONSTITUTION
+    from nestquant.production.execution.prop_firm_guard import PropFirmGuard, PropFirmConfig
+    from nestquant.core.configuration.constitution import CONSTITUTION
 
     guard = PropFirmGuard()
     status = guard.status()
@@ -117,8 +114,8 @@ def test_prop_firm_guard_uses_constitution():
 
 def test_constitution_is_authoritative_source():
     """Verify constitution is the only source of truth."""
-    from config.constitution import CONSTITUTION
-    from execution.risk_guard import RiskGuardConfig
+    from nestquant.core.configuration.constitution import CONSTITUTION
+    from nestquant.production.execution.risk_guard import RiskGuardConfig
 
     # All RiskGuardConfig defaults must match constitution
     rc = RiskGuardConfig()

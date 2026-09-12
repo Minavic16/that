@@ -3,7 +3,7 @@ import { withAuth } from "@/lib/rbac";
 import { readFileSync, existsSync, appendFileSync } from "fs";
 import { join } from "path";
 
-const LOG_DIR = "/root/nestquant/logs/shadow_live";
+const LOG_DIR = "/root/that/logs/shadow_live";
 const API_LOG = join(LOG_DIR, "api_access.log");
 const METRICS_FILE = join(LOG_DIR, "metrics.json");
 
@@ -22,7 +22,7 @@ export const GET = withAuth(async (req: NextRequest) => {
       state = JSON.parse(readFileSync(stateFile, "utf8"));
     }
 
-    const zeroFile = "/root/nestquant/orders_submitted_count.json";
+    const zeroFile = "/root/that/orders_submitted_count.json";
     let zeroOrders = { orders_submitted: 0, blocked_attempts: 0 };
     if (existsSync(zeroFile)) {
       zeroOrders = JSON.parse(readFileSync(zeroFile, "utf8"));

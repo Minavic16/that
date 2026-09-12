@@ -26,8 +26,8 @@ from typing import Any, Optional
 
 import pandas as pd
 
-from nestquant.indicators.atr import calculate_atr
-from nestquant.indicators.swing import swing_high_series, swing_low_series
+from nestquant.core.tooling.indicators.atr import calculate_atr
+from nestquant.core.tooling.indicators.swing import swing_high_series, swing_low_series
 
 
 # ---------------------------------------------------------------------------

@@ -15,12 +15,12 @@ from typing import Optional
 import numpy as np
 import pandas as pd
 
-from nestquant.engines.backtest_engine import BacktestEngine, BacktestConfig, Trade
-from nestquant.regime.base import RegimeDetector, RegimePrediction
-from nestquant.regime.labels import RegimeLabel, REGIME_PARAMS
-from nestquant.regime.adx_regime import ADXRegimeDetector
-from nestquant.signals.base import BaseSignal, SignalResult
-from nestquant.indicators.session import is_active_session
+from nestquant.research.shared.engines.backtest_engine import BacktestEngine, BacktestConfig, Trade
+from nestquant.research.shared.regime.base import RegimeDetector, RegimePrediction
+from nestquant.research.shared.regime.labels import RegimeLabel, REGIME_PARAMS
+from nestquant.research.shared.regime.adx_regime import ADXRegimeDetector
+from nestquant.production.signals.base import BaseSignal, SignalResult
+from nestquant.core.tooling.indicators.session import is_active_session
 
 
 @dataclass

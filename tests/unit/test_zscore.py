@@ -4,7 +4,7 @@ from __future__ import annotations
 import numpy as np
 import pandas as pd
 import pytest
-from zscore.zscore import compute_zscore_causal, compute_zscore_expanding, zscore_to_array
+from nestquant.research.shared.zscore.zscore import compute_zscore_causal, compute_zscore_expanding, zscore_to_array
 
 
 class TestComputeZScoreCausal:

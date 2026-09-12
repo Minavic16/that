@@ -13,7 +13,7 @@ from typing import Any, Optional
 
 import numpy as np
 
-from monitoring.percentiles import compute_percentiles
+from nestquant.production.monitoring.percentiles import compute_percentiles
 
 
 @dataclass

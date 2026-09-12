@@ -20,7 +20,7 @@ from urllib.request import Request, urlopen
 
 import numpy as np
 
-from monitoring.models import MarketSnapshot
+from nestquant.production.monitoring.models import MarketSnapshot
 
 logger = logging.getLogger(__name__)
 
@@ -184,7 +184,7 @@ class SpreadCollector:
 
     def get_percentiles(self) -> dict[str, float]:
         """Return dict of P50/P75/P90/P95/P99 for spread_pips."""
-        from monitoring.percentiles import compute_percentiles
+        from nestquant.production.monitoring.percentiles import compute_percentiles
 
         dist = self.get_spread_distribution()
         if len(dist) == 0:

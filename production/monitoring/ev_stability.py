@@ -19,7 +19,7 @@ from typing import Optional
 
 import numpy as np
 
-from monitoring.percentiles import (
+from nestquant.production.monitoring.percentiles import (
     PercentileDistribution,
     compute_percentiles,
 )

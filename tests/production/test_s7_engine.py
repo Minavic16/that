@@ -10,18 +10,18 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from nestquant.execution.contracts import (
+from nestquant.core.contracts.execution_contracts import (
     Direction,
     ExecutionResult,
     ExecutionStatus,
     TradeIntent,
 )
-from nestquant.execution.mt5_adapter import MT5ExecutionAdapter
-from nestquant.execution.mt5_client import MT5Client
-from nestquant.execution.orchestration import ExecutionCoordinator
-from nestquant.execution.risk_guard import RiskGuard
-from nestquant.execution.s7_engine import S7Config, S7Engine
-from nestquant.execution.trade_logger import TradeLogger
+from nestquant.production.execution.mt5_adapter import MT5ExecutionAdapter
+from nestquant.production.execution.mt5_client import MT5Client
+from nestquant.production.execution.orchestration import ExecutionCoordinator
+from nestquant.production.execution.risk_guard import RiskGuard
+from nestquant.production.execution.s7_engine import S7Config, S7Engine
+from nestquant.production.execution.trade_logger import TradeLogger
 
 
 # ---------------------------------------------------------------------------
@@ -262,7 +262,7 @@ class TestExecute:
 
 class TestNoForbiddenImports:
     def test_no_mt5_import(self):
-        import nestquant.execution.s7_engine as mod
+        import nestquant.production.execution.s7_engine as mod
         source = open(mod.__file__).read()
         import_lines = [
             line.strip() for line in source.split("\n")
@@ -272,7 +272,7 @@ class TestNoForbiddenImports:
             assert "MetaTrader5" not in line
 
     def test_no_network_calls(self):
-        import nestquant.execution.s7_engine as mod
+        import nestquant.production.execution.s7_engine as mod
         source = open(mod.__file__).read()
         import_lines = [
             line.strip() for line in source.split("\n")

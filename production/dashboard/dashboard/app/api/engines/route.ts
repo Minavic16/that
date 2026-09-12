@@ -4,7 +4,7 @@ import { readFileSync, existsSync, readdirSync } from "fs";
 import { join } from "path";
 
 const MT5_URL = process.env.MT5_API_URL || "http://127.0.0.1:5001";
-const LOG_DIR = "/root/nestquant/logs/shadow_live";
+const LOG_DIR = "/root/that/logs/shadow_live";
 const STATE_FILE = join(LOG_DIR, "state.json");
 const KILL_FILE = join(LOG_DIR, "KILL");
 const SIGNALS_FILE = join(LOG_DIR, "signals.jsonl");
@@ -12,7 +12,7 @@ const BARS_FILE = join(LOG_DIR, "bars.jsonl");
 const INFRA_FILE = join(LOG_DIR, "infrastructure.jsonl");
 const BREAKER_FILE = join(LOG_DIR, "breaker_state.json");
 const METRICS_FILE = join(LOG_DIR, "metrics.json");
-const GUARD_FILE = "/root/nestquant/orders_submitted_count.json";
+const GUARD_FILE = "/root/that/orders_submitted_count.json";
 
 function readJson(path: string): Record<string, unknown> | null {
   try {

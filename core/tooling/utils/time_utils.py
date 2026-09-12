@@ -6,7 +6,7 @@ from __future__ import annotations
 
 from datetime import datetime, time
 
-from nestquant.config.settings import SESSION_CLOSE_UTC, SESSION_OPEN_UTC
+from nestquant.core.configuration.settings import SESSION_CLOSE_UTC, SESSION_OPEN_UTC
 
 
 def is_trading_day(dt: datetime) -> bool:

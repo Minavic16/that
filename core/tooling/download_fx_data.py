@@ -39,7 +39,7 @@ PAIRS = [
 ]
 
 DATA_DIR = Path('/root/data')
-LOG_DIR = Path('/root/nestquant/logs')
+LOG_DIR = Path('/root/that/logs')
 FAILURE_LOG = LOG_DIR / 'download_failures.jsonl'
 PROGRESS_FILE = LOG_DIR / 'download_progress.json'
 REPORT_FILE = LOG_DIR / 'acquisition_report.json'

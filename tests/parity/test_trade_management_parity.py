@@ -9,23 +9,21 @@ Test cases are derived from specific line traces of the research
 engines (phase_s0, phase_s5_5, phase_s6).
 """
 
-import sys
 import os
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import pytest
-from strategy.trade_management.breakeven import BreakevenConfig, BreakevenManager
-from strategy.trade_management.max_hold import MaxHoldConfig, MaxHoldManager
-from strategy.trade_management.trailing_stop import TrailingStopConfig, TrailingStopManager
-from strategy.trade_management.manager import (
+from nestquant.production.strategy.trade_management.breakeven import BreakevenConfig, BreakevenManager
+from nestquant.production.strategy.trade_management.max_hold import MaxHoldConfig, MaxHoldManager
+from nestquant.production.strategy.trade_management.trailing_stop import TrailingStopConfig, TrailingStopManager
+from nestquant.production.strategy.trade_management.manager import (
     TradeAction,
     TradeState,
     MarketUpdate,
     TradeDecision,
     TradeLifecycleManager,
 )
-from strategy.trade_management.trailing_stop import _is_nan
+from nestquant.production.strategy.trade_management.trailing_stop import _is_nan
 
 
 class TestBreakevenParity:

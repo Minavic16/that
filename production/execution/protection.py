@@ -21,7 +21,7 @@ from datetime import datetime, timezone
 from enum import Enum
 from typing import Callable, Optional
 
-from strategy.lifecycle.contracts import ModificationResult
+from nestquant.production.strategy.lifecycle.contracts import ModificationResult
 
 logger = logging.getLogger(__name__)
 

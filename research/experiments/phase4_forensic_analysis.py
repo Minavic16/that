@@ -16,7 +16,6 @@ import pandas as pd
 from collections import defaultdict
 from dataclasses import dataclass, field
 warnings.filterwarnings('ignore')
-sys.path.insert(0, '/root')
 import position_sizing as ps
 
 # ═══════════════════════════════════════════════════════════════
@@ -1059,8 +1058,8 @@ if __name__ == '__main__':
 
     R['baseline'] = _compute(trades, 'baseline_full')
 
-    os.makedirs('/root/nestquant/logs', exist_ok=True)
-    with open('/root/nestquant/logs/mr_phase4_metrics.json', 'w') as f:
+    os.makedirs('/root/that/logs', exist_ok=True)
+    with open('/root/that/logs/mr_phase4_metrics.json', 'w') as f:
         json.dump(R, f, indent=2, default=str)
-    print(f"\n  Saved /root/nestquant/logs/mr_phase4_metrics.json")
+    print(f"\n  Saved /root/that/logs/mr_phase4_metrics.json")
     print(f"\n[DONE] {time.time() - t0:.1f}s")

@@ -4,7 +4,7 @@ Single backtest with full path recording and feature computation.
 All analysis modules import from this shared engine.
 
 Usage:
-    cd /root/nestquant && .venv/bin/python -u scripts/signal_discovery.py
+    cd /root/that && .venv/bin/python -u scripts/signal_discovery.py
 """
 from __future__ import annotations
 
@@ -22,8 +22,7 @@ import pandas as pd
 from scipy import stats as sp_stats
 
 warnings.filterwarnings("ignore")
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from zscore.zscore import compute_zscore_causal
+from nestquant.research.shared.zscore.zscore import compute_zscore_causal
 
 # ═══════════════════════════════════════════════════════════════
 # FROZEN PARAMETERS
@@ -47,7 +46,7 @@ SPREAD = {
 }
 DEFAULT_USD = {"USD":1.0,"EUR":1.08,"GBP":1.26,"JPY":0.0067,
                "CHF":0.88,"AUD":0.65,"CAD":0.74,"NZD":0.60}
-OUT = Path("/root/nestquant/research_data/phase6")
+OUT = Path("research/output/phase6")
 OUT.mkdir(parents=True, exist_ok=True)
 
 # ═══════════════════════════════════════════════════════════════

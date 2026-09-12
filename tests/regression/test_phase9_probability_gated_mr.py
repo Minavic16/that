@@ -16,15 +16,13 @@ Tests verify:
 from __future__ import annotations
 
 import json
-import sys
 from pathlib import Path
 
 import numpy as np
 import pytest
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 
-PHASE9_DIR = Path("/root/nestquant/research_data/phase9")
+PHASE9_DIR = Path("research/output/phase9")
 
 
 @pytest.fixture(scope="module")

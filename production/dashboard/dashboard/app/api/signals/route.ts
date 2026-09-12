@@ -3,7 +3,7 @@ import { withAuth } from "@/lib/rbac";
 import { readFileSync, existsSync, appendFileSync } from "fs";
 import { join } from "path";
 
-const LOG_DIR = "/root/nestquant/logs/shadow_live";
+const LOG_DIR = "/root/that/logs/shadow_live";
 const API_LOG = join(LOG_DIR, "api_access.log");
 
 function logAccess(endpoint: string, user: string, limit: number, count: number) {

@@ -8,8 +8,8 @@ from datetime import datetime
 import pandas as pd
 import pytest
 
-from nestquant.data.loader import DataLoader
-from nestquant.knowledge.experiment_tracker import Experiment, ExperimentTracker
+from nestquant.core.data.loader import DataLoader
+from nestquant.core.knowledge.experiment_tracker import Experiment, ExperimentTracker
 
 
 class TestDataLoader:

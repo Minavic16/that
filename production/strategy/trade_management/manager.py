@@ -24,9 +24,9 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import Optional
 
-from strategy.trade_management.breakeven import BreakevenConfig, BreakevenManager
-from strategy.trade_management.max_hold import MaxHoldConfig, MaxHoldManager
-from strategy.trade_management.trailing_stop import TrailingStopConfig, TrailingStopManager
+from nestquant.production.strategy.trade_management.breakeven import BreakevenConfig, BreakevenManager
+from nestquant.production.strategy.trade_management.max_hold import MaxHoldConfig, MaxHoldManager
+from nestquant.production.strategy.trade_management.trailing_stop import TrailingStopConfig, TrailingStopManager
 
 
 class TradeAction(Enum):

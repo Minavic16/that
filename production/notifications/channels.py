@@ -14,7 +14,7 @@ import logging
 from abc import ABC, abstractmethod
 from typing import Optional
 
-from notifications.events import NQTSEvent
+from nestquant.production.notifications.events import NQTSEvent
 
 logger = logging.getLogger(__name__)
 

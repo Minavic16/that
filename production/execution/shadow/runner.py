@@ -32,23 +32,23 @@ from typing import Any, Optional
 
 import pandas as pd
 
-from nestquant.data.loader import DataLoader
-from nestquant.data.validation import (
+from nestquant.core.data.loader import DataLoader
+from nestquant.core.data.validation import (
     validate_data_quality,
     validate_duplicates,
     validate_gaps,
     validate_ohlc_integrity,
     validate_timestamps,
 )
-from nestquant.execution.shadow.health import HealthMonitor
-from nestquant.execution.shadow.kill_switch import KillSwitch
-from nestquant.execution.shadow.logger import ShadowLogger
-from nestquant.execution.shadow.signal_generator import (
+from nestquant.production.execution.shadow.health import HealthMonitor
+from nestquant.production.execution.shadow.kill_switch import KillSwitch
+from nestquant.production.execution.shadow.logger import ShadowLogger
+from nestquant.production.execution.shadow.signal_generator import (
     BARS_PER_DAY_4H,
     MAX_HOLD_DAYS,
     ShadowCausalSignalGenerator,
 )
-from nestquant.execution.shadow.state import ShadowState
+from nestquant.production.execution.shadow.state import ShadowState
 
 
 def _pip_size(pair: str) -> float:
@@ -155,7 +155,7 @@ class ShadowRunner:
                 except Exception:
                     pairs = None
             if not pairs:
-                from nestquant.config.settings import get_config
+                from nestquant.core.configuration.settings import get_config
 
                 pairs = list(get_config().universe.all_pairs[:20])
         self.pairs = list(pairs)
@@ -259,8 +259,8 @@ class ShadowRunner:
 
                 # Log bar (§3.5) — compute ATR/swing context for observability if possible
                 try:
-                    from nestquant.indicators.atr import calculate_atr
-                    from nestquant.indicators.swing import swing_high_series, swing_low_series
+                    from nestquant.core.tooling.indicators.atr import calculate_atr
+                    from nestquant.core.tooling.indicators.swing import swing_high_series, swing_low_series
 
                     atr_s = calculate_atr(prefix, self.generator.atr_period)
                     sh_s = swing_high_series(prefix, self.generator.lookback)

@@ -1,5 +1,5 @@
 import sys, os, pickle, random, numpy as np, pandas as pd
-sys.path = ['/root/nestquant', '/root'] + [p for p in sys.path if p not in ('/root','/root/nestquant')]
+sys.path = ['/root/that', '/root'] + [p for p in sys.path if p not in ('/root','/root/that')]
 import config as cfg
 from backtest_hybrid_opt import B_TF_LADDER, precompute_strength, precompute_signals_vectorized
 spec = __import__('importlib').util.spec_from_file_location('rc','/root/config.py')

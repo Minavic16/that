@@ -9,7 +9,7 @@ Components:
 - registry: LifecycleRegistry (active position management, evaluation, reconciliation)
 """
 
-from strategy.lifecycle.contracts import (
+from nestquant.production.strategy.lifecycle.contracts import (
     Direction,
     ExitReason,
     LifecycleAction,
@@ -24,7 +24,7 @@ from strategy.lifecycle.contracts import (
     StartupReconciliationResult,
     TradeGeometry,
 )
-from strategy.lifecycle.registry import LifecycleEvent, LifecycleRegistry
+from nestquant.production.strategy.lifecycle.registry import LifecycleEvent, LifecycleRegistry
 
 __all__ = [
     "Direction",

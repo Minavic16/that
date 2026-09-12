@@ -1,7 +1,7 @@
 """Z-Score Research Engine — Cost Model."""
 from __future__ import annotations
 
-from zscore.contracts import CostBreakdown, CostModel
+from nestquant.core.contracts.zscore_contracts import CostBreakdown, CostModel
 
 # Default spread configuration (pips)
 DEFAULT_SPREADS: dict[str, float] = {

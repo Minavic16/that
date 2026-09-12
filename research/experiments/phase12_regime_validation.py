@@ -14,7 +14,6 @@ a 2024-2026 JPY regime effect.
 from __future__ import annotations
 
 import json
-import sys
 import time
 from pathlib import Path
 from typing import Any
@@ -23,7 +22,6 @@ import numpy as np
 import pandas as pd
 from scipy import stats
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from currency_strength import CurrencyStrengthRanker
 from config import (
@@ -830,7 +828,7 @@ def main():
     results["classification"] = classification
 
     # ── Save ───────────────────────────────────────────────────────────
-    out_dir = Path("/root/nestquant/research_data/phase12")
+    out_dir = Path("research/output/phase12")
     out_dir.mkdir(parents=True, exist_ok=True)
     results["runtime_seconds"] = time.time() - t0
 

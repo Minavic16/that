@@ -4,13 +4,13 @@ from __future__ import annotations
 import numpy as np
 import pandas as pd
 import pytest
-from zscore.regime import (
+from nestquant.research.shared.zscore.regime import (
     _causal_atr,
     _causal_ema,
     classify_regime,
     classify_regime_chunked,
 )
-from zscore.zscore import compute_zscore_causal
+from nestquant.research.shared.zscore.zscore import compute_zscore_causal
 
 
 class TestCausalityRegression:
@@ -87,7 +87,7 @@ class TestCausalityRegression:
 
     def test_expanding_zscore_causality(self, price_data):
         """Expanding-window Z-score is also causal."""
-        from zscore.zscore import compute_zscore_expanding
+        from nestquant.research.shared.zscore.zscore import compute_zscore_expanding
 
         ts, close = price_data
         test_idx = 300

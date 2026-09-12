@@ -6,15 +6,13 @@ Tests for retry logic, state integrity, failure classification,
 and circuit breaker behavior.
 """
 
-import sys
 import os
 from datetime import datetime, timezone
 from unittest.mock import MagicMock, patch
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import pytest
-from execution.protection import (
+from nestquant.production.execution.protection import (
     CircuitBreakerConfig,
     ClassifiedModificationResult,
     ExecutionProtection,
@@ -22,7 +20,7 @@ from execution.protection import (
     RetryConfig,
     classify_failure,
 )
-from strategy.lifecycle.contracts import ModificationResult
+from nestquant.production.strategy.lifecycle.contracts import ModificationResult
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -102,7 +100,7 @@ class TestFailureClassification:
 class TestRetryLogic:
 
     def _make_request(self):
-        from strategy.lifecycle.contracts import PositionModificationRequest
+        from nestquant.production.strategy.lifecycle.contracts import PositionModificationRequest
         return PositionModificationRequest(
             trade_id="T1", symbol="EURUSD", new_sl=1.0980, reason="test",
         )
@@ -248,11 +246,11 @@ class TestStateIntegrity:
 
     def test_pending_sl_not_committed_before_confirmation(self):
         """Internal SL does not change before broker confirmation."""
-        from strategy.lifecycle.registry import LifecycleRegistry
-        from strategy.lifecycle.contracts import Direction, MarketContext
-        from strategy.trade_management.breakeven import BreakevenConfig
-        from strategy.trade_management.max_hold import MaxHoldConfig
-        from strategy.trade_management.trailing_stop import TrailingStopConfig
+        from nestquant.production.strategy.lifecycle.registry import LifecycleRegistry
+        from nestquant.production.strategy.lifecycle.contracts import Direction, MarketContext
+        from nestquant.production.strategy.trade_management.breakeven import BreakevenConfig
+        from nestquant.production.strategy.trade_management.max_hold import MaxHoldConfig
+        from nestquant.production.strategy.trade_management.trailing_stop import TrailingStopConfig
 
         registry = LifecycleRegistry(
             strategy_identity="test",
@@ -283,11 +281,11 @@ class TestStateIntegrity:
 
     def test_commit_sl_advances_confirmed_sl(self):
         """Successful commit advances confirmed SL."""
-        from strategy.lifecycle.registry import LifecycleRegistry
-        from strategy.lifecycle.contracts import Direction, MarketContext
-        from strategy.trade_management.breakeven import BreakevenConfig
-        from strategy.trade_management.max_hold import MaxHoldConfig
-        from strategy.trade_management.trailing_stop import TrailingStopConfig
+        from nestquant.production.strategy.lifecycle.registry import LifecycleRegistry
+        from nestquant.production.strategy.lifecycle.contracts import Direction, MarketContext
+        from nestquant.production.strategy.trade_management.breakeven import BreakevenConfig
+        from nestquant.production.strategy.trade_management.max_hold import MaxHoldConfig
+        from nestquant.production.strategy.trade_management.trailing_stop import TrailingStopConfig
 
         registry = LifecycleRegistry(
             strategy_identity="test",
@@ -319,11 +317,11 @@ class TestStateIntegrity:
 
     def test_rollback_preserves_previous_confirmed_sl(self):
         """Failed modification preserves previous confirmed SL."""
-        from strategy.lifecycle.registry import LifecycleRegistry
-        from strategy.lifecycle.contracts import Direction, MarketContext
-        from strategy.trade_management.breakeven import BreakevenConfig
-        from strategy.trade_management.max_hold import MaxHoldConfig
-        from strategy.trade_management.trailing_stop import TrailingStopConfig
+        from nestquant.production.strategy.lifecycle.registry import LifecycleRegistry
+        from nestquant.production.strategy.lifecycle.contracts import Direction, MarketContext
+        from nestquant.production.strategy.trade_management.breakeven import BreakevenConfig
+        from nestquant.production.strategy.trade_management.max_hold import MaxHoldConfig
+        from nestquant.production.strategy.trade_management.trailing_stop import TrailingStopConfig
 
         registry = LifecycleRegistry(
             strategy_identity="test",
@@ -356,11 +354,11 @@ class TestStateIntegrity:
 
     def test_successful_retry_commits_sl_once(self):
         """Successful retry commits SL exactly once."""
-        from strategy.lifecycle.registry import LifecycleRegistry
-        from strategy.lifecycle.contracts import Direction, MarketContext
-        from strategy.trade_management.breakeven import BreakevenConfig
-        from strategy.trade_management.max_hold import MaxHoldConfig
-        from strategy.trade_management.trailing_stop import TrailingStopConfig
+        from nestquant.production.strategy.lifecycle.registry import LifecycleRegistry
+        from nestquant.production.strategy.lifecycle.contracts import Direction, MarketContext
+        from nestquant.production.strategy.trade_management.breakeven import BreakevenConfig
+        from nestquant.production.strategy.trade_management.max_hold import MaxHoldConfig
+        from nestquant.production.strategy.trade_management.trailing_stop import TrailingStopConfig
 
         registry = LifecycleRegistry(
             strategy_identity="test",

@@ -22,7 +22,6 @@ import sys
 import time
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 import os
 os.environ.setdefault("NESTQUANT_SKIP_LIVE_CHECK", "1")
 os.environ.setdefault("NESTQUANT_SKIP_DASHBOARD_CHECK", "1")
@@ -30,9 +29,9 @@ os.environ.setdefault("NESTQUANT_SKIP_DASHBOARD_CHECK", "1")
 import numpy as np
 import pandas as pd
 
-from nestquant.data.loader import DataLoader
-from nestquant.indicators.atr import calculate_atr
-from nestquant.indicators.swing import swing_high_series, swing_low_series
+from nestquant.core.data.loader import DataLoader
+from nestquant.core.tooling.indicators.atr import calculate_atr
+from nestquant.core.tooling.indicators.swing import swing_high_series, swing_low_series
 
 # Import S6C causal helpers without side-effects
 import importlib.util
@@ -116,7 +115,7 @@ def main():
             except Exception:
                 pairs = None
         if not pairs:
-            from nestquant.config.settings import get_config
+            from nestquant.core.configuration.settings import get_config
             pairs = list(get_config().universe.all_pairs[:20])
 
     s6c = _load_s6c_module()

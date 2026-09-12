@@ -1,7 +1,7 @@
 """Phase 7 — Adversarial Out-of-Sample Validation (optimized).
 
 Pre-extracts events + precomputes all metrics once. Analyses are O(1) lookups.
-Usage: cd /root/nestquant && .venv/bin/python -u scripts/phase7_oos_validation.py
+Usage: cd /root/that && .venv/bin/python -u scripts/phase7_oos_validation.py
 """
 from __future__ import annotations
 
@@ -12,8 +12,7 @@ import pandas as pd
 from scipy import stats as sp_stats
 
 warnings.filterwarnings("ignore")
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from zscore.zscore import compute_zscore_causal
+from nestquant.research.shared.zscore.zscore import compute_zscore_causal
 
 Z_ENTRY=2.2; LOOKBACK=20; COMMISSION=3.50; SLIPPAGE_PIPS=0.3
 ATR_PERIOD=14; ATR_SL_MULT=3.0; MAX_HOLD=64
@@ -26,7 +25,7 @@ SPREAD={"EUR/USD":0.8,"GBP/USD":1.0,"USD/JPY":1.0,"USD/CHF":1.2,"AUD/USD":0.9,
         "AUD/JPY":2.0,"CAD/JPY":2.5,"NZD/JPY":3.0,"EUR/AUD":2.0,"EUR/CAD":2.5,
         "GBP/AUD":3.5,"GBP/CAD":3.5,"AUD/CAD":2.0,"AUD/CHF":2.5,"NZD/CHF":3.0,"CAD/CHF":3.0}
 DEFAULT_USD={"USD":1.0,"EUR":1.08,"GBP":1.26,"JPY":0.0067,"CHF":0.88,"AUD":0.65,"CAD":0.74,"NZD":0.60}
-OUT=Path("/root/nestquant/research_data/phase7"); OUT.mkdir(parents=True,exist_ok=True)
+OUT=Path("research/output/phase7"); OUT.mkdir(parents=True,exist_ok=True)
 
 DISCOVERED_REGIONS=[
     {"key":"Z3-3.5-Vextreme_vol","zlo":3.0,"zhi":3.5,"vr":"extreme_vol"},

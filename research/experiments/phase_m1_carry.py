@@ -19,7 +19,6 @@ All rates are official policy rates as documented by each central bank.
 from __future__ import annotations
 
 import json
-import sys
 import time
 from pathlib import Path
 from typing import Any
@@ -28,7 +27,6 @@ import numpy as np
 import pandas as pd
 from scipy import stats
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from config import ALL_PAIRS
 
@@ -980,7 +978,7 @@ def main():
         "runtime_seconds": time.time() - t0,
     }
 
-    out_dir = Path("/root/nestquant/research_data/spectrum_m1_carry")
+    out_dir = Path("research/output/spectrum_m1_carry")
     out_dir.mkdir(parents=True, exist_ok=True)
 
     # Remove non-serializable hcml_returns from spectrum for JSON

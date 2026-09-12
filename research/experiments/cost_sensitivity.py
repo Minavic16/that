@@ -1,24 +1,22 @@
 """Cost sensitivity analysis per regime with Newey-West HAC inference.
 
 Usage:
-    cd /root/nestquant && .venv/bin/python -u scripts/cost_sensitivity.py --timeframe 1h
-    cd /root/nestquant && .venv/bin/python -u scripts/cost_sensitivity.py --timeframe 4h
+    cd /root/that && .venv/bin/python -u scripts/cost_sensitivity.py --timeframe 1h
+    cd /root/that && .venv/bin/python -u scripts/cost_sensitivity.py --timeframe 4h
 """
 from __future__ import annotations
 
 import argparse
 import json
-import sys
 import time
 from pathlib import Path
 
 import numpy as np
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from research.phase3_research import prepare_pair
+from nestquant.research.phase3_research import prepare_pair
 
-RESULTS_DIR = Path("/root/nestquant/research_data/phase3")
+RESULTS_DIR = Path("research/output/phase3")
 
 PAIRS = [
     "EUR/USD", "GBP/USD", "USD/JPY", "AUD/USD", "USD/CHF",

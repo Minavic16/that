@@ -14,11 +14,11 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from zscore.regime import classify_regime_chunked
-from zscore.zscore import _zscore_causal_core
+from nestquant.research.shared.zscore.regime import classify_regime_chunked
+from nestquant.research.shared.zscore.zscore import _zscore_causal_core
 
 DATA_DIR = Path("/root/data")
-RESULTS_DIR = Path("/root/nestquant/research_data/phase3")
+RESULTS_DIR = Path("research/output/phase3")
 
 # Default forward-return horizons (in bars) per timeframe.
 # These are bar counts, NOT elapsed time. The same bar counts are used

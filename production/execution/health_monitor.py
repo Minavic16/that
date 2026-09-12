@@ -24,8 +24,8 @@ from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from typing import Callable, Optional
 
-from nestquant.execution.mt5_client import MT5Client, MT5ConnectionError, MT5Response
-from nestquant.execution.trade_logger import InfrastructureRecord, TradeLogger
+from nestquant.production.execution.mt5_client import MT5Client, MT5ConnectionError, MT5Response
+from nestquant.production.execution.trade_logger import InfrastructureRecord, TradeLogger
 
 
 # ---------------------------------------------------------------------------

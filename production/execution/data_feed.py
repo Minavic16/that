@@ -25,7 +25,7 @@ from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from typing import Any, Optional
 
-from execution.mt5_client import MT5Client, MT5Response
+from nestquant.production.execution.mt5_client import MT5Client, MT5Response
 
 logger = logging.getLogger(__name__)
 

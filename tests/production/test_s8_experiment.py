@@ -19,18 +19,15 @@ import pytest
 # ---------------------------------------------------------------------------
 # Ensure nestquant is importable
 # ---------------------------------------------------------------------------
-NESTQUANT_ROOT = str(Path(__file__).parent.parent)
-if NESTQUANT_ROOT not in os.sys.path:
-    os.sys.path.insert(0, NESTQUANT_ROOT)
 
-from config.experiment import (
+from nestquant.core.configuration.experiment import (
     ExperimentConfig,
     ExperimentPhase,
     RiskIdentity,
     StrategyIdentity,
     UniverseIdentity,
 )
-from execution.trade_logger import SignalRecord, TradeLogger
+from nestquant.production.execution.trade_logger import SignalRecord, TradeLogger
 
 
 # ===================================================================

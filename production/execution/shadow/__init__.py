@@ -5,11 +5,11 @@ Public surface:
   ShadowLogger, HealthMonitor, KillSwitch, ShadowState, ShadowRunner
 """
 
-from nestquant.execution.shadow.health import HealthMonitor, HealthSnapshot
-from nestquant.execution.shadow.kill_switch import KillSwitch
-from nestquant.execution.shadow.logger import ShadowLogger
-from nestquant.execution.shadow.runner import ShadowRunner, ShadowRunSummary
-from nestquant.execution.shadow.signal_generator import (
+from nestquant.production.execution.shadow.health import HealthMonitor, HealthSnapshot
+from nestquant.production.execution.shadow.kill_switch import KillSwitch
+from nestquant.production.execution.shadow.logger import ShadowLogger
+from nestquant.production.execution.shadow.runner import ShadowRunner, ShadowRunSummary
+from nestquant.production.execution.shadow.signal_generator import (
     BARS_PER_DAY_4H,
     BREAKEVEN_RATIO,
     LOOKBACK,
@@ -19,7 +19,7 @@ from nestquant.execution.shadow.signal_generator import (
     ShadowSignalRecord,
     STRATEGY_PARAMS,
 )
-from nestquant.execution.shadow.state import ShadowState
+from nestquant.production.execution.shadow.state import ShadowState
 
 __all__ = [
     "ShadowCausalSignalGenerator",

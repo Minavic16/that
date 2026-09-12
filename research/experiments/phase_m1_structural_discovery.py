@@ -12,7 +12,6 @@ Just determine whether the structure exists.
 from __future__ import annotations
 
 import json
-import sys
 import time
 from pathlib import Path
 from typing import Any
@@ -21,7 +20,6 @@ import numpy as np
 import pandas as pd
 from scipy import stats
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from config import ALL_PAIRS
 
@@ -602,7 +600,7 @@ def main():
         "runtime_seconds": time.time() - t0,
     }
 
-    out_dir = Path("/root/nestquant/research_data/phase_m1")
+    out_dir = Path("research/output/phase_m1")
     out_dir.mkdir(parents=True, exist_ok=True)
 
     with open(out_dir / "phase_m1_results.json", "w") as f:

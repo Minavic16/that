@@ -15,14 +15,12 @@ through every downstream component:
 This is the central acceptance test for S8.6.7.B.
 """
 
-import sys
 import os
 from datetime import datetime, timezone, timedelta
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import pytest
-from strategy.lifecycle import (
+from nestquant.production.strategy.lifecycle import (
     Direction,
     LifecycleAction,
     LifecycleRegistry,
@@ -30,11 +28,11 @@ from strategy.lifecycle import (
     RiskReconciliation,
     TradeGeometry,
 )
-from strategy.lifecycle.contracts import PositionModificationRequest
-from strategy.trade_management.breakeven import BreakevenConfig
-from strategy.trade_management.max_hold import MaxHoldConfig
-from strategy.trade_management.trailing_stop import TrailingStopConfig
-from execution.adapter import FakeExecutionAdapter
+from nestquant.production.strategy.lifecycle.contracts import PositionModificationRequest
+from nestquant.production.strategy.trade_management.breakeven import BreakevenConfig
+from nestquant.production.strategy.trade_management.max_hold import MaxHoldConfig
+from nestquant.production.strategy.trade_management.trailing_stop import TrailingStopConfig
+from nestquant.production.execution.adapter import FakeExecutionAdapter
 
 
 # ═══════════════════════════════════════════════════════════════

@@ -5,11 +5,9 @@ import json
 import numpy as np
 import pytest
 from pathlib import Path
-import sys
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 
-RESULTS = Path("/root/nestquant/research_data/simple_strategies/S2_mechanism_identification.json")
+RESULTS = Path("research/output/simple_strategies/S2_mechanism_identification.json")
 
 
 @pytest.fixture(scope="module")

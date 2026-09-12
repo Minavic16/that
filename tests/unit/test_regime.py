@@ -4,7 +4,7 @@ from __future__ import annotations
 import numpy as np
 import pandas as pd
 import pytest
-from zscore.regime import _causal_atr, _causal_ema, classify_regime
+from nestquant.research.shared.zscore.regime import _causal_atr, _causal_ema, classify_regime
 
 
 class TestCausalEMA:

@@ -23,10 +23,10 @@ import uuid
 from datetime import UTC, datetime
 from typing import TYPE_CHECKING, Optional
 
-from execution.contracts import Direction, TradeIntent
+from nestquant.core.contracts.execution_contracts import Direction, TradeIntent
 
 if TYPE_CHECKING:
-    from signals.base import SignalResult
+    from nestquant.production.signals.base import SignalResult
 
 
 class IntentFactoryError(ValueError):

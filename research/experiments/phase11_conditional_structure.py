@@ -13,7 +13,6 @@ from __future__ import annotations
 import csv
 import json
 import pickle
-import sys
 import time
 from collections import defaultdict
 from pathlib import Path
@@ -21,9 +20,8 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from zscore.zscore import compute_zscore_causal
+from nestquant.research.shared.zscore.zscore import compute_zscore_causal
 
 # ─── Constants ────────────────────────────────────────────────────────────────
 RNG_SEED = 42
@@ -83,7 +81,7 @@ COST_SCENARIOS = {
     "COST_LOW": {"spread_pips": 0.5, "slippage_pips": 0.1, "commission_usd": 2.0},
     "COST_BASE": {"spread_pips": 1.0, "slippage_pips": 0.3, "commission_usd": 3.50},
 }
-OUT_DIR = Path("/root/nestquant/research_data/phase11")
+OUT_DIR = Path("research/output/phase11")
 OUT_DIR.mkdir(parents=True, exist_ok=True)
 
 

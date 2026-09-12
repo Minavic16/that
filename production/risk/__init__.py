@@ -1,6 +1,6 @@
 """NestQuant risk management module."""
 
-from nestquant.risk.circuit_breakers import (
+from nestquant.production.risk.circuit_breakers import (
     BaseBreaker,
     BreakerSuite,
     CorrelationBreaker,

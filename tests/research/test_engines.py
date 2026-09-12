@@ -6,10 +6,10 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from nestquant.engines.backtest_engine import BacktestConfig, BacktestEngine, Trade
-from nestquant.engines.base_engine import BaseEngine, EngineState
-from nestquant.engines.regime_backtest_engine import RegimeBacktestConfig, RegimeBacktestEngine
-from nestquant.signals.base import BaseSignal, SignalResult
+from nestquant.research.shared.engines.backtest_engine import BacktestConfig, BacktestEngine, Trade
+from nestquant.research.shared.engines.base_engine import BaseEngine, EngineState
+from nestquant.research.shared.engines.regime_backtest_engine import RegimeBacktestConfig, RegimeBacktestEngine
+from nestquant.production.signals.base import BaseSignal, SignalResult
 
 
 class StubSignal(BaseSignal):
@@ -188,12 +188,12 @@ class TestRegimeBacktestEngine:
 
     def test_regime_blocks_high_vol(self, sample_ohlcv):
         """HIGH_VOL regime should block new entries."""
-        from nestquant.regime.labels import RegimeLabel
+        from nestquant.research.shared.regime.labels import RegimeLabel
 
         signal = StubSignal(direction="BUY", strength=1.0)
         engine = RegimeBacktestEngine(signal)
         # Manually set regime to HIGH_VOL
-        from nestquant.regime.base import RegimePrediction
+        from nestquant.research.shared.regime.base import RegimePrediction
 
         engine._current_regime = RegimePrediction(
             regime=RegimeLabel.HIGH_VOL,

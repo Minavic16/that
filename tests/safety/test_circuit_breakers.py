@@ -5,7 +5,7 @@ Tests for nestquant.risk.circuit_breakers module.
 import numpy as np
 import pytest
 
-from nestquant.risk.circuit_breakers import (
+from nestquant.production.risk.circuit_breakers import (
     BaseBreaker,
     BreakerSuite,
     CorrelationBreaker,

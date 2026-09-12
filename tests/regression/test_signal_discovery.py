@@ -10,15 +10,12 @@ Tests verify:
 from __future__ import annotations
 
 import json
-import sys
-from pathlib import Path
 
 import numpy as np
 import pytest
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 
-from scripts.signal_discovery import (
+from nestquant.research.experiments.signal_discovery import (
     load_all, run_backtest, classify_outcome,
     eval_forward_return, eval_mae_mfe, eval_time_exit,
     compute_features, stats, metrics, bootstrap_ci,

@@ -22,7 +22,7 @@ from dataclasses import dataclass, field
 from enum import Enum
 from typing import Optional
 
-from monitoring.architecture import MetricState, MonitoringClassification
+from nestquant.production.monitoring.architecture import MetricState, MonitoringClassification
 
 
 # ─────────────────────────────────────────────────────────────────────

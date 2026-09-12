@@ -17,12 +17,9 @@ from unittest.mock import MagicMock
 
 import pytest
 
-NESTQUANT_ROOT = str(Path(__file__).parent.parent)
-if NESTQUANT_ROOT not in os.sys.path:
-    os.sys.path.insert(0, NESTQUANT_ROOT)
 
-from execution.data_feed import OHLCV, BarState, LiveDataFeed, TIMEFRAME_SECONDS
-from execution.mt5_client import MT5Client, MT5Response
+from nestquant.production.execution.data_feed import OHLCV, BarState, LiveDataFeed, TIMEFRAME_SECONDS
+from nestquant.production.execution.mt5_client import MT5Client, MT5Response
 
 
 # ===================================================================

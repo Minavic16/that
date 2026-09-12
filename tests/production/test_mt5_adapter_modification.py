@@ -6,19 +6,15 @@ Mocked tests for MT5ExecutionAdapter.modify_position_stop().
 Tests success, rejection, connection failure, and invalid ticket scenarios.
 """
 
-import sys
 import os
 from datetime import datetime, timezone
 from unittest.mock import MagicMock, patch
 
-_project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.insert(0, _project_root)
-sys.path.insert(0, os.path.dirname(_project_root))  # /root for nestquant symlink
 
 import pytest
-from strategy.lifecycle.contracts import ModificationResult, PositionModificationRequest
-from execution.mt5_adapter import MT5ExecutionAdapter
-from execution.mt5_client import MT5Client, MT5Response
+from nestquant.production.strategy.lifecycle.contracts import ModificationResult, PositionModificationRequest
+from nestquant.production.execution.mt5_adapter import MT5ExecutionAdapter
+from nestquant.production.execution.mt5_client import MT5Client, MT5Response
 
 
 class TestMT5ClientModifyPosition:
@@ -102,7 +98,7 @@ class TestMT5AdapterModifyPositionStop:
 
     def test_connection_failure(self):
         """MT5 bridge unreachable."""
-        from execution.mt5_client import MT5ConnectionError
+        from nestquant.production.execution.mt5_client import MT5ConnectionError
         self.client.modify_position.side_effect = MT5ConnectionError("Connection refused")
 
         request = PositionModificationRequest(
@@ -145,7 +141,7 @@ class TestMT5AdapterModifyPositionStop:
 
     def test_connection_error_not_caught(self):
         """MT5ConnectionError is properly caught."""
-        from execution.mt5_client import MT5ConnectionError
+        from nestquant.production.execution.mt5_client import MT5ConnectionError
         self.client.modify_position.side_effect = MT5ConnectionError("timeout")
 
         request = PositionModificationRequest(

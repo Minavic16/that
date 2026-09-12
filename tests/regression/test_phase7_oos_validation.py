@@ -14,15 +14,13 @@ Tests verify:
 from __future__ import annotations
 
 import json
-import sys
 from pathlib import Path
 
 import numpy as np
 import pytest
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 
-PHASE7_DIR = Path("/root/nestquant/research_data/phase7")
+PHASE7_DIR = Path("research/output/phase7")
 REGIONS = [
     "Z3-3.5-Vextreme_vol",
     "Z2.5-3-Vextreme_vol",

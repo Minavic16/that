@@ -10,10 +10,10 @@ from typing import Optional
 import numpy as np
 import pandas as pd
 
-from nestquant.engines.base_engine import BaseEngine
-from nestquant.indicators.session import is_active_session
-from nestquant.risk.circuit_breakers import BreakerSuite
-from nestquant.signals.base import BaseSignal, SignalResult
+from nestquant.research.shared.engines.base_engine import BaseEngine
+from nestquant.core.tooling.indicators.session import is_active_session
+from nestquant.production.risk.circuit_breakers import BreakerSuite
+from nestquant.production.signals.base import BaseSignal, SignalResult
 
 
 @dataclass

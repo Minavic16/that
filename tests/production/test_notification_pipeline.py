@@ -6,22 +6,20 @@ Tests for events, bus, policy, channels, deduplication,
 and failure isolation.
 """
 
-import sys
 import os
 from datetime import datetime, timezone
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import pytest
-from notifications.events import NQTSEvent, EventType, Severity, build_event
-from notifications.bus import EventBus, DeliveryStatus
-from notifications.policy import NotificationPolicy, NotificationDecision
-from notifications.channels import (
+from nestquant.production.notifications.events import NQTSEvent, EventType, Severity, build_event
+from nestquant.production.notifications.bus import EventBus, DeliveryStatus
+from nestquant.production.notifications.policy import NotificationPolicy, NotificationDecision
+from nestquant.production.notifications.channels import (
     FakeNotificationChannel,
     LogNotificationChannel,
     NotificationChannel,
 )
-from notifications.dedup import EventDeduplicator, DeduplicationResult
+from nestquant.production.notifications.dedup import EventDeduplicator, DeduplicationResult
 
 
 # ═══════════════════════════════════════════════════════════════

@@ -25,7 +25,7 @@ import sys
 from datetime import UTC, datetime
 from pathlib import Path
 
-LOG_DIR = Path("/root/nestquant/logs/shadow_live")
+LOG_DIR = Path("/root/that/logs/shadow_live")
 STATE_FILE = LOG_DIR / "state.json"
 SIGNALS_FILE = LOG_DIR / "signals.jsonl"
 KILL_FILE = LOG_DIR / "KILL"

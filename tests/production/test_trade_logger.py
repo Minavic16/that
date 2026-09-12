@@ -9,7 +9,7 @@ from pathlib import Path
 
 import pytest
 
-from nestquant.execution.trade_logger import (
+from nestquant.production.execution.trade_logger import (
     BarRecord,
     ExitRecord,
     FillRecord,
@@ -533,7 +533,7 @@ class TestSummary:
 
 class TestNoForbiddenImports:
     def test_no_mt5_import(self):
-        import nestquant.execution.trade_logger as mod
+        import nestquant.production.execution.trade_logger as mod
         source = open(mod.__file__).read()
         import_lines = [
             line.strip() for line in source.split("\n")
@@ -543,7 +543,7 @@ class TestNoForbiddenImports:
             assert "MetaTrader5" not in line
 
     def test_no_network_calls(self):
-        import nestquant.execution.trade_logger as mod
+        import nestquant.production.execution.trade_logger as mod
         source = open(mod.__file__).read()
         import_lines = [
             line.strip() for line in source.split("\n")

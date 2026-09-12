@@ -13,7 +13,6 @@ from __future__ import annotations
 import json
 import os
 import pickle
-import sys
 import time
 from collections import defaultdict
 from dataclasses import dataclass, field
@@ -24,9 +23,8 @@ import numpy as np
 import pandas as pd
 from scipy import stats
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from zscore.zscore import compute_zscore_causal
+from nestquant.research.shared.zscore.zscore import compute_zscore_causal
 
 # ─── Constants ────────────────────────────────────────────────────────────────
 RNG_SEED = 42
@@ -108,7 +106,7 @@ COST_SCENARIOS = {
     "COST_HIGH": {"spread_pips": 2.0, "slippage_pips": 0.5, "commission_usd": 7.0},
 }
 
-OUT_DIR = Path("/root/nestquant/research_data/phase9b")
+OUT_DIR = Path("research/output/phase9b")
 OUT_DIR.mkdir(parents=True, exist_ok=True)
 
 

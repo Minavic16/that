@@ -239,7 +239,7 @@ class MarketContext:
 
     def to_trade_management_market(self) -> "MarketUpdate":
         """Convert to TradeLifecycleManager's MarketUpdate format."""
-        from strategy.trade_management.manager import MarketUpdate
+        from nestquant.production.strategy.trade_management.manager import MarketUpdate
         return MarketUpdate(
             open=self.open,
             high=self.high,

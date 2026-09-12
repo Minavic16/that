@@ -16,11 +16,8 @@ from unittest.mock import MagicMock
 
 import pytest
 
-NESTQUANT_ROOT = str(Path(__file__).parent.parent)
-if NESTQUANT_ROOT not in os.sys.path:
-    os.sys.path.insert(0, NESTQUANT_ROOT)
 
-from execution.s8_runtime import (
+from nestquant.production.execution.s8_runtime import (
     RuntimeConfig,
     RuntimeMetrics,
     RuntimeMode,

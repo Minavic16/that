@@ -21,12 +21,12 @@ from typing import Optional
 
 import requests
 
-from nestquant.execution.adapter import (
+from nestquant.production.execution.adapter import (
     AdapterConnectionError,
     AdapterError,
     BaseExecutionAdapter,
 )
-from nestquant.execution.contracts import (
+from nestquant.core.contracts.execution_contracts import (
     Direction,
     ExecutionResult,
     ExecutionStatus,

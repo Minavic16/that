@@ -12,7 +12,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from scripts.elapsed_time_analysis import (
+from nestquant.research.experiments.elapsed_time_analysis import (
     bars_for_elapsed,
     compute_forward_returns,
     BARS_PER_MINUTE,

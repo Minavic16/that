@@ -10,7 +10,6 @@ Classification: OOS net expectancy sign + significance.
 from __future__ import annotations
 
 import json
-import sys
 import time
 from pathlib import Path
 from typing import Any
@@ -19,7 +18,6 @@ import numpy as np
 import pandas as pd
 from scipy import stats
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from currency_strength import CurrencyStrengthRanker
 from config import ALL_PAIRS, STRENGTH_LOOKBACKS, STRENGTH_TOP_N, STRENGTH_MIN_DIVERGENCE, STRENGTH_NORMALIZE_WINDOW as NORM_WINDOW
@@ -532,7 +530,7 @@ def main():
     print(f"\n  Research decision: {decision}")
 
     # --- SAVE ---
-    out_dir = Path("/root/nestquant/research_data/phase11_currency")
+    out_dir = Path("research/output/phase11_currency")
     out_dir.mkdir(parents=True, exist_ok=True)
     results["runtime_seconds"] = time.time() - t0
     with open(out_dir / "phase11_results.json", "w") as f:

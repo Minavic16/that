@@ -23,19 +23,19 @@ import os
 from dataclasses import dataclass
 from typing import Optional
 
-from nestquant.execution.adapter import BaseExecutionAdapter
-from nestquant.execution.contracts import (
+from nestquant.production.execution.adapter import BaseExecutionAdapter
+from nestquant.core.contracts.execution_contracts import (
     ExecutionResult,
     RiskDecision,
     TradeIntent,
 )
-from nestquant.execution.health_monitor import HealthMonitor, HealthMonitorConfig
-from nestquant.execution.mt5_adapter import MT5ExecutionAdapter
-from nestquant.execution.mt5_client import MT5Client
-from nestquant.execution.orchestration import ExecutionCoordinator
-from nestquant.execution.risk_guard import RiskGuard, RiskGuardConfig
-from nestquant.execution.trade_logger import TradeLogger
-from nestquant.risk.circuit_breakers import BreakerSuite
+from nestquant.production.execution.health_monitor import HealthMonitor, HealthMonitorConfig
+from nestquant.production.execution.mt5_adapter import MT5ExecutionAdapter
+from nestquant.production.execution.mt5_client import MT5Client
+from nestquant.production.execution.orchestration import ExecutionCoordinator
+from nestquant.production.execution.risk_guard import RiskGuard, RiskGuardConfig
+from nestquant.production.execution.trade_logger import TradeLogger
+from nestquant.production.risk.circuit_breakers import BreakerSuite
 
 # S8 experiment identity (lazy import to avoid circular dependency)
 _experiment_config = None

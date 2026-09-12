@@ -23,18 +23,18 @@ from dataclasses import dataclass
 from datetime import UTC, datetime
 from typing import Optional
 
-from nestquant.config.constitution import CONSTITUTION, ConstitutionRiskConfig
-from nestquant.execution.contracts import (
+from nestquant.core.configuration.constitution import CONSTITUTION, ConstitutionRiskConfig
+from nestquant.core.contracts.execution_contracts import (
     RiskDecision,
     TradeIntent,
 )
-from nestquant.portfolio.position_sizer import (
+from nestquant.production.portfolio.position_sizer import (
     SizingResult,
     compute_position_size,
     pip_size_for_pair,
     pip_value_per_lot,
 )
-from nestquant.risk.circuit_breakers import BreakerSuite
+from nestquant.production.risk.circuit_breakers import BreakerSuite
 
 logger = logging.getLogger(__name__)
 
@@ -281,7 +281,7 @@ class RiskGuard:
         """Create a rejection decision with logging and notification."""
         logger.warning("RISK_REJECTED: %s", reason)
         try:
-            from notifications.signal_notifier import send_risk_block_alert
+            from nestquant.production.notifications.signal_notifier import send_risk_block_alert
             send_risk_block_alert(reason=reason)
         except Exception:
             pass

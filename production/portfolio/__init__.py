@@ -1,6 +1,6 @@
 """NestQuant portfolio management module."""
 
-from nestquant.portfolio.position_sizer import (
+from nestquant.production.portfolio.position_sizer import (
     QuoteSnapshot,
     SizingResult,
     compute_position_size,

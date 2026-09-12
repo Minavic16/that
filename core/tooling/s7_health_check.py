@@ -15,9 +15,9 @@ import argparse
 import json
 import sys
 
-from execution.mt5_client import MT5Client
-from execution.mt5_adapter import MT5ExecutionAdapter
-from execution.health_monitor import HealthMonitor
+from nestquant.production.execution.mt5_client import MT5Client
+from nestquant.production.execution.mt5_adapter import MT5ExecutionAdapter
+from nestquant.production.execution.health_monitor import HealthMonitor
 
 
 def main() -> int:

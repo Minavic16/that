@@ -10,7 +10,7 @@ from typing import Optional
 
 import pandas as pd
 
-from nestquant.regime.labels import REGIME_PARAMS, RegimeLabel
+from nestquant.research.shared.regime.labels import REGIME_PARAMS, RegimeLabel
 
 
 @dataclass

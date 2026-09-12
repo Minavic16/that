@@ -20,16 +20,16 @@ from typing import Any, Optional
 
 import pandas as pd
 
-from nestquant.data.loader import DataLoader
-from nestquant.execution.shadow.health import HealthMonitor
-from nestquant.execution.shadow.kill_switch import KillSwitch
-from nestquant.execution.shadow.live_adapter import ReadOnlyMarketDataAdapter, StubLiveAdapter
-from nestquant.execution.shadow.logger import ShadowLogger
-from nestquant.execution.shadow.safety import install_hard_guard, verify_zero_orders
-from nestquant.execution.shadow.signal_generator import ShadowCausalSignalGenerator
-from nestquant.execution.shadow.state import ShadowState
+from nestquant.core.data.loader import DataLoader
+from nestquant.production.execution.shadow.health import HealthMonitor
+from nestquant.production.execution.shadow.kill_switch import KillSwitch
+from nestquant.production.execution.shadow.live_adapter import ReadOnlyMarketDataAdapter, StubLiveAdapter
+from nestquant.production.execution.shadow.logger import ShadowLogger
+from nestquant.production.execution.shadow.safety import install_hard_guard, verify_zero_orders
+from nestquant.production.execution.shadow.signal_generator import ShadowCausalSignalGenerator
+from nestquant.production.execution.shadow.state import ShadowState
 try:
-    from notifications.signal_notifier import send_signal_alert
+    from nestquant.production.notifications.signal_notifier import send_signal_alert
 except ImportError:
     send_signal_alert = None
 
@@ -87,7 +87,7 @@ class LiveShadowRunner:
                 except Exception:
                     pairs = None
             if not pairs:
-                from nestquant.config.settings import get_config
+                from nestquant.core.configuration.settings import get_config
                 pairs = list(get_config().universe.all_pairs[:20])
         self.pairs = list(pairs)
 
@@ -141,7 +141,7 @@ class LiveShadowRunner:
         # Load Telegram credentials from .env.telegram
         _env_file = Path("/root/that/.env.telegram")
         if not _env_file.exists():
-            _env_file = Path("/root/nestquant/.env.telegram")
+            _env_file = Path("/root/that/.env.telegram")
         if _env_file.exists():
             for line in _env_file.read_text().splitlines():
                 if line.strip() and not line.startswith("#") and "=" in line:

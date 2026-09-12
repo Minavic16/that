@@ -18,15 +18,13 @@ from __future__ import annotations
 import argparse
 import json
 import sys
-from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 import os
 os.environ.setdefault("NESTQUANT_SKIP_LIVE_CHECK", "1")
 os.environ.setdefault("NESTQUANT_SKIP_DASHBOARD_CHECK", "1")
 
-from nestquant.execution.shadow.live_adapter import MT5ReadOnlyAdapter, StubLiveAdapter, WineFlaskReadOnlyAdapter
-from nestquant.execution.shadow.live_runner import LiveShadowRunner
+from nestquant.production.execution.shadow.live_adapter import MT5ReadOnlyAdapter, StubLiveAdapter, WineFlaskReadOnlyAdapter
+from nestquant.production.execution.shadow.live_runner import LiveShadowRunner
 
 
 def main() -> None:

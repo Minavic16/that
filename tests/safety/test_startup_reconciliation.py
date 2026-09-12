@@ -9,15 +9,13 @@ State mismatches detected.
 Unsafe state blocks trading.
 """
 
-import sys
 import os
 from datetime import datetime, timezone
 from unittest.mock import MagicMock, patch
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import pytest
-from strategy.lifecycle.contracts import (
+from nestquant.production.strategy.lifecycle.contracts import (
     Direction,
     ExitReason,
     OrphanPositionPolicy,
@@ -25,10 +23,10 @@ from strategy.lifecycle.contracts import (
     StartupReconciliationResult,
     TradeGeometry,
 )
-from strategy.lifecycle.registry import LifecycleRegistry
-from strategy.trade_management.breakeven import BreakevenConfig
-from strategy.trade_management.max_hold import MaxHoldConfig
-from strategy.trade_management.trailing_stop import TrailingStopConfig
+from nestquant.production.strategy.lifecycle.registry import LifecycleRegistry
+from nestquant.production.strategy.trade_management.breakeven import BreakevenConfig
+from nestquant.production.strategy.trade_management.max_hold import MaxHoldConfig
+from nestquant.production.strategy.trade_management.trailing_stop import TrailingStopConfig
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -84,7 +82,7 @@ def _make_mock_runtime(
     orphan_policy=OrphanPositionPolicy.HALT,
 ):
     """Create a mock S8Runtime for testing reconciliation."""
-    from execution.s8_runtime import RuntimeConfig, RuntimeMode, RuntimeState, S8Runtime
+    from nestquant.production.execution.s8_runtime import RuntimeConfig, RuntimeMode, RuntimeState, S8Runtime
 
     config = RuntimeConfig(
         mode=RuntimeMode.DRY_RUN if mode == "dry-run" else RuntimeMode.EXPERIMENTAL_LIVE,
@@ -139,7 +137,7 @@ class TestCleanStartupReconciliation:
 
     def test_clean_startup_dry_run_with_empty_registry(self):
         """Dry-run with empty registry → safe, state = RUNNING."""
-        from execution.s8_runtime import RuntimeState
+        from nestquant.production.execution.s8_runtime import RuntimeState
         runtime = _make_mock_runtime(mode="dry-run")
         result = runtime.reconcile_startup_state()
 
@@ -165,7 +163,7 @@ class TestBrokerOrphanDetection:
 
     def test_broker_orphan_halts_runtime(self):
         """Broker has position, registry does not → SAFE_HALTED."""
-        from execution.s8_runtime import RuntimeState
+        from nestquant.production.execution.s8_runtime import RuntimeState
         broker_pos = _make_broker_position()
         runtime = _make_mock_runtime(
             mode="live",
@@ -181,7 +179,7 @@ class TestBrokerOrphanDetection:
 
     def test_broker_orphan_multiple_halt(self):
         """Multiple broker orphans → all detected, SAFE_HALTED."""
-        from execution.s8_runtime import RuntimeState
+        from nestquant.production.execution.s8_runtime import RuntimeState
         bp1 = _make_broker_position(ticket="111", symbol="EURUSD")
         bp2 = _make_broker_position(ticket="222", symbol="GBPUSD", type_=1)
         runtime = _make_mock_runtime(
@@ -220,7 +218,7 @@ class TestClosePolicy:
 
     def test_close_policy_closes_orphan(self):
         """CLOSE policy: orphan detected → adapter.close_position() called."""
-        from execution.s8_runtime import RuntimeState
+        from nestquant.production.execution.s8_runtime import RuntimeState
         broker_pos = _make_broker_position()
         runtime = _make_mock_runtime(
             mode="live",
@@ -245,7 +243,7 @@ class TestClosePolicy:
 
     def test_close_policy_failure_leaves_halted(self):
         """CLOSE policy: if close fails → SAFE_HALTED."""
-        from execution.s8_runtime import RuntimeState
+        from nestquant.production.execution.s8_runtime import RuntimeState
         broker_pos = _make_broker_position()
         runtime = _make_mock_runtime(
             mode="live",
@@ -309,7 +307,7 @@ class TestStateMismatchDetection:
 
     def test_stop_loss_mismatch_halts_runtime(self):
         """Broker SL differs from internal SL → SAFE_HALTED."""
-        from execution.s8_runtime import RuntimeState
+        from nestquant.production.execution.s8_runtime import RuntimeState
         reg = _make_registry_with_position(sl=1.0980)
         # Broker has different SL
         broker_pos = _make_broker_position(sl=0.0960, type_=0)
@@ -326,7 +324,7 @@ class TestStateMismatchDetection:
 
     def test_direction_mismatch_halts_runtime(self):
         """Broker has BUY, registry has SELL → different keys: orphan + ghost."""
-        from execution.s8_runtime import RuntimeState
+        from nestquant.production.execution.s8_runtime import RuntimeState
         reg = _make_registry_with_position(direction=Direction.LONG)
         # Broker has SELL (type=1) → different key
         broker_pos = _make_broker_position(type_=1, sl=0.0980)
@@ -368,7 +366,7 @@ class TestRuntimeStateMachine:
 
     def test_reconcile_sets_reconciling_state(self):
         """During reconciliation, state should be RECONCILING."""
-        from execution.s8_runtime import RuntimeState
+        from nestquant.production.execution.s8_runtime import RuntimeState
         runtime = _make_mock_runtime(mode="dry-run")
         # Patch to check intermediate state
         original_reconcile = runtime.reconcile_startup_state
@@ -384,7 +382,7 @@ class TestRuntimeStateMachine:
 
     def test_safe_halted_state_blocks_processing(self):
         """SAFE_HALTED state blocks signal processing."""
-        from execution.s8_runtime import RuntimeState
+        from nestquant.production.execution.s8_runtime import RuntimeState
         runtime = _make_mock_runtime(mode="dry-run")
         runtime._state = RuntimeState.SAFE_HALTED
 
@@ -396,7 +394,7 @@ class TestRuntimeStateMachine:
 
     def test_halted_state_prevents_start(self):
         """start() should not proceed if reconciliation fails."""
-        from execution.s8_runtime import RuntimeState
+        from nestquant.production.execution.s8_runtime import RuntimeState
         broker_pos = _make_broker_position()
         runtime = _make_mock_runtime(
             mode="live",

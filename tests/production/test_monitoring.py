@@ -27,11 +27,8 @@ from datetime import UTC, datetime
 import numpy as np
 import pytest
 
-NESTQUANT_ROOT = str(Path(__file__).parent.parent)
-if NESTQUANT_ROOT not in os.sys.path:
-    os.sys.path.insert(0, NESTQUANT_ROOT)
 
-from monitoring.percentiles import (
+from nestquant.production.monitoring.percentiles import (
     PercentileResult,
     PercentileDistribution,
     compute_percentile,
@@ -39,25 +36,25 @@ from monitoring.percentiles import (
     classify_value,
     MIN_SAMPLES,
 )
-from monitoring.ev_stability import (
+from nestquant.production.monitoring.ev_stability import (
     EVStabilityAnalyzer,
     CoreEVMetrics,
     RollingWindow,
 )
-from monitoring.dd_clustering import (
+from nestquant.production.monitoring.dd_clustering import (
     DDClusterAnalyzer,
     DDEpisode,
     DDCusteringMetrics,
 )
-from monitoring.circuit_breaker_analysis import (
+from nestquant.production.monitoring.circuit_breaker_analysis import (
     CircuitBreakerCalibrator,
     BreakerTriggerAnalysis,
 )
-from monitoring.slippage import SlippageTracker
-from monitoring.equity_tracker import EquityTracker
-from monitoring.health_collector import HealthCollector
-from monitoring.spread_collector import SpreadCollector
-from monitoring.models import (
+from nestquant.production.monitoring.slippage import SlippageTracker
+from nestquant.production.monitoring.equity_tracker import EquityTracker
+from nestquant.production.monitoring.health_collector import HealthCollector
+from nestquant.production.monitoring.spread_collector import SpreadCollector
+from nestquant.production.monitoring.models import (
     MarketSnapshot,
     ExecutionSnapshot,
     AccountSnapshot,
@@ -597,7 +594,7 @@ class TestResearchAnalysis:
     def test_load_s0(self):
         from analytics.research_analysis import ResearchAnalyzer
         analyzer = ResearchAnalyzer()
-        s0_path = Path(NESTQUANT_ROOT) / "research_data" / "simple_strategies" / "S0_breakout_results.json"
+        s0_path = Path("archive/research/output") / "simple_strategies" / "S0_breakout_results.json"
         if s0_path.exists():
             data = analyzer.load_s0_results(str(s0_path))
             assert data is not None
@@ -608,7 +605,7 @@ class TestResearchAnalysis:
     def test_load_s5_5(self):
         from analytics.research_analysis import ResearchAnalyzer
         analyzer = ResearchAnalyzer()
-        s55_path = Path(NESTQUANT_ROOT) / "research_data" / "simple_strategies" / "S5_5_failure_analysis.json"
+        s55_path = Path("archive/research/output") / "simple_strategies" / "S5_5_failure_analysis.json"
         if s55_path.exists():
             data = analyzer.load_s5_5_results(str(s55_path))
             assert data is not None
@@ -619,7 +616,7 @@ class TestResearchAnalysis:
     def test_analyze_monthly_stats(self):
         from analytics.research_analysis import ResearchAnalyzer
         analyzer = ResearchAnalyzer()
-        s55_path = Path(NESTQUANT_ROOT) / "research_data" / "simple_strategies" / "S5_5_failure_analysis.json"
+        s55_path = Path("archive/research/output") / "simple_strategies" / "S5_5_failure_analysis.json"
         if s55_path.exists():
             data = analyzer.load_s5_5_results(str(s55_path))
             result = analyzer.analyze_monthly_stats(data)
@@ -632,7 +629,7 @@ class TestResearchAnalysis:
     def test_analyze_consecutive_losses(self):
         from analytics.research_analysis import ResearchAnalyzer
         analyzer = ResearchAnalyzer()
-        s55_path = Path(NESTQUANT_ROOT) / "research_data" / "simple_strategies" / "S5_5_failure_analysis.json"
+        s55_path = Path("archive/research/output") / "simple_strategies" / "S5_5_failure_analysis.json"
         if s55_path.exists():
             data = analyzer.load_s5_5_results(str(s55_path))
             result = analyzer.analyze_consecutive_losses(data)
@@ -644,7 +641,7 @@ class TestResearchAnalysis:
     def test_analyze_risk_scaling(self):
         from analytics.research_analysis import ResearchAnalyzer
         analyzer = ResearchAnalyzer()
-        s6_path = Path(NESTQUANT_ROOT) / "research_data" / "simple_strategies" / "S6_adaptive_risk_challenge.json"
+        s6_path = Path("archive/research/output") / "simple_strategies" / "S6_adaptive_risk_challenge.json"
         if s6_path.exists():
             data = analyzer.load_s6_results(str(s6_path))
             result = analyzer.analyze_risk_scaling(data)
@@ -656,7 +653,7 @@ class TestResearchAnalysis:
     def test_analyze_monte_carlo(self):
         from analytics.research_analysis import ResearchAnalyzer
         analyzer = ResearchAnalyzer()
-        s6_path = Path(NESTQUANT_ROOT) / "research_data" / "simple_strategies" / "S6_adaptive_risk_challenge.json"
+        s6_path = Path("archive/research/output") / "simple_strategies" / "S6_adaptive_risk_challenge.json"
         if s6_path.exists():
             data = analyzer.load_s6_results(str(s6_path))
             result = analyzer.analyze_monte_carlo(data)

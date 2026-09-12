@@ -8,7 +8,7 @@ import tempfile
 
 import pytest
 
-from nestquant.config.policies import (
+from nestquant.core.configuration.policies import (
     ExecutionParams,
     HardLimits,
     LiveParameterPolicy,

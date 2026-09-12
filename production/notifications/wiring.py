@@ -9,7 +9,7 @@ WARNING events are sent with lower priority.
 INFORMATION events are log-only.
 
 Usage:
-    from notifications.wiring import create_notification_pipeline
+    from nestquant.production.notifications.wiring import create_notification_pipeline
     bus = create_notification_pipeline()
     bus.emit(build_event(...))
 """
@@ -20,11 +20,11 @@ import os
 import logging
 from typing import Optional
 
-from notifications.events import NQTSEvent, Severity, build_event, EventType
-from notifications.bus import EventBus, DeliveryStatus
-from notifications.policy import NotificationPolicy
-from notifications.channels import TelegramChannel, LogNotificationChannel
-from notifications.dedup import EventDeduplicator
+from nestquant.production.notifications.events import NQTSEvent, Severity, build_event, EventType
+from nestquant.production.notifications.bus import EventBus, DeliveryStatus
+from nestquant.production.notifications.policy import NotificationPolicy
+from nestquant.production.notifications.channels import TelegramChannel, LogNotificationChannel
+from nestquant.production.notifications.dedup import EventDeduplicator
 
 logger = logging.getLogger("nqts.notifications")
 

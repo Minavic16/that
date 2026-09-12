@@ -17,10 +17,10 @@ Event ordering (matches research):
 4. IF no exit: trailing → breakeven (may move SL)
 """
 
-from strategy.trade_management.breakeven import BreakevenConfig, BreakevenManager
-from strategy.trade_management.max_hold import MaxHoldConfig, MaxHoldManager, MaxHoldResult
-from strategy.trade_management.trailing_stop import TrailingStopConfig, TrailingStopManager
-from strategy.trade_management.manager import (
+from nestquant.production.strategy.trade_management.breakeven import BreakevenConfig, BreakevenManager
+from nestquant.production.strategy.trade_management.max_hold import MaxHoldConfig, MaxHoldManager, MaxHoldResult
+from nestquant.production.strategy.trade_management.trailing_stop import TrailingStopConfig, TrailingStopManager
+from nestquant.production.strategy.trade_management.manager import (
     TradeAction,
     TradeState,
     MarketUpdate,

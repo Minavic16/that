@@ -6,7 +6,6 @@ from collections import defaultdict
 from dataclasses import dataclass, field
 from typing import List, Dict, Optional
 
-sys.path.insert(0, '/root')
 import position_sizing as ps
 
 # Config (exact copy from test_final_scalper.py)
@@ -582,14 +581,14 @@ if __name__ == '__main__':
     filters = filter_effectiveness(pdata)
 
     # Save JSON
-    os.makedirs('/root/nestquant/logs', exist_ok=True)
+    os.makedirs('/root/that/logs', exist_ok=True)
     output = {
         'baseline': baseline,
         'cost_sensitivity': cost_sens,
         'filter_effectiveness': filters,
     }
-    with open('/root/nestquant/logs/mr_baseline_metrics.json', 'w') as f:
+    with open('/root/that/logs/mr_baseline_metrics.json', 'w') as f:
         json.dump(output, f, indent=2, default=str)
-    print("\n  Saved /root/nestquant/logs/mr_baseline_metrics.json")
+    print("\n  Saved /root/that/logs/mr_baseline_metrics.json")
 
     print("\n[DONE]")

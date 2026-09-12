@@ -6,7 +6,7 @@ from __future__ import annotations
 
 import pandas as pd
 
-from nestquant.config.settings import (
+from nestquant.core.configuration.settings import (
     SESSION_CLOSE_UTC,
     SESSION_OPEN_UTC,
     SKIP_FRIDAY_CLOSE,

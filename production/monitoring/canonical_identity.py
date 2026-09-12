@@ -216,7 +216,7 @@ class PopulationMismatch:
 KNOWN_POPULATIONS: list[PopulationMismatch] = [
     PopulationMismatch(
         population_name="S0",
-        source_file="research_data/simple_strategies/S0_breakout_results.json",
+        source_file="research/output/simple_strategies/S0_breakout_results.json",
         trade_count=1002,
         has_breakeven=True,
         has_max_hold=True,
@@ -231,7 +231,7 @@ KNOWN_POPULATIONS: list[PopulationMismatch] = [
     ),
     PopulationMismatch(
         population_name="S6A",
-        source_file="research_data/simple_strategies/S6_adaptive_risk_challenge.json",
+        source_file="research/output/simple_strategies/S6_adaptive_risk_challenge.json",
         trade_count=15321,
         has_breakeven=True,
         has_max_hold=True,
@@ -250,7 +250,7 @@ KNOWN_POPULATIONS: list[PopulationMismatch] = [
     ),
     PopulationMismatch(
         population_name="S5.5",
-        source_file="research_data/simple_strategies/S5_5_failure_analysis.json",
+        source_file="research/output/simple_strategies/S5_5_failure_analysis.json",
         trade_count=15321,
         has_breakeven=True,
         has_max_hold=True,

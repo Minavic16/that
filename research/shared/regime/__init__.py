@@ -1,9 +1,9 @@
 """NestQuant regime detection module."""
 
-from nestquant.regime.base import RegimeDetector, RegimePrediction
-from nestquant.regime.labels import RegimeLabel, REGIME_PARAMS
-from nestquant.regime.adx_regime import ADXRegimeDetector
-from nestquant.regime.hybrid import HybridRegimeDetector
+from nestquant.research.shared.regime.base import RegimeDetector, RegimePrediction
+from nestquant.research.shared.regime.labels import RegimeLabel, REGIME_PARAMS
+from nestquant.research.shared.regime.adx_regime import ADXRegimeDetector
+from nestquant.research.shared.regime.hybrid import HybridRegimeDetector
 
 __all__ = [
     "RegimeDetector",

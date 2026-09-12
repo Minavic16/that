@@ -14,11 +14,8 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-NESTQUANT_ROOT = str(Path(__file__).parent.parent)
-if NESTQUANT_ROOT not in os.sys.path:
-    os.sys.path.insert(0, NESTQUANT_ROOT)
 
-from scripts.s8_runner import main as runner_main, parse_args
+from nestquant.research.experiments.s8_runner import main as runner_main, parse_args
 
 
 def _make_mock_factory():

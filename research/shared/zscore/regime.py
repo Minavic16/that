@@ -9,7 +9,7 @@ from __future__ import annotations
 import numpy as np
 import pandas as pd
 from numba import njit
-from zscore.contracts import RegimeState
+from nestquant.core.contracts.zscore_contracts import RegimeState
 
 
 @njit(cache=True)

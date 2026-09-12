@@ -17,12 +17,9 @@ from typing import Optional
 
 import pytest
 
-NESTQUANT_ROOT = str(Path(__file__).parent.parent)
-if NESTQUANT_ROOT not in os.sys.path:
-    os.sys.path.insert(0, NESTQUANT_ROOT)
 
-from execution.contracts import Direction, TradeIntent
-from execution.intent_factory import IntentFactory, IntentFactoryError
+from nestquant.core.contracts.execution_contracts import Direction, TradeIntent
+from nestquant.production.execution.intent_factory import IntentFactory, IntentFactoryError
 
 # Mock SignalResult to avoid importing signals.base (which requires pandas)
 # This is a lightweight mirror of the real SignalResult for testing only.

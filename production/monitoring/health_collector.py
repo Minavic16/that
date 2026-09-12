@@ -16,7 +16,7 @@ from datetime import UTC, datetime
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
-from monitoring.models import HealthSnapshot
+from nestquant.production.monitoring.models import HealthSnapshot
 
 logger = logging.getLogger(__name__)
 

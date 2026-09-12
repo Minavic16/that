@@ -16,12 +16,12 @@ from typing import Optional
 import pandas as pd
 import numpy as np
 
-from nestquant.engines.regime_backtest_engine import RegimeBacktestEngine, RegimeBacktestConfig
-from nestquant.regime.base import RegimeDetector
-from nestquant.regime.adx_regime import ADXRegimeDetector
-from nestquant.regime.hybrid import HybridRegimeDetector
-from nestquant.signals.base import BaseSignal
-from nestquant.backtest.metrics import calculate_metrics, BacktestMetrics
+from nestquant.research.shared.engines.regime_backtest_engine import RegimeBacktestEngine, RegimeBacktestConfig
+from nestquant.research.shared.regime.base import RegimeDetector
+from nestquant.research.shared.regime.adx_regime import ADXRegimeDetector
+from nestquant.research.shared.regime.hybrid import HybridRegimeDetector
+from nestquant.production.signals.base import BaseSignal
+from nestquant.research.shared.backtest.metrics import calculate_metrics, BacktestMetrics
 
 
 @dataclass

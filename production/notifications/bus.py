@@ -14,7 +14,7 @@ import logging
 from datetime import datetime, timezone
 from typing import Callable, Optional
 
-from notifications.events import NQTSEvent, EventType, Severity
+from nestquant.production.notifications.events import NQTSEvent, EventType, Severity
 
 logger = logging.getLogger(__name__)
 
@@ -52,7 +52,7 @@ class EventBus:
             policy: NotificationPolicy instance. If None, all events are suppressed.
             channels: List of NotificationChannel instances. If None, no channels.
         """
-        from notifications.policy import NotificationPolicy
+        from nestquant.production.notifications.policy import NotificationPolicy
         self._policy = policy or NotificationPolicy()
         self._channels = list(channels or [])
         self._event_log: list[dict] = []  # delivery audit trail

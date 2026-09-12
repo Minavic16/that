@@ -6,9 +6,9 @@ from __future__ import annotations
 
 import pandas as pd
 
-from nestquant.indicators.atr import calculate_atr
-from nestquant.indicators.swing import swing_high_series, swing_low_series
-from nestquant.signals.base import BaseSignal, SignalResult
+from nestquant.core.tooling.indicators.atr import calculate_atr
+from nestquant.core.tooling.indicators.swing import swing_high_series, swing_low_series
+from nestquant.production.signals.base import BaseSignal, SignalResult
 
 
 # Research-validated defaults (S0-S6: ATR_SL_MULT=2.0, RRR=3.5)

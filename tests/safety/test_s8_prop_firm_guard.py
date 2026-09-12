@@ -16,13 +16,10 @@ from unittest.mock import MagicMock
 
 import pytest
 
-NESTQUANT_ROOT = str(Path(__file__).parent.parent)
-if NESTQUANT_ROOT not in os.sys.path:
-    os.sys.path.insert(0, NESTQUANT_ROOT)
 
-from execution.contracts import Direction, TradeIntent, RiskDecision
-from execution.prop_firm_guard import PropFirmConfig, PropFirmGuard, PropFirmState
-from execution.risk_guard import RiskGuardConfig
+from nestquant.core.contracts.execution_contracts import Direction, TradeIntent, RiskDecision
+from nestquant.production.execution.prop_firm_guard import PropFirmConfig, PropFirmGuard, PropFirmState
+from nestquant.production.execution.risk_guard import RiskGuardConfig
 
 
 # ===================================================================

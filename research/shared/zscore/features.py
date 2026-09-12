@@ -6,7 +6,7 @@ from __future__ import annotations
 
 import numpy as np
 import pandas as pd
-from zscore.contracts import FeatureSet
+from nestquant.core.contracts.zscore_contracts import FeatureSet
 
 
 def causal_atr(

@@ -4,7 +4,7 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from scripts.temporal_stability_analysis import (
+from nestquant.research.experiments.temporal_stability_analysis import (
     compute_metrics,
     bootstrap_ci,
     outlier_sensitivity,

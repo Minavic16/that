@@ -2,8 +2,8 @@
 from __future__ import annotations
 
 import pandas as pd
-from zscore.contracts import RegimeState, ZScoreObservation
-from zscore.signals import (
+from nestquant.core.contracts.zscore_contracts import RegimeState, ZScoreObservation
+from nestquant.research.shared.zscore.signals import (
     classify_observation,
     filter_to_executable,
     generate_candidate_signal,

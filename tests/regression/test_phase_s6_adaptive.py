@@ -4,11 +4,9 @@ Regression tests for Phase S6: Adaptive Risk & Challenge Optimization.
 import json
 import pytest
 from pathlib import Path
-import sys
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 
-RESULTS = Path("/root/nestquant/research_data/simple_strategies/S6_adaptive_risk_challenge.json")
+RESULTS = Path("research/output/simple_strategies/S6_adaptive_risk_challenge.json")
 
 
 @pytest.fixture(scope="module")

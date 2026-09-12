@@ -52,7 +52,7 @@ def _sample_df(n=800, seed=7, start="2020-01-01"):
 
 class TestShadowCausalSignalGenerator:
     def test_short_data_neutral(self):
-        from nestquant.execution.shadow.signal_generator import ShadowCausalSignalGenerator
+        from nestquant.production.execution.shadow.signal_generator import ShadowCausalSignalGenerator
 
         gen = ShadowCausalSignalGenerator()
         df = pd.DataFrame(
@@ -62,7 +62,7 @@ class TestShadowCausalSignalGenerator:
         assert gen.generate(df, "EUR/USD") is None
 
     def test_frozen_variant_b_params(self):
-        from nestquant.execution.shadow.signal_generator import STRATEGY_PARAMS
+        from nestquant.production.execution.shadow.signal_generator import STRATEGY_PARAMS
 
         assert STRATEGY_PARAMS["lookback"] == 5
         assert STRATEGY_PARAMS["atr_period"] == 14
@@ -71,7 +71,7 @@ class TestShadowCausalSignalGenerator:
         assert STRATEGY_PARAMS["max_hold_days"] == 7
 
     def test_deterministic(self):
-        from nestquant.execution.shadow.signal_generator import ShadowCausalSignalGenerator
+        from nestquant.production.execution.shadow.signal_generator import ShadowCausalSignalGenerator
 
         gen = ShadowCausalSignalGenerator()
         df = _sample_df(800, seed=42)
@@ -85,7 +85,7 @@ class TestShadowCausalSignalGenerator:
             assert r1.signal_id != r2.signal_id  # UUID differs but content same
 
     def test_rrr_35_and_sl_tp_side(self):
-        from nestquant.execution.shadow.signal_generator import ShadowCausalSignalGenerator
+        from nestquant.production.execution.shadow.signal_generator import ShadowCausalSignalGenerator
 
         gen = ShadowCausalSignalGenerator()
         # Force a breakout by constructing data where swing level is known
@@ -104,7 +104,7 @@ class TestShadowCausalSignalGenerator:
                 assert rec.expected_sl > rec.expected_entry > rec.expected_tp
 
     def test_timestamp_is_bar_close_utc(self):
-        from nestquant.execution.shadow.signal_generator import ShadowCausalSignalGenerator
+        from nestquant.production.execution.shadow.signal_generator import ShadowCausalSignalGenerator
 
         gen = ShadowCausalSignalGenerator()
         df = _sample_df(300, seed=9)
@@ -119,7 +119,7 @@ class TestShadowCausalSignalGenerator:
 
     def test_causality_no_lookahead(self):
         """Mutating future bars must not change decision at bar t."""
-        from nestquant.execution.shadow.signal_generator import ShadowCausalSignalGenerator
+        from nestquant.production.execution.shadow.signal_generator import ShadowCausalSignalGenerator
 
         gen = ShadowCausalSignalGenerator()
         df = _sample_df(600, seed=101)
@@ -138,7 +138,7 @@ class TestShadowCausalSignalGenerator:
             assert rec_before.swing_level == rec_again.swing_level
 
     def test_latency_measured(self):
-        from nestquant.execution.shadow.signal_generator import ShadowCausalSignalGenerator
+        from nestquant.production.execution.shadow.signal_generator import ShadowCausalSignalGenerator
 
         gen = ShadowCausalSignalGenerator()
         df = _sample_df(800, seed=55)
@@ -148,7 +148,7 @@ class TestShadowCausalSignalGenerator:
             assert rec.generation_latency_ms < 100  # should be <100ms on 800 bars
 
     def test_batch_vs_incremental_consistency(self):
-        from nestquant.execution.shadow.signal_generator import ShadowCausalSignalGenerator
+        from nestquant.production.execution.shadow.signal_generator import ShadowCausalSignalGenerator
 
         gen = ShadowCausalSignalGenerator()
         df = _sample_df(1000, seed=202)
@@ -165,7 +165,7 @@ class TestShadowCausalSignalGenerator:
 
     def test_synthetic_breakout_fires(self):
         """Construct deterministic breakout: price crosses known swing high."""
-        from nestquant.execution.shadow.signal_generator import ShadowCausalSignalGenerator
+        from nestquant.production.execution.shadow.signal_generator import ShadowCausalSignalGenerator
 
         # Build a df where a swing high is clearly established then broken
         # Use flat then trend to make swing detection stable
@@ -193,8 +193,8 @@ class TestShadowCausalSignalGenerator:
 
 class TestShadowLogger:
     def test_creates_files_and_appends_jsonl(self, tmp_path: Path):
-        from nestquant.execution.shadow.logger import ShadowLogger
-        from nestquant.execution.shadow.signal_generator import ShadowCausalSignalGenerator
+        from nestquant.production.execution.shadow.logger import ShadowLogger
+        from nestquant.production.execution.shadow.signal_generator import ShadowCausalSignalGenerator
 
         log_dir = tmp_path / "shadow"
         logger = ShadowLogger(log_dir=log_dir)
@@ -232,7 +232,7 @@ class TestShadowLogger:
 
 class TestHealthMonitor:
     def test_healthy_initially(self):
-        from nestquant.execution.shadow.health import HealthMonitor
+        from nestquant.production.execution.shadow.health import HealthMonitor
 
         h = HealthMonitor()
         h.record_bar(pd.Timestamp("2024-01-01", tz=timezone.utc).isoformat())
@@ -241,7 +241,7 @@ class TestHealthMonitor:
         assert snap.bars_processed == 1
 
     def test_degraded_on_gap(self):
-        from nestquant.execution.shadow.health import HealthMonitor
+        from nestquant.production.execution.shadow.health import HealthMonitor
 
         h = HealthMonitor()
         h.record_bar(pd.Timestamp.now(timezone.utc).isoformat())
@@ -251,7 +251,7 @@ class TestHealthMonitor:
         assert snap.gaps_detected == 1
 
     def test_failed_on_kill_switch(self):
-        from nestquant.execution.shadow.health import HealthMonitor
+        from nestquant.production.execution.shadow.health import HealthMonitor
 
         h = HealthMonitor()
         h.set_kill_switch(True)
@@ -260,7 +260,7 @@ class TestHealthMonitor:
         assert snap.kill_switch_active is True
 
     def test_latency_stats(self):
-        from nestquant.execution.shadow.health import HealthMonitor
+        from nestquant.production.execution.shadow.health import HealthMonitor
 
         h = HealthMonitor()
         for v in [1.0, 2.0, 3.0, 100.0]:
@@ -276,7 +276,7 @@ class TestHealthMonitor:
 
 class TestKillSwitch:
     def test_inactive_then_active_and_clear(self, tmp_path: Path):
-        from nestquant.execution.shadow.kill_switch import KillSwitch
+        from nestquant.production.execution.shadow.kill_switch import KillSwitch
 
         ks = KillSwitch(primary_path=tmp_path / "KILL")
         assert not ks.is_active()
@@ -294,7 +294,7 @@ class TestKillSwitch:
 
 class TestShadowState:
     def test_save_load_roundtrip(self, tmp_path: Path):
-        from nestquant.execution.shadow.state import ShadowState
+        from nestquant.production.execution.shadow.state import ShadowState
 
         p = tmp_path / "state.json"
         s = ShadowState(path=p)
@@ -314,7 +314,7 @@ class TestShadowState:
 
 class TestShadowRunnerIntegration:
     def test_small_replay_produces_logs_and_state(self, tmp_path: Path):
-        from nestquant.execution.shadow.runner import ShadowRunner
+        from nestquant.production.execution.shadow.runner import ShadowRunner
 
         log_dir = tmp_path / "shadow"
         runner = ShadowRunner(
@@ -333,7 +333,7 @@ class TestShadowRunnerIntegration:
         assert summary.health["status"] in ("HEALTHY", "DEGRADED")
 
     def test_runner_restart_is_idempotent(self, tmp_path: Path):
-        from nestquant.execution.shadow.runner import ShadowRunner
+        from nestquant.production.execution.shadow.runner import ShadowRunner
 
         log_dir = tmp_path / "shadow"
         # First run
@@ -350,8 +350,8 @@ class TestShadowRunnerIntegration:
         assert s2.bars_processed == 0 or s2.bars_processed < 60
 
     def test_kill_switch_halts_runner(self, tmp_path: Path):
-        from nestquant.execution.shadow.kill_switch import KillSwitch
-        from nestquant.execution.shadow.runner import ShadowRunner
+        from nestquant.production.execution.shadow.kill_switch import KillSwitch
+        from nestquant.production.execution.shadow.runner import ShadowRunner
 
         log_dir = tmp_path / "shadow"
         ks = KillSwitch(primary_path=log_dir / "KILL")
@@ -380,7 +380,7 @@ class TestShadowRunnerIntegration:
             assert "OrderSend" not in src
 
     def test_intended_orders_are_shadow_only(self, tmp_path: Path):
-        from nestquant.execution.shadow.runner import ShadowRunner
+        from nestquant.production.execution.shadow.runner import ShadowRunner
 
         log_dir = tmp_path / "shadow"
         runner = ShadowRunner(pairs=["EUR/USD"], timeframe="4h", log_dir=log_dir, limit_bars=300)

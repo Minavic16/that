@@ -9,13 +9,13 @@ from typing import Optional
 
 import pytest
 
-from nestquant.execution.contracts import (
+from nestquant.core.contracts.execution_contracts import (
     Direction,
     RiskDecision,
     TradeIntent,
 )
-from nestquant.execution.risk_guard import RiskGuard, RiskGuardConfig
-from nestquant.risk.circuit_breakers import BreakerSuite
+from nestquant.production.execution.risk_guard import RiskGuard, RiskGuardConfig
+from nestquant.production.risk.circuit_breakers import BreakerSuite
 
 
 # ---------------------------------------------------------------------------
@@ -404,7 +404,7 @@ class TestStatus:
 
 class TestProtocolConformance:
     def test_satisfies_risk_evaluator_protocol(self):
-        from nestquant.execution.orchestration import RiskEvaluator
+        from nestquant.production.execution.orchestration import RiskEvaluator
         guard = RiskGuard()
         assert isinstance(guard, RiskEvaluator)
 
@@ -421,8 +421,8 @@ class TestProtocolConformance:
 
 class TestCoordinatorIntegration:
     def test_risk_guard_with_coordinator(self):
-        from nestquant.execution.orchestration import ExecutionCoordinator
-        from nestquant.execution.adapter import FakeExecutionAdapter
+        from nestquant.production.execution.orchestration import ExecutionCoordinator
+        from nestquant.production.execution.adapter import FakeExecutionAdapter
 
         guard = RiskGuard()
         adapter = FakeExecutionAdapter()
@@ -435,8 +435,8 @@ class TestCoordinatorIntegration:
         assert adapter.execution_count == 1
 
     def test_risk_guard_rejection_through_coordinator(self):
-        from nestquant.execution.orchestration import ExecutionCoordinator
-        from nestquant.execution.adapter import FakeExecutionAdapter
+        from nestquant.production.execution.orchestration import ExecutionCoordinator
+        from nestquant.production.execution.adapter import FakeExecutionAdapter
 
         config = RiskGuardConfig(max_concurrent_positions=0)
         guard = RiskGuard(config=config)
@@ -457,7 +457,7 @@ class TestCoordinatorIntegration:
 
 class TestNoForbiddenImports:
     def test_no_mt5_import(self):
-        import nestquant.execution.risk_guard as mod
+        import nestquant.production.execution.risk_guard as mod
         source = open(mod.__file__).read()
         import_lines = [
             line.strip() for line in source.split("\n")
@@ -467,7 +467,7 @@ class TestNoForbiddenImports:
             assert "MetaTrader5" not in line
 
     def test_no_network_calls(self):
-        import nestquant.execution.risk_guard as mod
+        import nestquant.production.execution.risk_guard as mod
         source = open(mod.__file__).read()
         import_lines = [
             line.strip() for line in source.split("\n")

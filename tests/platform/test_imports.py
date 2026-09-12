@@ -73,7 +73,7 @@ class TestSmokeImports:
         assert nestquant.__version__ == "0.2.0"
 
     def test_config_singleton(self):
-        from nestquant.config.settings import get_config
+        from nestquant.core.configuration.settings import get_config
 
         cfg = get_config()
         assert cfg is not None

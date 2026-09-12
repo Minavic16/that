@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import numpy as np
 import pandas as pd
-from zscore.features import (
+from nestquant.research.shared.zscore.features import (
     causal_atr,
     causal_ema_distance,
     causal_realized_volatility,

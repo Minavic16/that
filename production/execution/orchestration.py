@@ -31,7 +31,7 @@ from __future__ import annotations
 
 from typing import Protocol, runtime_checkable
 
-from nestquant.execution.contracts import (
+from nestquant.core.contracts.execution_contracts import (
     Direction,
     ExecutionResult,
     ExecutionStatus,

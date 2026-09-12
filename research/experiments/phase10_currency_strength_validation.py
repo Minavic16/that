@@ -12,7 +12,6 @@ from __future__ import annotations
 import csv
 import json
 import pickle
-import sys
 import time
 from pathlib import Path
 
@@ -20,7 +19,6 @@ import numpy as np
 import pandas as pd
 from scipy import stats
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 # ─── Constants ────────────────────────────────────────────────────────────────
 RNG_SEED = 42
@@ -71,7 +69,7 @@ REGIME_PERIODS = [
     ("2022-2024", 2022, 2024), ("2025-2026", 2025, 2026),
 ]
 
-OUT_DIR = Path("/root/nestquant/research_data/phase10")
+OUT_DIR = Path("research/output/phase10")
 FIG_DIR = OUT_DIR / "figures"
 OUT_DIR.mkdir(parents=True, exist_ok=True)
 FIG_DIR.mkdir(parents=True, exist_ok=True)

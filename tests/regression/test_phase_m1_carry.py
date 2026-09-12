@@ -2,14 +2,12 @@
 from __future__ import annotations
 
 import json
-import sys
 from pathlib import Path
 
 import pytest
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 
-PHASE_M1_DIR = Path("/root/nestquant/research_data/spectrum_m1_carry")
+PHASE_M1_DIR = Path("research/output/spectrum_m1_carry")
 
 
 @pytest.fixture(scope="module")

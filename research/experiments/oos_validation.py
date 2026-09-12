@@ -13,7 +13,7 @@ import numpy as np
 import pandas as pd
 from datetime import datetime
 
-sys.path = ['/root/nestquant', '/root'] + [p for p in sys.path if p not in ('/root', '/root/nestquant')]
+sys.path = ['/root/that', '/root'] + [p for p in sys.path if p not in ('/root', '/root/that')]
 for mod in list(sys.modules.keys()):
     if 'config' in mod or 'risk_manager' in mod or 'backtest' in mod or 'currency_strength' in mod or 'indicators' in mod:
         del sys.modules[mod]
@@ -188,7 +188,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--is_sims', type=int, default=IS_SIMS_PER_YEAR)
     parser.add_argument('--oos_sims', type=int, default=OOS_SIMS)
-    parser.add_argument('--output', type=str, default='/root/nestquant/backtests/oos_results.json')
+    parser.add_argument('--output', type=str, default='/root/that/backtests/oos_results.json')
     args = parser.parse_args()
 
     pairs = config.TRADEABLE_PAIRS

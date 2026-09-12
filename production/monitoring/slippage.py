@@ -16,7 +16,7 @@ from typing import Optional
 
 import numpy as np
 
-from monitoring.models import ExecutionSnapshot
+from nestquant.production.monitoring.models import ExecutionSnapshot
 
 logger = logging.getLogger(__name__)
 
@@ -143,7 +143,7 @@ class SlippageTracker:
 
     def get_percentiles(self) -> dict[str, float]:
         """Return dict of P50/P75/P90/P95/P99 for overall slippage."""
-        from monitoring.percentiles import compute_percentiles
+        from nestquant.production.monitoring.percentiles import compute_percentiles
 
         dist = self.get_overall_distribution()
         if len(dist) == 0:

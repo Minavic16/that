@@ -17,9 +17,6 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-NESTQUANT_ROOT = str(Path(__file__).parent.parent)
-if NESTQUANT_ROOT not in os.sys.path:
-    os.sys.path.insert(0, NESTQUANT_ROOT)
 
 # Mock pandas if not available (for strategy wiring tests)
 _MOCK_PD = None
@@ -35,12 +32,12 @@ if "pandas" not in sys.modules:
     sys.modules["pandas"] = _mock_pd
     _MOCK_PD = _mock_pd
 
-from execution.contracts import Direction, ExecutionResult, ExecutionStatus, TradeIntent
-from execution.data_feed import OHLCV
-from execution.intent_factory import IntentFactory
-from execution.orchestration import ExecutionCoordinator
-from execution.prop_firm_guard import PropFirmConfig, PropFirmGuard
-from execution.s8_runtime import (
+from nestquant.core.contracts.execution_contracts import Direction, ExecutionResult, ExecutionStatus, TradeIntent
+from nestquant.production.execution.data_feed import OHLCV
+from nestquant.production.execution.intent_factory import IntentFactory
+from nestquant.production.execution.orchestration import ExecutionCoordinator
+from nestquant.production.execution.prop_firm_guard import PropFirmConfig, PropFirmGuard
+from nestquant.production.execution.s8_runtime import (
     DryRunAdapter,
     PositionTracker,
     RuntimeConfig,

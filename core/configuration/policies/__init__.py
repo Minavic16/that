@@ -6,7 +6,7 @@ Provides the research → live parameter contract:
   - JSON serialization/deserialization
 """
 
-from nestquant.config.policies.loader import (
+from nestquant.core.configuration.policies.loader import (
     dict_to_policy,
     json_to_policy,
     load_policy,
@@ -14,14 +14,14 @@ from nestquant.config.policies.loader import (
     policy_to_json,
     save_policy,
 )
-from nestquant.config.policies.models import (
+from nestquant.core.configuration.policies.models import (
     ExecutionParams,
     HardLimits,
     LiveParameterPolicy,
     RiskParams,
     StrategyParams,
 )
-from nestquant.config.policies.validator import (
+from nestquant.core.configuration.policies.validator import (
     PolicyValidationError,
     assert_valid,
     validate_execution,

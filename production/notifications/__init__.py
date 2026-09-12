@@ -13,21 +13,21 @@ Components:
   - dedup: EventDeduplicator
 """
 
-from notifications.events import (
+from nestquant.production.notifications.events import (
     NQTSEvent,
     EventType,
     Severity,
     build_event,
 )
-from notifications.bus import EventBus, DeliveryStatus
-from notifications.policy import NotificationPolicy, NotificationDecision
-from notifications.channels import (
+from nestquant.production.notifications.bus import EventBus, DeliveryStatus
+from nestquant.production.notifications.policy import NotificationPolicy, NotificationDecision
+from nestquant.production.notifications.channels import (
     NotificationChannel,
     FakeNotificationChannel,
     TelegramChannel,
     LogNotificationChannel,
 )
-from notifications.dedup import EventDeduplicator, DeduplicationResult
+from nestquant.production.notifications.dedup import EventDeduplicator, DeduplicationResult
 
 __all__ = [
     "NQTSEvent",

@@ -6,12 +6,12 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from nestquant.indicators.adx import calculate_adx
-from nestquant.indicators.atr import calculate_atr
-from nestquant.indicators.ema import calculate_ema
-from nestquant.indicators.pip import pip_size, pips_to_price, price_to_pips
-from nestquant.indicators.resampler import build_all_timeframes, resample_ohlcv
-from nestquant.indicators.swing import swing_high_series, swing_low_series
+from nestquant.core.tooling.indicators.adx import calculate_adx
+from nestquant.core.tooling.indicators.atr import calculate_atr
+from nestquant.core.tooling.indicators.ema import calculate_ema
+from nestquant.core.tooling.indicators.pip import pip_size, pips_to_price, price_to_pips
+from nestquant.core.tooling.indicators.resampler import build_all_timeframes, resample_ohlcv
+from nestquant.core.tooling.indicators.swing import swing_high_series, swing_low_series
 
 
 class TestATR:

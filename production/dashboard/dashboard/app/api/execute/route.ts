@@ -21,19 +21,19 @@ export const POST = withAdmin(async (req: NextRequest) => {
       ];
 
       const enableExec = body.enable_execution ? "1" : "0";
-      const cmd = `cd /root/nestquant && NESTQUANT_LIVE_MODE=${enableExec} MT5_API_URL=http://127.0.0.1:5001 /root/venv/bin/python scripts/run_live_executor.py --pairs ${pairs.length} --poll 5 --log-dir logs/shadow_live &`;
+      const cmd = `cd /root/that && NESTQUANT_LIVE_MODE=${enableExec} MT5_API_URL=http://127.0.0.1:5001 /root/venv/bin/python scripts/run_live_executor.py --pairs ${pairs.length} --poll 5 --log-dir logs/shadow_live &`;
       await execAsync(cmd);
 
       return NextResponse.json({ ok: true, mode: enableExec === "1" ? "LIVE" : "SHADOW", pairs: pairs.length });
     }
 
     if (action === "stop") {
-      await execAsync("touch /root/nestquant/logs/shadow_live/kill_switch");
+      await execAsync("touch /root/that/logs/shadow_live/kill_switch");
       return NextResponse.json({ ok: true, message: "Kill switch activated" });
     }
 
     if (action === "status") {
-      const logDir = "/root/nestquant/logs/shadow_live";
+      const logDir = "/root/that/logs/shadow_live";
       const stateFile = join(logDir, "state.json");
       const killFile = join(logDir, "kill_switch");
 

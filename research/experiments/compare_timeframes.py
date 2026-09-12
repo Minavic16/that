@@ -8,14 +8,12 @@ Do NOT modify production signal logic. This is research/analysis only.
 from __future__ import annotations
 
 import json
-import sys
 from pathlib import Path
 
 import numpy as np
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-RESULTS_DIR = Path("/root/nestquant/research_data/phase3")
+RESULTS_DIR = Path("research/output/phase3")
 
 TIMEFRAMES = ["1min", "15min", "1h", "4h"]
 

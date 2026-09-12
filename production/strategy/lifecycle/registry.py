@@ -18,7 +18,7 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Optional
 
-from strategy.lifecycle.contracts import (
+from nestquant.production.strategy.lifecycle.contracts import (
     Direction,
     ExitReason,
     LifecycleAction,
@@ -28,11 +28,11 @@ from strategy.lifecycle.contracts import (
     PositionLifecycleState,
     ReconciliationResult,
 )
-from strategy.lifecycle.contracts import PositionModificationRequest
-from strategy.trade_management.manager import TradeAction, TradeLifecycleManager, TradeState
-from strategy.trade_management.breakeven import BreakevenConfig
-from strategy.trade_management.max_hold import MaxHoldConfig
-from strategy.trade_management.trailing_stop import TrailingStopConfig
+from nestquant.production.strategy.lifecycle.contracts import PositionModificationRequest
+from nestquant.production.strategy.trade_management.manager import TradeAction, TradeLifecycleManager, TradeState
+from nestquant.production.strategy.trade_management.breakeven import BreakevenConfig
+from nestquant.production.strategy.trade_management.max_hold import MaxHoldConfig
+from nestquant.production.strategy.trade_management.trailing_stop import TrailingStopConfig
 
 logger = logging.getLogger(__name__)
 

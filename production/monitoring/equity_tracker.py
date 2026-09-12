@@ -18,7 +18,7 @@ from urllib.request import Request, urlopen
 
 import numpy as np
 
-from monitoring.models import AccountSnapshot
+from nestquant.production.monitoring.models import AccountSnapshot
 
 logger = logging.getLogger(__name__)
 

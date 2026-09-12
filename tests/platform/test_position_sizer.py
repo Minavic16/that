@@ -4,7 +4,7 @@ Tests for nestquant.portfolio.position_sizer module.
 
 import pytest
 
-from nestquant.portfolio.position_sizer import (
+from nestquant.production.portfolio.position_sizer import (
     DEFAULT_SNAPSHOT,
     QuoteSnapshot,
     compute_position_size,

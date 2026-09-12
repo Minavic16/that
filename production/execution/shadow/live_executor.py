@@ -22,11 +22,11 @@ from typing import Optional
 
 import pandas as pd
 
-from nestquant.execution.contracts import Direction, OrderRequest, TradeIntent, RiskDecision
-from nestquant.execution.shadow.health import HealthMonitor
-from nestquant.execution.shadow.kill_switch import KillSwitch
-from nestquant.execution.shadow.logger import ShadowLogger
-from nestquant.execution.shadow.signal_generator import (
+from nestquant.core.contracts.execution_contracts import Direction, OrderRequest, TradeIntent, RiskDecision
+from nestquant.production.execution.shadow.health import HealthMonitor
+from nestquant.production.execution.shadow.kill_switch import KillSwitch
+from nestquant.production.execution.shadow.logger import ShadowLogger
+from nestquant.production.execution.shadow.signal_generator import (
     LOOKBACK,
     ATR_PERIOD,
     ATR_SL_MULT,
@@ -37,10 +37,10 @@ from nestquant.execution.shadow.signal_generator import (
     ShadowCausalSignalGenerator,
     ShadowSignalRecord,
 )
-from nestquant.execution.shadow.state import ShadowState
-from nestquant.execution.shadow.wine_flask_adapter import WineFlaskExecutionAdapter
-from nestquant.execution.risk_guard import RiskGuard, RiskGuardConfig
-from nestquant.config.constitution import CONSTITUTION
+from nestquant.production.execution.shadow.state import ShadowState
+from nestquant.production.execution.shadow.wine_flask_adapter import WineFlaskExecutionAdapter
+from nestquant.production.execution.risk_guard import RiskGuard, RiskGuardConfig
+from nestquant.core.configuration.constitution import CONSTITUTION
 
 logger = logging.getLogger(__name__)
 

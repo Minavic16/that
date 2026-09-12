@@ -14,10 +14,10 @@ from typing import Optional
 
 import pandas as pd
 
-from nestquant.regime.base import RegimeDetector, RegimePrediction
-from nestquant.regime.labels import RegimeLabel, REGIME_PARAMS
-from nestquant.regime.adx_regime import ADXRegimeDetector
-from nestquant.regime.tabfm.predictor import TabFMRegimeDetector
+from nestquant.research.shared.regime.base import RegimeDetector, RegimePrediction
+from nestquant.research.shared.regime.labels import RegimeLabel, REGIME_PARAMS
+from nestquant.research.shared.regime.adx_regime import ADXRegimeDetector
+from nestquant.research.shared.regime.tabfm.predictor import TabFMRegimeDetector
 
 
 @dataclass

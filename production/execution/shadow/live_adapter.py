@@ -34,7 +34,7 @@ from typing import Any, Optional
 
 import pandas as pd
 
-from nestquant.data.loader import DataLoader
+from nestquant.core.data.loader import DataLoader
 
 
 @dataclass(frozen=True)
@@ -170,7 +170,7 @@ class StubLiveAdapter(ReadOnlyMarketDataAdapter):
                     except Exception:
                         target_pairs = None
                 if not target_pairs:
-                    from nestquant.config.settings import get_config
+                    from nestquant.core.configuration.settings import get_config
                     target_pairs = list(get_config().universe.all_pairs[:20])
             for pair in target_pairs:
                 df = self._loader.load_pair(pair, timeframe=self.timeframe)

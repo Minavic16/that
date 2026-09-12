@@ -22,10 +22,8 @@ from __future__ import annotations
 import argparse
 import json
 import sys
-from pathlib import Path
 
 # Ensure `nestquant` import works when invoked as `python scripts/run_shadow.py`
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 
 # Shadow imports require NESTQUANT_SKIP checks not to fail on missing secrets
 import os
@@ -33,7 +31,7 @@ import os
 os.environ.setdefault("NESTQUANT_SKIP_LIVE_CHECK", "1")
 os.environ.setdefault("NESTQUANT_SKIP_DASHBOARD_CHECK", "1")
 
-from nestquant.execution.shadow.runner import ShadowRunner
+from nestquant.production.execution.shadow.runner import ShadowRunner
 
 
 def main() -> None:

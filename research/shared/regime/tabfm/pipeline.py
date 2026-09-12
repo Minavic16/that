@@ -11,10 +11,10 @@ from typing import Optional
 import numpy as np
 import pandas as pd
 
-from nestquant.regime.labels import RegimeLabel
-from nestquant.regime.tabfm.model import TabFMModel, TabFMConfig
-from nestquant.regime.tabfm.features import FeatureEngineer
-from nestquant.regime.tabfm.trainer import RegimeLabeler, LabelingConfig
+from nestquant.research.shared.regime.labels import RegimeLabel
+from nestquant.research.shared.regime.tabfm.model import TabFMModel, TabFMConfig
+from nestquant.research.shared.regime.tabfm.features import FeatureEngineer
+from nestquant.research.shared.regime.tabfm.trainer import RegimeLabeler, LabelingConfig
 
 
 @dataclass

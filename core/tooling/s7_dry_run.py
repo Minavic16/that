@@ -20,10 +20,9 @@ import time
 from pathlib import Path
 
 # Add project root to path
-sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-from nestquant.execution.contracts import Direction, TradeIntent
-from nestquant.execution.mt5_client import MT5Client
+from nestquant.core.contracts.execution_contracts import Direction, TradeIntent
+from nestquant.production.execution.mt5_client import MT5Client
 
 
 def main() -> int:
@@ -88,7 +87,7 @@ def main() -> int:
     print(f"Intent: {intent}")
 
     # Execute through client directly (not full S7 pipeline for safety)
-    from nestquant.execution.mt5_adapter import MT5ExecutionAdapter
+    from nestquant.production.execution.mt5_adapter import MT5ExecutionAdapter
 
     adapter = MT5ExecutionAdapter(client=client, magic=0, deviation=10)
     result = adapter.execute(intent)

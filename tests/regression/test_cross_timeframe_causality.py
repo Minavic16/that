@@ -15,9 +15,9 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from zscore.zscore import _zscore_causal_core
-from zscore.regime import classify_regime_chunked, _causal_ema, _causal_atr
-from zscore.features import causal_realized_volatility, causal_ema_distance
+from nestquant.research.shared.zscore.zscore import _zscore_causal_core
+from nestquant.research.shared.zscore.regime import classify_regime_chunked, _causal_ema, _causal_atr
+from nestquant.research.shared.zscore.features import causal_realized_volatility, causal_ema_distance
 
 
 def _make_synthetic_ohlcv(

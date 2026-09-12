@@ -6,12 +6,10 @@ import numpy as np
 import pandas as pd
 import pytest
 from pathlib import Path
-import sys
 import json
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 
-from scripts.phase_s0_breakout_reassessment import (
+from nestquant.research.experiments.phase_s0_breakout_reassessment import (
     compute_signals, simulate, metrics, merge,
     LOOKBACK, ATR_SL_MULT, RRR, MAX_HOLD_DAYS, BREAKEVEN_RATIO,
     SPREAD_PIPS, SLIPPAGE_PIPS, RNG_SEED, N_PERM,
@@ -20,8 +18,8 @@ from scripts.phase_s0_breakout_reassessment import (
 
 @pytest.fixture(scope="module")
 def eurusd_4h():
-    from indicators.atr import calculate_atr
-    from indicators.swing import swing_high_series, swing_low_series
+    from nestquant.core.tooling.indicators.atr import calculate_atr
+    from nestquant.core.tooling.indicators.swing import swing_high_series, swing_low_series
     fp = Path("/root/data/EUR_USD.pkl")
     raw = pd.read_pickle(fp)
     for k, v in raw.items():
@@ -206,11 +204,11 @@ class TestMetrics:
 
 class TestResultsFile:
     def test_results_exist(self):
-        fp = Path("/root/nestquant/research_data/simple_strategies/S0_breakout_results.json")
+        fp = Path("research/output/simple_strategies/S0_breakout_results.json")
         assert fp.exists()
 
     def test_results_structure(self):
-        fp = Path("/root/nestquant/research_data/simple_strategies/S0_breakout_results.json")
+        fp = Path("research/output/simple_strategies/S0_breakout_results.json")
         with open(fp) as f:
             data = json.load(f)
         assert "phase" in data
@@ -223,7 +221,7 @@ class TestResultsFile:
         assert "classification" in data
 
     def test_classification_is_valid(self):
-        fp = Path("/root/nestquant/research_data/simple_strategies/S0_breakout_results.json")
+        fp = Path("research/output/simple_strategies/S0_breakout_results.json")
         with open(fp) as f:
             data = json.load(f)
         valid = ["A. NO STRUCTURAL SUPPORT — KILL",
@@ -233,7 +231,7 @@ class TestResultsFile:
         assert data["classification"] in valid
 
     def test_all_experiments_have_results(self):
-        fp = Path("/root/nestquant/research_data/simple_strategies/S0_breakout_results.json")
+        fp = Path("research/output/simple_strategies/S0_breakout_results.json")
         with open(fp) as f:
             data = json.load(f)
         assert data["original_result"]["n"] > 0
@@ -244,13 +242,13 @@ class TestResultsFile:
         assert len(data["param_variants"]) == 9
 
     def test_permutation_p_value(self):
-        fp = Path("/root/nestquant/research_data/simple_strategies/S0_breakout_results.json")
+        fp = Path("research/output/simple_strategies/S0_breakout_results.json")
         with open(fp) as f:
             data = json.load(f)
         assert 0 <= data["permutation"]["p_value"] <= 1
 
     def test_year_by_year_covers_range(self):
-        fp = Path("/root/nestquant/research_data/simple_strategies/S0_breakout_results.json")
+        fp = Path("research/output/simple_strategies/S0_breakout_results.json")
         with open(fp) as f:
             data = json.load(f)
         years = [int(y) for y in data["year_by_year"].keys()]

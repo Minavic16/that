@@ -18,7 +18,7 @@ from urllib.request import Request, urlopen
 
 import numpy as np
 
-from monitoring.models import LatencySnapshot
+from nestquant.production.monitoring.models import LatencySnapshot
 
 logger = logging.getLogger(__name__)
 
@@ -97,7 +97,7 @@ class LatencyTracker:
 
     def get_percentiles(self, component: str) -> dict[str, float]:
         """Return dict of P50/P75/P90/P95/P99 for a component's latency."""
-        from monitoring.percentiles import compute_percentiles
+        from nestquant.production.monitoring.percentiles import compute_percentiles
 
         dist = self.get_distribution(component)
         if len(dist) == 0:

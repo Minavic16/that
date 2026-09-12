@@ -7,7 +7,7 @@ from datetime import datetime, timezone
 
 import pytest
 
-from nestquant.execution.contracts import (
+from nestquant.core.contracts.execution_contracts import (
     ContractValidationError,
     Direction,
     ExecutionResult,
@@ -667,31 +667,31 @@ class TestNoForbiddenImports:
     """Verify contracts do not import MT5, research, or strategy modules."""
 
     def test_no_mt5_import(self):
-        import nestquant.execution.contracts as mod
+        import nestquant.core.contracts.execution_contracts as mod
         source = open(mod.__file__).read()
         assert "MetaTrader5" not in source
         assert "mt5" not in source.lower().split("#")[0]  # not in imports
 
     def test_no_research_import(self):
-        import nestquant.execution.contracts as mod
+        import nestquant.core.contracts.execution_contracts as mod
         source = open(mod.__file__).read()
         assert "from nestquant.research" not in source
         assert "import nestquant.research" not in source
 
     def test_no_strategy_import(self):
-        import nestquant.execution.contracts as mod
+        import nestquant.core.contracts.execution_contracts as mod
         source = open(mod.__file__).read()
         assert "from nestquant.zscore" not in source
         assert "import nestquant.zscore" not in source
 
     def test_no_logging(self):
-        import nestquant.execution.contracts as mod
+        import nestquant.core.contracts.execution_contracts as mod
         source = open(mod.__file__).read()
         assert "import logging" not in source
         assert "logger" not in source
 
     def test_no_network_calls(self):
-        import nestquant.execution.contracts as mod
+        import nestquant.core.contracts.execution_contracts as mod
         source = open(mod.__file__).read()
         assert "requests." not in source
         assert "urllib" not in source

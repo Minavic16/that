@@ -4,7 +4,7 @@ from __future__ import annotations
 import numpy as np
 import pandas as pd
 import pytest
-from data.validation import (
+from nestquant.core.data.validation import (
     validate_data_quality,
     validate_duplicates,
     validate_gaps,
@@ -151,7 +151,7 @@ class TestValidateDataQuality:
 
 class TestProvenance:
     def test_provenance_record(self):
-        from data.acquisition import record_provenance
+        from nestquant.core.data.acquisition import record_provenance
 
         prov = record_provenance(
             source="dukascopy",

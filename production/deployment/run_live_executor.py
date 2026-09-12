@@ -5,9 +5,7 @@ import argparse
 import logging
 import os
 import sys
-from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).parent.parent))
 
 logging.basicConfig(
     level=logging.INFO,
@@ -15,8 +13,8 @@ logging.basicConfig(
 )
 logger = logging.getLogger("live_executor")
 
-from execution.shadow.wine_flask_adapter import WineFlaskExecutionAdapter
-from execution.shadow.live_executor import LiveExecutionRunner
+from nestquant.production.execution.shadow.wine_flask_adapter import WineFlaskExecutionAdapter
+from nestquant.production.execution.shadow.live_executor import LiveExecutionRunner
 
 ALL_PAIRS = [
     "EUR/USD", "GBP/USD", "USD/JPY", "USD/CHF", "USD/CAD",

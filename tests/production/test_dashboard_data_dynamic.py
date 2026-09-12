@@ -98,7 +98,7 @@ class TestDashboardDataDynamic:
         assert bars_1 != bars_2
 
     def test_signals_emitted_changes_with_file(self, tmp_path: Path):
-        """Signals emitted is counted from signals.jsonl — prove it changes."""
+        """Signals emitted is counted from nestquant.production.signals.jsonl — prove it changes."""
         sigs = tmp_path / "signals.jsonl"
 
         sigs.write_text('{"id":"s1"}\n{"id":"s2"}\n{"id":"s3"}\n')

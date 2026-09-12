@@ -13,7 +13,6 @@ from __future__ import annotations
 import csv
 import json
 import pickle
-import sys
 import time
 from collections import defaultdict
 from pathlib import Path
@@ -21,9 +20,8 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from zscore.zscore import compute_zscore_causal
+from nestquant.research.shared.zscore.zscore import compute_zscore_causal
 
 # ─── Constants ────────────────────────────────────────────────────────────────
 RNG_SEED = 42
@@ -71,7 +69,7 @@ WF_SPLITS = [
     {"train_end": 2023, "test_start": 2024, "test_end": 2024, "label": "2024"},
     {"train_end": 2024, "test_start": 2025, "test_end": 2026, "label": "2025-2026"},
 ]
-OUT_DIR = Path("/root/nestquant/research_data/phase10")
+OUT_DIR = Path("research/output/phase10")
 OUT_DIR.mkdir(parents=True, exist_ok=True)
 
 

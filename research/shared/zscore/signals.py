@@ -13,7 +13,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any
 
-from zscore.contracts import RegimeState, Signal, ZScoreObservation
+from nestquant.core.contracts.zscore_contracts import RegimeState, Signal, ZScoreObservation
 
 
 @dataclass

@@ -21,11 +21,9 @@ import sys
 from pathlib import Path
 
 # Ensure project root is on path
-PROJECT_ROOT = str(Path(__file__).parent.parent)
 if PROJECT_ROOT not in sys.path:
-    os.sys.path.insert(0, PROJECT_ROOT)
 
-from execution.s8_runtime import RuntimeConfig, RuntimeMode, S8Runtime
+from nestquant.production.execution.s8_runtime import RuntimeConfig, RuntimeMode, S8Runtime
 
 
 def setup_logging(level: str = "INFO") -> None:
@@ -89,7 +87,7 @@ def parse_args() -> argparse.Namespace:
 
 def main(runtime_factory=None) -> int:
     """Main entry point. runtime_factory defaults to S8Runtime."""
-    from execution.s8_runtime import S8Runtime as _S8Runtime
+    from nestquant.production.execution.s8_runtime import S8Runtime as _S8Runtime
     _runtime_factory = runtime_factory or _S8Runtime
 
     args = parse_args()

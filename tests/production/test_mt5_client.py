@@ -11,7 +11,7 @@ from urllib.error import HTTPError, URLError
 
 import pytest
 
-from nestquant.execution.mt5_client import (
+from nestquant.production.execution.mt5_client import (
     MT5Client,
     MT5ClientError,
     MT5ConnectionError,
@@ -256,7 +256,7 @@ class TestSendOrder:
 
     def test_send_order_direction_case_insensitive(self):
         """Direction mapping should be case-insensitive via .upper() in send_order."""
-        from nestquant.execution.mt5_client import DIRECTION_TO_MT5_TYPE
+        from nestquant.production.execution.mt5_client import DIRECTION_TO_MT5_TYPE
 
         # Mapping keys are uppercase
         assert DIRECTION_TO_MT5_TYPE["BUY"] == 0
@@ -438,7 +438,7 @@ class TestErrorHandling:
 
 class TestNoForbiddenImports:
     def test_no_mt5_import(self):
-        import nestquant.execution.mt5_client as mod
+        import nestquant.production.execution.mt5_client as mod
         source = open(mod.__file__).read()
         # Only check actual import lines, not docstrings
         import_lines = [
@@ -450,7 +450,7 @@ class TestNoForbiddenImports:
             assert "import mt5" not in line
 
     def test_no_network_calls_beyond_urllib(self):
-        import nestquant.execution.mt5_client as mod
+        import nestquant.production.execution.mt5_client as mod
         source = open(mod.__file__).read()
         import_lines = [
             line.strip() for line in source.split("\n")

@@ -9,19 +9,19 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from nestquant.execution.adapter import AdapterValidationError
-from nestquant.execution.contracts import (
+from nestquant.production.execution.adapter import AdapterValidationError
+from nestquant.core.contracts.execution_contracts import (
     Direction,
     ExecutionResult,
     ExecutionStatus,
     OrderRequest,
 )
-from nestquant.execution.mt5_adapter import (
+from nestquant.production.execution.mt5_adapter import (
     MT5ExecutionAdapter,
     nestquant_to_mt5_symbol,
     mt5_to_nestquant_symbol,
 )
-from nestquant.execution.mt5_client import MT5Client, MT5Response, MT5ConnectionError
+from nestquant.production.execution.mt5_client import MT5Client, MT5Response, MT5ConnectionError
 
 
 # ---------------------------------------------------------------------------
@@ -463,12 +463,12 @@ class TestGetPositions:
 
 class TestProtocolConformance:
     def test_satisfies_execution_adapter_protocol(self):
-        from nestquant.execution.orchestration import ExecutionAdapter
+        from nestquant.production.execution.orchestration import ExecutionAdapter
         adapter = MT5ExecutionAdapter()
         assert isinstance(adapter, ExecutionAdapter)
 
     def test_satisfies_base_adapter(self):
-        from nestquant.execution.adapter import BaseExecutionAdapter
+        from nestquant.production.execution.adapter import BaseExecutionAdapter
         adapter = MT5ExecutionAdapter()
         assert isinstance(adapter, BaseExecutionAdapter)
 
@@ -486,7 +486,7 @@ class TestProtocolConformance:
 
 class TestNoForbiddenImports:
     def test_no_mt5_import(self):
-        import nestquant.execution.mt5_adapter as mod
+        import nestquant.production.execution.mt5_adapter as mod
         source = open(mod.__file__).read()
         # Only check actual import lines, not docstrings
         import_lines = [
@@ -498,25 +498,25 @@ class TestNoForbiddenImports:
             assert "import mt5" not in line
 
     def test_no_research_import(self):
-        import nestquant.execution.mt5_adapter as mod
+        import nestquant.production.execution.mt5_adapter as mod
         source = open(mod.__file__).read()
         assert "from nestquant.research" not in source
         assert "import nestquant.research" not in source
 
     def test_no_strategy_import(self):
-        import nestquant.execution.mt5_adapter as mod
+        import nestquant.production.execution.mt5_adapter as mod
         source = open(mod.__file__).read()
         assert "from nestquant.zscore" not in source
         assert "import nestquant.zscore" not in source
 
     def test_no_logging(self):
-        import nestquant.execution.mt5_adapter as mod
+        import nestquant.production.execution.mt5_adapter as mod
         source = open(mod.__file__).read()
         assert "import logging" not in source
         assert "logger" not in source
 
     def test_no_monitoring(self):
-        import nestquant.execution.mt5_adapter as mod
+        import nestquant.production.execution.mt5_adapter as mod
         source = open(mod.__file__).read()
         assert "import telemetry" not in source
         assert "send_alert" not in source

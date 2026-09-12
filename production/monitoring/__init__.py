@@ -18,24 +18,24 @@ Components:
 - Data schema for future calibration
 """
 
-from monitoring.percentiles import PercentileResult, compute_percentiles
-from monitoring.ev_stability import EVStabilityAnalyzer
-from monitoring.dd_clustering import DDClusterAnalyzer
-from monitoring.architecture import (
+from nestquant.production.monitoring.percentiles import PercentileResult, compute_percentiles
+from nestquant.production.monitoring.ev_stability import EVStabilityAnalyzer
+from nestquant.production.monitoring.dd_clustering import DDClusterAnalyzer
+from nestquant.production.monitoring.architecture import (
     MetricState,
     MetricDirection,
     MetricClassification,
     MonitoringClassification,
     classify_percentile,
 )
-from monitoring.decision import (
+from nestquant.production.monitoring.decision import (
     DecisionAction,
     DecisionSource,
     Decision,
     HardSafetyLimits,
     DecisionEngine,
 )
-from monitoring.canonical_identity import (
+from nestquant.production.monitoring.canonical_identity import (
     CanonicalStrategyIdentity,
     PopulationMismatch,
     KNOWN_POPULATIONS,

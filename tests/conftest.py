@@ -9,7 +9,7 @@ os.environ["NESTQUANT_SKIP_DASHBOARD_CHECK"] = "1"
 import numpy as np
 import pandas as pd
 import pytest
-from zscore.contracts import InstrumentMetadata, MarketData
+from nestquant.core.contracts.zscore_contracts import InstrumentMetadata, MarketData
 
 # --- Pre-existing fixtures (used by tests/test_engines.py, test_indicators.py, test_signals.py) ---
 

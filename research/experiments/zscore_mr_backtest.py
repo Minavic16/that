@@ -8,7 +8,7 @@ Reconstructs the historical NestQuant Z-score MR strategy:
   - Full cost model: spread + commission + slippage
 
 Usage:
-    cd /root/nestquant && .venv/bin/python -u scripts/zscore_mr_backtest.py
+    cd /root/that && .venv/bin/python -u scripts/zscore_mr_backtest.py
 """
 from __future__ import annotations
 
@@ -24,9 +24,8 @@ import numpy as np
 import pandas as pd
 
 warnings.filterwarnings("ignore")
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from zscore.zscore import compute_zscore_causal
+from nestquant.research.shared.zscore.zscore import compute_zscore_causal
 
 # ═══════════════════════════════════════════════════════════════
 # STRATEGY PARAMETERS (DO NOT MODIFY during forensic run)
@@ -768,7 +767,7 @@ if __name__ == "__main__":
         "max_dd_pct": mdd * 100,
     }
 
-    out_dir = Path("/root/nestquant/research_data/phase4")
+    out_dir = Path("research/output/phase4")
     out_dir.mkdir(parents=True, exist_ok=True)
     out_file = out_dir / "zscore_mr_backtest.json"
     with open(out_file, "w") as f:

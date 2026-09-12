@@ -27,7 +27,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import Optional
 
-from nestquant.execution.contracts import (
+from nestquant.core.contracts.execution_contracts import (
     ContractValidationError,
     Direction,
     ExecutionResult,
@@ -38,7 +38,7 @@ from nestquant.execution.contracts import (
 # Forward reference for lifecycle contracts
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from strategy.lifecycle.contracts import ModificationResult, PositionModificationRequest
+    from nestquant.production.strategy.lifecycle.contracts import ModificationResult, PositionModificationRequest
 
 
 # ---------------------------------------------------------------------------
@@ -165,7 +165,7 @@ class BaseExecutionAdapter(ABC):
         Returns:
             ModificationResult with success status and broker confirmation.
         """
-        from strategy.lifecycle.contracts import ModificationResult
+        from nestquant.production.strategy.lifecycle.contracts import ModificationResult
         from datetime import datetime, timezone
         return ModificationResult(
             success=False,
@@ -273,7 +273,7 @@ class FakeExecutionAdapter(BaseExecutionAdapter):
 
         Always succeeds and returns requested_sl as broker_sl.
         """
-        from strategy.lifecycle.contracts import ModificationResult
+        from nestquant.production.strategy.lifecycle.contracts import ModificationResult
         from datetime import datetime, timezone
         return ModificationResult(
             success=True,

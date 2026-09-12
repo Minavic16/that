@@ -4,7 +4,7 @@ Single backtest with full path recording. All exit configurations
 are evaluated offline from recorded paths (O(1) backtests).
 
 Usage:
-    cd /root/nestquant && .venv/bin/python -u scripts/exit_surface.py
+    cd /root/that && .venv/bin/python -u scripts/exit_surface.py
 """
 from __future__ import annotations
 
@@ -22,9 +22,8 @@ import pandas as pd
 from scipy import stats as sp_stats
 
 warnings.filterwarnings("ignore")
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from zscore.zscore import compute_zscore_causal
+from nestquant.research.shared.zscore.zscore import compute_zscore_causal
 
 # ═══════════════════════════════════════════════════════════════
 # FROZEN PARAMETERS (entry logic — DO NOT CHANGE)
@@ -60,7 +59,7 @@ SPREAD = {
 DEFAULT_USD = {"USD": 1.0, "EUR": 1.08, "GBP": 1.26, "JPY": 0.0067,
                "CHF": 0.88, "AUD": 0.65, "CAD": 0.74, "NZD": 0.60}
 
-OUT = Path("/root/nestquant/research_data/phase5")
+OUT = Path("research/output/phase5")
 OUT.mkdir(parents=True, exist_ok=True)
 
 # ═══════════════════════════════════════════════════════════════

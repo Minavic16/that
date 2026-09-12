@@ -8,21 +8,21 @@ from datetime import datetime, timezone
 
 import pytest
 
-from nestquant.execution.adapter import (
+from nestquant.production.execution.adapter import (
     AdapterConnectionError,
     AdapterError,
     AdapterValidationError,
     BaseExecutionAdapter,
     FakeExecutionAdapter,
 )
-from nestquant.execution.contracts import (
+from nestquant.core.contracts.execution_contracts import (
     ContractValidationError,
     Direction,
     ExecutionResult,
     ExecutionStatus,
     OrderRequest,
 )
-from nestquant.execution.orchestration import (
+from nestquant.production.execution.orchestration import (
     ExecutionCoordinator,
     RiskEvaluator,
 )
@@ -48,7 +48,7 @@ def _valid_request(**overrides) -> OrderRequest:
 
 
 def _valid_intent(**overrides):
-    from nestquant.execution.contracts import TradeIntent
+    from nestquant.core.contracts.execution_contracts import TradeIntent
     defaults = dict(
         pair="EUR/USD",
         direction=Direction.BUY,
@@ -239,7 +239,7 @@ class TestFakeExecutionAdapter:
         assert adapter.last_request.pair == "GBP/USD"
 
     def test_satisfies_protocol(self):
-        from nestquant.execution.orchestration import ExecutionAdapter
+        from nestquant.production.execution.orchestration import ExecutionAdapter
         adapter = FakeExecutionAdapter()
         assert isinstance(adapter, ExecutionAdapter)
 
@@ -321,7 +321,7 @@ class TestCoordinatorAdapterIntegration:
     def _make_coordinator(self, **adapter_kwargs):
         class ApproveAllRisk:
             def evaluate(self, intent):
-                from nestquant.execution.contracts import RiskDecision
+                from nestquant.core.contracts.execution_contracts import RiskDecision
                 return RiskDecision(
                     approved=True,
                     reason="OK",
@@ -431,38 +431,38 @@ class TestNoBrokerCoupling:
 
 class TestNoForbiddenImports:
     def test_no_mt5_import(self):
-        import nestquant.execution.adapter as mod
+        import nestquant.production.execution.adapter as mod
         source = open(mod.__file__).read()
         assert "MetaTrader5" not in source
         assert "import mt5" not in source
 
     def test_no_research_import(self):
-        import nestquant.execution.adapter as mod
+        import nestquant.production.execution.adapter as mod
         source = open(mod.__file__).read()
         assert "from nestquant.research" not in source
         assert "import nestquant.research" not in source
 
     def test_no_strategy_import(self):
-        import nestquant.execution.adapter as mod
+        import nestquant.production.execution.adapter as mod
         source = open(mod.__file__).read()
         assert "from nestquant.zscore" not in source
         assert "import nestquant.zscore" not in source
 
     def test_no_logging(self):
-        import nestquant.execution.adapter as mod
+        import nestquant.production.execution.adapter as mod
         source = open(mod.__file__).read()
         assert "import logging" not in source
         assert "logger" not in source
 
     def test_no_network_calls(self):
-        import nestquant.execution.adapter as mod
+        import nestquant.production.execution.adapter as mod
         source = open(mod.__file__).read()
         assert "requests." not in source
         assert "urllib" not in source
         assert "httpx" not in source
 
     def test_no_monitoring(self):
-        import nestquant.execution.adapter as mod
+        import nestquant.production.execution.adapter as mod
         source = open(mod.__file__).read()
         assert "import telemetry" not in source
         assert "send_alert" not in source

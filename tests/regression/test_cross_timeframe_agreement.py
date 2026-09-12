@@ -4,7 +4,7 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from scripts.cross_timeframe_agreement import (
+from nestquant.research.experiments.cross_timeframe_agreement import (
     compute_metrics,
     bootstrap_ci,
     pip_value,

@@ -19,20 +19,18 @@ from __future__ import annotations
 
 import json
 import pickle
-import sys
 import time
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from zscore.regime import classify_regime_chunked
-from zscore.zscore import _zscore_causal_core
+from nestquant.research.shared.zscore.regime import classify_regime_chunked
+from nestquant.research.shared.zscore.zscore import _zscore_causal_core
 
 DATA_DIR = Path("/root/data")
-RESULTS_DIR = Path("/root/nestquant/research_data/phase3")
+RESULTS_DIR = Path("research/output/phase3")
 
 PAIRS = [
     "EUR/USD", "GBP/USD", "USD/JPY", "AUD/USD", "USD/CHF",

@@ -6,9 +6,9 @@ from __future__ import annotations
 
 import pandas as pd
 
-from nestquant.indicators.adx import calculate_adx
-from nestquant.regime.base import RegimeDetector, RegimePrediction
-from nestquant.regime.labels import RegimeLabel
+from nestquant.core.tooling.indicators.adx import calculate_adx
+from nestquant.research.shared.regime.base import RegimeDetector, RegimePrediction
+from nestquant.research.shared.regime.labels import RegimeLabel
 
 
 class ADXRegimeDetector(RegimeDetector):

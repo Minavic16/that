@@ -21,17 +21,17 @@ from __future__ import annotations
 
 from typing import Optional
 
-from nestquant.execution.adapter import (
+from nestquant.production.execution.adapter import (
     AdapterConnectionError,
     BaseExecutionAdapter,
 )
-from nestquant.execution.contracts import (
+from nestquant.core.contracts.execution_contracts import (
     Direction,
     ExecutionResult,
     ExecutionStatus,
     OrderRequest,
 )
-from nestquant.execution.mt5_client import MT5Client, MT5ConnectionError
+from nestquant.production.execution.mt5_client import MT5Client, MT5ConnectionError
 
 
 # ---------------------------------------------------------------------------
@@ -115,7 +115,7 @@ class MT5ExecutionAdapter(BaseExecutionAdapter):
 
         # MT5 lot size constraints
         if request.lot_size < 0.01:
-            from nestquant.execution.adapter import AdapterValidationError
+            from nestquant.production.execution.adapter import AdapterValidationError
             raise AdapterValidationError(
                 [f"MT5 minimum lot size is 0.01, got {request.lot_size}"]
             )
@@ -288,7 +288,7 @@ class MT5ExecutionAdapter(BaseExecutionAdapter):
             ModificationResult with success status and broker confirmation.
         """
         from datetime import datetime, timezone
-        from strategy.lifecycle.contracts import ModificationResult
+        from nestquant.production.strategy.lifecycle.contracts import ModificationResult
 
         try:
             ticket = int(request.trade_id)

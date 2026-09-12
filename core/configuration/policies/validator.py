@@ -19,7 +19,7 @@ import re
 from dataclasses import fields
 from typing import List
 
-from nestquant.config.policies.models import (
+from nestquant.core.configuration.policies.models import (
     ExecutionParams,
     HardLimits,
     LiveParameterPolicy,
