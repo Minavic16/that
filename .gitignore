@@ -47,20 +47,10 @@ Thumbs.db
 
 # Node
 node_modules/
+.next/
 
 # Generated signal files
 signals_structured_*.json
-
-# Empty placeholder directories
-features/
-
-data/dashboard.db
-
-logs/shadow_live/
-
-data/dashboard.db
-
-logs/shadow_live/
 
 # Dashboard runtime
 data/dashboard.db

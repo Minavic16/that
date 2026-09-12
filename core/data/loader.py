@@ -8,7 +8,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from nestquant.config.settings import get_config
+from nestquant.core.configuration.settings import get_config
 
 
 # Timeframe directory mapping: user-facing name -> subdirectory under data_dir

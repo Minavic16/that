@@ -25,7 +25,7 @@ def download_forexfactory_weekly(output_dir: Path | None = None) -> Path | None:
         data = resp.json()
 
         if output_dir is None:
-            output_dir = Path("/root/nestquant/research_data/samples")
+            output_dir = Path("research/output/samples")
         output_dir.mkdir(parents=True, exist_ok=True)
 
         filename = "forexfactory_thisweek.json"

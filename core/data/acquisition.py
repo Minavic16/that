@@ -9,7 +9,7 @@ from pathlib import Path
 
 import pandas as pd
 
-DATA_DIR = Path("/root/nestquant/research_data")
+DATA_DIR = Path("research/output")
 RAW_DIR = DATA_DIR / "raw"
 PROCESSED_DIR = DATA_DIR / "processed"
 SAMPLE_DIR = DATA_DIR / "samples"

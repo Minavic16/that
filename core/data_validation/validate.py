@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import numpy as np
 import pandas as pd
-from zscore.contracts import MarketData, ValidatedMarketData, ValidationReport
+from nestquant.core.contracts.zscore_contracts import MarketData, ValidatedMarketData, ValidationReport
 
 
 def validate_market_data(data: MarketData) -> ValidatedMarketData:
