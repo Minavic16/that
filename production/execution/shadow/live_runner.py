@@ -32,6 +32,7 @@ try:
     from nestquant.production.notifications.signal_notifier import send_signal_alert
 except ImportError:
     send_signal_alert = None
+from nestquant.production.monitoring.metrics_aggregator import MetricsAggregator
 
 
 def _parse_iso(ts: str) -> datetime:
@@ -98,6 +99,7 @@ class LiveShadowRunner:
 
         # Metrics for S7_LIVE_SHADOW_REPORT
         self._bars_observed = 0
+        self.metrics = MetricsAggregator(log_dir=self.log_dir)
         self._bars_processed = 0
         self._signals = 0
         self._duplicates = 0
@@ -290,6 +292,9 @@ class LiveShadowRunner:
                     self.state.mark_bar(pair, bar.timestamp)
                     self.state.inc("bars_processed", 1)
                     self.health.record_bar(bar.timestamp, latency_ms=latency_ms)
+                    # Telemetry: mark evaluation and data freshness for actual bar processing
+                    self.metrics.update_data_freshness(bar.timestamp)
+                    self.metrics.update_evaluation_time()
                     # For stub adapters that simulate live progression, advance pointer
                     # so next poll sees a new bar (not duplicate). MT5 adapter has no advance.
                     try:
@@ -321,6 +326,16 @@ class LiveShadowRunner:
                             spread_at_submission=bar.spread,
                         )
                         self._signals += 1
+                        # Telemetry: record actual signal emission
+                        self.metrics.update_signal({
+                            "symbol": pair,
+                            "direction": rec.direction,
+                            "signal_id": rec.signal_id,
+                            "entry": rec.expected_entry,
+                            "sl": rec.expected_sl,
+                            "tp": rec.expected_tp,
+                            "timestamp": bar.timestamp,
+                        })
                         # Send Telegram notification
                         if send_signal_alert:
                             try:
@@ -342,6 +357,8 @@ class LiveShadowRunner:
 
                     # Duplicate prevention: already marked, next poll will see same timestamp as duplicate
                     self.state.save()
+                    # Telemetry: persist metrics.json after each bar processing cycle
+                    self.metrics.aggregate()
 
                 # Stale feed detection: if no bars processed this iteration, health may degrade
                 # The health monitor's stale is based on last_bar time vs now; for live we want real-time staleness
