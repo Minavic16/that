@@ -431,17 +431,16 @@ class WineFlaskReadOnlyAdapter(ReadOnlyMarketDataAdapter):
         return None
 
     def get_last_completed_bar(self, pair: str, timeframe: str = "4h") -> Optional[CompletedBar]:
-        # Flask's copy_rates_from_pos with start_pos 0 returns [oldest,...,newest] where last is forming.
-        # For completed bar, fetch 2 and take second-last (e.g., 16:00 when 20:00 is forming at 18:05)
-        rates = self._fetch_via_rest(pair, timeframe, 2)
+        # MT5 copy_rates_from_pos with start_pos=0 returns [oldest,...,newest].
+        # The last element is always the currently forming (incomplete) candle.
+        # Request 3 bars so that even if the bridge returns fewer than requested,
+        # we still have ≥2 bars and rates[-2] is the last completed candle.
+        rates = self._fetch_via_rest(pair, timeframe, 3)
         if not rates or len(rates) < 2:
-            rates = self._fetch_via_rest(pair, timeframe, 1)
-            if not rates:
-                return None
-            r = rates[0] if isinstance(rates, list) else rates
-        else:
-            # rates[0]=16:00, rates[1]=20:00 (forming), so completed is rates[-2]
-            r = rates[-2] if isinstance(rates, list) else rates
+            # Bridge returned 0-1 bars: not enough to identify a completed candle.
+            return None
+        # rates[-1] = forming candle, rates[-2] = last completed candle
+        r = rates[-2] if isinstance(rates, list) else rates
         try:
             raw_time = r.get("time", r.get("Time", r.get("timestamp", 0)))
             if isinstance(raw_time, (int, float)):

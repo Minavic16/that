@@ -308,3 +308,104 @@ class TestWineFlaskReadOnlyAdapter:
         # Extract WineFlask class source (approx)
         wine_section = src.split("class WineFlaskReadOnlyAdapter")[1].split("class MT5ReadOnlyAdapter")[0]
         assert "order" not in wine_section.lower() or "order" in wine_section.lower() and "OrderSend" not in wine_section
+
+
+# ===================================================================
+# get_last_completed_bar — completed-candle selection
+# ===================================================================
+
+
+class TestGetLastCompletedBar:
+    """Verify that get_last_completed_bar always returns the last
+    COMPLETED candle (rates[-2]) and never the forming candle (rates[-1]).
+    """
+
+    def _make_adapter(self, monkeypatch, rates_list):
+        """Create a WineFlaskReadOnlyAdapter with a mocked _fetch_via_rest
+        that returns *rates_list* regardless of pair/timeframe/num_bars."""
+        from nestquant.production.execution.shadow.live_adapter import (
+            WineFlaskReadOnlyAdapter,
+        )
+
+        adapter = WineFlaskReadOnlyAdapter(base_url="http://mt5:5001")
+        adapter._connected = True
+
+        def fake_fetch(pair, timeframe, num_bars):
+            return rates_list
+
+        monkeypatch.setattr(adapter, "_fetch_via_rest", fake_fetch)
+        # Stub get_quote so it doesn't make HTTP calls
+        monkeypatch.setattr(adapter, "get_quote", lambda pair: None)
+        return adapter
+
+    @staticmethod
+    def _bar(ts, close=1.10):
+        return {"time": ts, "open": close, "high": close, "low": close,
+                "close": close, "tick_volume": 100, "spread": 10}
+
+    # --- 3 bars returned (normal case) ---------------------------------
+
+    def test_three_bars_returns_second_last(self, monkeypatch):
+        bars = [
+            self._bar("2026-09-14 08:00:00+00:00", 1.100),
+            self._bar("2026-09-14 12:00:00+00:00", 1.101),  # completed
+            self._bar("2026-09-14 16:00:00+00:00", 1.102),  # forming
+        ]
+        adapter = self._make_adapter(monkeypatch, bars)
+        bar = adapter.get_last_completed_bar("EUR/USD", "4h")
+        assert bar is not None
+        assert "12:00:00" in bar.timestamp
+
+    # --- 2 bars returned (edge: bridge returns fewer than requested) ----
+
+    def test_two_bars_returns_second_last(self, monkeypatch):
+        bars = [
+            self._bar("2026-09-14 12:00:00+00:00", 1.101),  # completed
+            self._bar("2026-09-14 16:00:00+00:00", 1.102),  # forming
+        ]
+        adapter = self._make_adapter(monkeypatch, bars)
+        bar = adapter.get_last_completed_bar("EUR/USD", "4h")
+        assert bar is not None
+        assert "12:00:00" in bar.timestamp
+
+    # --- 1 bar returned (bug scenario) ----------------------------------
+
+    def test_one_bar_returns_none(self, monkeypatch):
+        """When only 1 bar is returned it is the forming candle.
+        The adapter must NOT use it as a completed bar."""
+        bars = [
+            self._bar("2026-09-14 16:00:00+00:00", 1.102),  # forming only
+        ]
+        adapter = self._make_adapter(monkeypatch, bars)
+        bar = adapter.get_last_completed_bar("EUR/USD", "4h")
+        assert bar is None
+
+    # --- 0 bars returned ------------------------------------------------
+
+    def test_zero_bars_returns_none(self, monkeypatch):
+        adapter = self._make_adapter(monkeypatch, [])
+        bar = adapter.get_last_completed_bar("EUR/USD", "4h")
+        assert bar is None
+
+    # --- None returned --------------------------------------------------
+
+    def test_none_returns_none(self, monkeypatch):
+        adapter = self._make_adapter(monkeypatch, None)
+        bar = adapter.get_last_completed_bar("EUR/USD", "4h")
+        assert bar is None
+
+    # --- Forming candle never used ---------------------------------------
+
+    def test_forming_candle_never_selected(self, monkeypatch):
+        """The most recent bar (forming) must never be returned."""
+        bars = [
+            self._bar("2026-09-14 04:00:00+00:00", 1.099),
+            self._bar("2026-09-14 08:00:00+00:00", 1.100),
+            self._bar("2026-09-14 12:00:00+00:00", 1.101),
+            self._bar("2026-09-14 16:00:00+00:00", 1.102),  # forming
+        ]
+        adapter = self._make_adapter(monkeypatch, bars)
+        bar = adapter.get_last_completed_bar("EUR/USD", "4h")
+        assert bar is not None
+        assert "12:00:00" in bar.timestamp
+        assert "16:00:00" not in bar.timestamp
