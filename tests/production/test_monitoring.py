@@ -54,6 +54,7 @@ from nestquant.production.monitoring.slippage import SlippageTracker
 from nestquant.production.monitoring.equity_tracker import EquityTracker
 from nestquant.production.monitoring.health_collector import HealthCollector
 from nestquant.production.monitoring.spread_collector import SpreadCollector
+from nestquant.production.monitoring.metrics_aggregator import MetricsAggregator
 from nestquant.production.monitoring.models import (
     MarketSnapshot,
     ExecutionSnapshot,
@@ -737,3 +738,67 @@ class TestIntegration:
         ev_analyzer = EVStabilityAnalyzer()
         ev_result = ev_analyzer.analyze(returns)
         assert ev_result.core.count == 100
+
+
+# ===================================================================
+# PART XII: METRICS AGGREGATOR — MT5 STATUS
+# ===================================================================
+
+
+class TestMetricsAggregatorMT5Status:
+    def test_default_mt5_status(self):
+        agg = MetricsAggregator(log_dir="/tmp/nq_test_metrics")
+        metrics = agg.aggregate()
+        assert metrics["execution"]["mt5_connected"] is False
+        assert metrics["execution"]["bridge_health"] == "unknown"
+
+    def test_update_mt5_connected(self):
+        agg = MetricsAggregator(log_dir="/tmp/nq_test_metrics")
+        agg.update_mt5_status(connected=True, bridge_health="healthy")
+        metrics = agg.aggregate()
+        assert metrics["execution"]["mt5_connected"] is True
+        assert metrics["execution"]["bridge_health"] == "healthy"
+
+    def test_update_mt5_disconnected(self):
+        agg = MetricsAggregator(log_dir="/tmp/nq_test_metrics")
+        agg.update_mt5_status(connected=True, bridge_health="healthy")
+        agg.update_mt5_status(connected=False, bridge_health="degraded")
+        metrics = agg.aggregate()
+        assert metrics["execution"]["mt5_connected"] is False
+        assert metrics["execution"]["bridge_health"] == "degraded"
+
+    def test_mt5_status_default_bridge_health(self):
+        agg = MetricsAggregator(log_dir="/tmp/nq_test_metrics")
+        agg.update_mt5_status(connected=True)
+        metrics = agg.aggregate()
+        assert metrics["execution"]["mt5_connected"] is True
+        assert metrics["execution"]["bridge_health"] == "unknown"
+
+    def test_mt5_status_thread_safety(self):
+        import threading
+        agg = MetricsAggregator(log_dir="/tmp/nq_test_metrics")
+        errors = []
+
+        def update(i):
+            try:
+                agg.update_mt5_status(connected=(i % 2 == 0), bridge_health="healthy")
+            except Exception as e:
+                errors.append(e)
+
+        threads = [threading.Thread(target=update, args=(i,)) for i in range(20)]
+        for t in threads:
+            t.start()
+        for t in threads:
+            t.join()
+        assert len(errors) == 0
+        metrics = agg.aggregate()
+        assert metrics["execution"]["mt5_connected"] in (True, False)
+
+    def test_existing_fields_preserved(self):
+        agg = MetricsAggregator(log_dir="/tmp/nq_test_metrics")
+        agg.update_mt5_status(connected=True, bridge_health="healthy")
+        agg.update_evaluation_time()
+        metrics = agg.aggregate()
+        assert metrics["execution"]["execution_mode"] == "SHADOW"
+        assert metrics["execution"]["last_evaluation"] is not None
+        assert metrics["execution"]["mt5_connected"] is True

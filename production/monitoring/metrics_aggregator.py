@@ -63,6 +63,8 @@ class MetricsAggregator:
         self._runner_healthy: bool = True
         self._last_evaluation: Optional[str] = None
         self._data_freshness: Optional[str] = None
+        self._mt5_connected: bool = False
+        self._bridge_health: str = "unknown"
 
     def record_snapshot(
         self,
@@ -142,6 +144,12 @@ class MetricsAggregator:
         """Update runner health status."""
         with self._lock:
             self._runner_healthy = healthy
+
+    def update_mt5_status(self, connected: bool, bridge_health: str = "unknown") -> None:
+        """Update MT5 connection status."""
+        with self._lock:
+            self._mt5_connected = connected
+            self._bridge_health = bridge_health
 
     def update_evaluation_time(self) -> None:
         """Mark that an evaluation just occurred."""
@@ -280,8 +288,8 @@ class MetricsAggregator:
                     "last_signal": self._last_signal,
                     "last_trade": self._last_trade,
                     "execution_mode": self._execution_mode,
-                    "mt5_connected": False,  # updated by runner
-                    "bridge_health": "unknown",
+                    "mt5_connected": self._mt5_connected,
+                    "bridge_health": self._bridge_health,
                     "runner_health": "healthy" if self._runner_healthy else "degraded",
                     "data_freshness": self._data_freshness,
                     "last_evaluation": self._last_evaluation,

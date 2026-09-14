@@ -295,6 +295,11 @@ class LiveShadowRunner:
                     # Telemetry: mark evaluation and data freshness for actual bar processing
                     self.metrics.update_data_freshness(bar.timestamp)
                     self.metrics.update_evaluation_time()
+                    # Telemetry: propagate adapter MT5 connection state
+                    self.metrics.update_mt5_status(
+                        connected=self.adapter.is_connected(),
+                        bridge_health="healthy" if self.adapter.is_connected() else "degraded",
+                    )
                     # For stub adapters that simulate live progression, advance pointer
                     # so next poll sees a new bar (not duplicate). MT5 adapter has no advance.
                     try:
