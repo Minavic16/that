@@ -141,9 +141,8 @@ class LiveShadowRunner:
 
     def run(self) -> dict[str, Any]:
         # Load Telegram credentials from .env.telegram
-        _env_file = Path("/root/that/.env.telegram")
-        if not _env_file.exists():
-            _env_file = Path("/root/that/.env.telegram")
+        _PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent.parent
+        _env_file = _PROJECT_ROOT / ".env.telegram"
         if _env_file.exists():
             for line in _env_file.read_text().splitlines():
                 if line.strip() and not line.startswith("#") and "=" in line:
