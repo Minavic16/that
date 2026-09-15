@@ -3,7 +3,7 @@ import { withAuth } from "@/lib/rbac";
 import { readFileSync, existsSync } from "fs";
 import { join } from "path";
 
-const RESULTS_DIR = "/root/that/archive/research/output";
+const RESULTS_DIR = "/root/nestquant/archive/research/output";
 
 export const GET = withAuth(async (req: NextRequest) => {
   try {
