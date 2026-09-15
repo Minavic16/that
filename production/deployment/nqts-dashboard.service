@@ -1,0 +1,41 @@
+[Unit]
+Description=NestQuant Dashboard (Next.js)
+After=network.target
+Wants=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/root/nestquant/production/dashboard/dashboard
+
+# Load DASHBOARD_SECRET (and other vars) from the repo root .env
+# systemd EnvironmentFile injects into process env; Next.js reads
+# process.env.DASHBOARD_SECRET directly in auth.ts.
+EnvironmentFile=/root/nestquant/.env
+
+# Next.js listens on 8080 for Caddy reverse proxy
+Environment=PORT=8080
+Environment=HOSTNAME=127.0.0.1
+Environment=NODE_ENV=production
+
+ExecStart=/usr/bin/node /root/nestquant/production/dashboard/dashboard/node_modules/.bin/next start
+Restart=on-failure
+RestartSec=5
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=nqts-dashboard
+
+# Safety limits
+LimitNOFILE=65536
+MemoryMax=512M
+CPUQuota=50%
+
+# Shutdown
+TimeoutStopSec=30
+KillMode=mixed
+KillSignal=SIGTERM
+
+[Install]
+WantedBy=multi-user.target
