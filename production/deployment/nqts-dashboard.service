@@ -13,6 +13,9 @@ WorkingDirectory=/root/nestquant/production/dashboard/dashboard
 # process.env.DASHBOARD_SECRET directly in auth.ts.
 EnvironmentFile=/root/nestquant/.env
 
+# Load Telegram bot credentials for dashboard notification status display
+EnvironmentFile=-/root/nestquant/.env.telegram
+
 # Next.js listens on 8080 for Caddy reverse proxy
 Environment=PORT=8080
 Environment=HOSTNAME=127.0.0.1
