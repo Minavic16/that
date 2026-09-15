@@ -1,0 +1,18 @@
+# NQTS — NestQuant Trading System
+# Version identity file. Do not edit manually.
+# Update when making meaningful system changes.
+
+NQTS_VERSION=0.2.0
+NQTS_CODENAME=shadow-v1
+NQTS_STRATEGY=Canonical Breakout V1 (NQ-BREAKOUT-V1)
+NQTS_TIMEFRAME=4H
+NQTS_MODE=SHADOW (read-only, no orders)
+
+# Deployment state (VPS: vmi3529970 / 169.58.230.92)
+# Dashboard: Next.js 16.3.3 on port 8080, Caddy HTTPS reverse proxy
+# Runner: run_live_shadow.py via Wine+Flask MT5 bridge (http://127.0.0.1:5001)
+# MT5: MetaQuotes-Demo, Account 111308298, leverage 100:1
+# Telegram: @NQTSbot, chat 7170946902
+
+# Last verified: 2026-09-15 16:38 CEST
+# Git HEAD: de3a9e8
