@@ -2,7 +2,8 @@
 # Version: 0.1.0
 # Date: 2026-09-15
 # Branch: research/strategy-2 (frozen at 7d25be3)
-# Status: DECISION REQUIRED — do not implement until approved
+# Status: APPROVED WITH REVISION (2026-09-15)
+# Falsification criterion revised: see R2.1 for corrected methodology
 
 ---
 
