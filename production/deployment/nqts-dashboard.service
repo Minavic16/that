@@ -18,7 +18,7 @@ Environment=PORT=8080
 Environment=HOSTNAME=127.0.0.1
 Environment=NODE_ENV=production
 
-ExecStart=/usr/bin/node /root/nestquant/production/dashboard/dashboard/node_modules/.bin/next start
+ExecStart=/usr/local/bin/node /root/nestquant/production/dashboard/dashboard/node_modules/.bin/next start
 Restart=on-failure
 RestartSec=5
 
