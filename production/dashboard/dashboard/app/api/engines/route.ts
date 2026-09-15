@@ -69,7 +69,7 @@ export const GET = withAuth(async (req: NextRequest) => {
     let runnerUptime = 0;
     try {
       const { execSync } = require("child_process");
-      const pidStr = execSync("pgrep -f 'next-start|run_live_shadow|nestquant-shadow' 2>/dev/null || true", { timeout: 3000 }).toString().trim();
+      const pidStr = execSync("pgrep -f 'run_live_shadow' 2>/dev/null || true", { timeout: 3000 }).toString().trim();
       if (pidStr) {
         runnerPid = parseInt(pidStr.split("\n")[0]);
         const uptimeStr = execSync(`ps -o etimes= -p ${runnerPid} 2>/dev/null || echo 0`, { timeout: 3000 }).toString().trim();
@@ -77,11 +77,15 @@ export const GET = withAuth(async (req: NextRequest) => {
       }
     } catch { /* ignore */ }
 
-    // Data freshness
+    // Data freshness — adaptive to strategy timeframe (4H candles)
+    // Threshold: 1.5x the candle interval = 6 hours for 4H
+    const TIMEFRAME_SEC = 4 * 3600;
+    const FRESHNESS_MULTIPLIER = 1.5;
+    const freshnessThreshold = TIMEFRAME_SEC * FRESHNESS_MULTIPLIER;
     const stateAge = fileAge(STATE_FILE);
     const signalsAge = fileAge(SIGNALS_FILE);
     const barsAge = fileAge(BARS_FILE);
-    const dataFresh = stateAge !== null && stateAge < 3600; // < 1 hour
+    const dataFresh = stateAge !== null && stateAge < freshnessThreshold;
 
     // Recent signals
     const recentSignals = tailJsonl(SIGNALS_FILE, 10);
