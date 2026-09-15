@@ -4,7 +4,7 @@ import { dirname, join } from "path";
 
 const PROJECT_ROOT = "/root/that";
 const DB_PATH = join(PROJECT_ROOT, "data", "dashboard.db");
-const WASM_PATH = join(PROJECT_ROOT, "dashboard", "node_modules", "sql.js", "dist", "sql-wasm.wasm");
+const WASM_PATH = join(PROJECT_ROOT, "production", "dashboard", "dashboard", "node_modules", "sql.js", "dist", "sql-wasm.wasm");
 
 let db: Database | null = null;
 
