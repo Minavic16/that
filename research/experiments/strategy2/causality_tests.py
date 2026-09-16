@@ -218,7 +218,7 @@ def _test_forward_target_alignment(close: pd.Series,
     """Verify forward volatility target is correctly aligned."""
     name = "forward_target_alignment"
 
-    horizon = 6  # 1 day at 4H
+    horizon = 6  # testing value (24h at 4H), not experiment horizon
     target = realized_volatility_forward(close, horizon=horizon)
 
     # Check that target at time t uses returns from [t+1, t+horizon]
@@ -314,7 +314,7 @@ def _test_walkforward_no_lookahead(returns: pd.Series) -> CausalityTestResult:
     name = "walkforward_no_lookahead"
 
     train_window = min(24, len(returns) - 15)
-    horizon = 6
+    horizon = 6  # testing value (24h at 4H), not experiment horizon
 
     if train_window + horizon + 5 > len(returns):
         return CausalityTestResult(name, True, "Skipped: insufficient data")

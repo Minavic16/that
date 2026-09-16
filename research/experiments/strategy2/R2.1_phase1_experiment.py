@@ -48,7 +48,7 @@ from causality_tests import run_causality_tests
 
 PAIR = "EUR/USD"
 TRAIN_WINDOW = 24  # 4 days at 4H
-HORIZONS = [6, 12, 18, 24]  # 1d, 2d, 3d, 5d at 4H
+HORIZONS = [1, 3, 6, 12]  # 4h, 12h, 24h, 48h at 4H (per R2.1_EXPERIMENT_DESIGN.md)
 RESULTS_DIR = EXPERIMENT_DIR / "results"
 RESULTS_DIR.mkdir(exist_ok=True)
 
