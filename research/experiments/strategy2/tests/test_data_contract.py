@@ -51,7 +51,9 @@ class TestTimestampValidation:
     def test_non_utc_timezone_fails(self):
         """Non-UTC timezone fails."""
         df = generate_clean_fixture(n_bars=50)
-        df.index = df.index.tz_convert("US/Eastern")
+        # Use a fixed-offset timezone instead of US/Eastern (requires tzdata)
+        import datetime as dt
+        df.index = df.index.tz_convert(dt.timezone(dt.timedelta(hours=5)))
         result = validate_timestamps(df)
         assert not result.passed
 

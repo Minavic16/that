@@ -25,6 +25,13 @@ DEFAULT_GARCH_PARAMS = {
     "beta": 0.90,
 }
 
+# Expected bar-end hours (UTC) for 4H bars
+EXPECTED_BAR_HOURS = [0, 4, 8, 12, 16, 20]
+
+# Weekend gap parameters (Friday 20:00 → Sunday 18:00 UTC)
+WEEKEND_GAP_MIN_HOURS = 44
+WEEKEND_GAP_MAX_HOURS = 76
+
 
 def generate_synthetic_ohlcv(
     n_bars: int = 200,
@@ -66,7 +73,7 @@ def generate_synthetic_ohlcv(
     rng = np.random.RandomState(seed)
 
     if start_date is None:
-        start_date = datetime(2026, 1, 1, 4, 0, 0, tzinfo=timezone.utc)
+        start_date = pd.Timestamp("2026-01-01 04:00:00", tz="UTC")
 
     # Generate GARCH-like returns
     omega, alpha, beta = (
@@ -219,10 +226,3 @@ def generate_rejection_fixtures(seed: int = 42) -> dict[str, pd.DataFrame]:
         ),
     }
 
-
-# Expected bar-end hours (UTC) for 4H bars
-EXPECTED_BAR_HOURS = [0, 4, 8, 12, 16, 20]
-
-# Weekend gap parameters (Friday 20:00 → Sunday 18:00 UTC)
-WEEKEND_GAP_MIN_HOURS = 44
-WEEKEND_GAP_MAX_HOURS = 76
