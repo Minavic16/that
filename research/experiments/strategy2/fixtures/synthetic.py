@@ -103,12 +103,12 @@ def generate_synthetic_ohlcv(
     for i in range(n_bars):
         # Skip weekends if requested
         if include_weekend_gaps:
-            # If it's Saturday, skip to Sunday 18:00 UTC
+            # If it's Saturday, skip to Sunday 20:00 UTC (next valid 4H bar)
             while current_time.weekday() == 5:  # Saturday
                 current_time += timedelta(hours=4)
-            # If it's Sunday before 18:00 UTC, skip to 18:00 UTC
-            if current_time.weekday() == 6 and current_time.hour < 18:
-                current_time = current_time.replace(hour=18, minute=0, second=0, microsecond=0)
+            # If it's Sunday before 20:00 UTC, skip to 20:00 UTC
+            if current_time.weekday() == 6 and current_time.hour < 20:
+                current_time = current_time.replace(hour=20, minute=0, second=0, microsecond=0)
 
         timestamps.append(current_time)
         current_time += timedelta(hours=4)
