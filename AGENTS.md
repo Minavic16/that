@@ -471,3 +471,106 @@ Note: 3 tests require `numba` (not installed on VPS). 10 tests have pre-existing
 - **Architecture:** FROZEN (see ARCHITECTURE_FREEZE.md)
 - **Validation:** D1-D7 gates defined (see SHADOW_VALIDATION.md)
 - **Git HEAD:** `fcc447a`
+
+---
+
+## OpenCode ↔ Needle Handoff Workflow
+
+### Overview
+
+OpenCode executes tasks. When reaching a deliberate stopping point, OpenCode produces
+a structured report. The report is handed to the human via Needle, who pastes it into
+ChatGPT/Claude for review. Feedback comes back to OpenCode for the next iteration.
+
+**The human remains the control point.**
+
+### Roles
+
+| System | Role |
+|---|---|
+| OpenCode | Executor: inspect, implement, test, debug, commit |
+| Needle | Transport: locate report, copy to clipboard, transfer feedback |
+| ChatGPT/Claude | Reviewer: reason, critique, architecture, research methodology |
+| Human | Control: decides what feedback is accepted |
+
+### Handoff Directory
+
+```
+/root/Needle/handoff/
+    latest_report.md          ← OpenCode writes here
+    reviewer_feedback.md      ← Human/paste feedback here
+    report_template.md        ← Template for reports
+    history/                  ← Archived reports
+```
+
+### When OpenCode Should Generate a Report
+
+OpenCode should produce a report when:
+
+1. A task is complete
+2. A deliberate stopping point is reached
+3. A decision is needed from the reviewer
+4. A blocker is encountered
+5. The task scope has been fulfilled
+
+### Report Generation
+
+OpenCode should write a report to `/root/Needle/handoff/latest_report.md` using the
+template at `/root/Needle/handoff/report_template.md`. The report must include at minimum:
+
+- **Task**: What was requested
+- **Status**: COMPLETE | AWAITING_REVIEW | BLOCKED | NEEDS_DECISION
+- **Objective**: What was trying to be achieved
+- **What Was Inspected**: Files, state, evidence examined
+- **What Was Changed**: Concrete changes made
+- **Files Changed**: List with change type and description
+- **Tests**: What tests were run
+- **Test Results**: Pass/fail evidence
+- **Remaining Issues**: Known problems
+- **Decisions Required**: What the reviewer must decide
+- **Recommended Next Action**: What should happen next
+- **Commit**: Hash if committed, or "uncommitted"
+
+### Report States
+
+| State | Meaning |
+|---|---|
+| COMPLETE | Task fully done, awaiting confirmation |
+| AWAITING_REVIEW | Report ready for reviewer, waiting for feedback |
+| BLOCKED | Cannot proceed, blocker identified |
+| NEEDS_DECISION | Architecture/methodology decision required |
+
+### Retrieving Reports
+
+```bash
+needle report          # Show report metadata + copy to clipboard
+needle feedback        # Show reviewer feedback + copy to clipboard
+```
+
+### Reading Reports via Needle Model
+
+The Needle AI model can also read reports:
+
+```
+needle run "read the latest handoff report"
+needle run "read the reviewer feedback"
+```
+
+### Feedback Loop
+
+1. OpenCode writes report → `/root/Needle/handoff/latest_report.md`
+2. Human runs `needle report` → copies to clipboard
+3. Human pastes into ChatGPT/Claude
+4. Reviewer provides feedback
+5. Human pastes feedback into `/root/Needle/handoff/reviewer_feedback.md`
+6. Human runs `needle feedback` → copies to clipboard
+7. Human pastes feedback into OpenCode
+8. OpenCode continues from existing state
+
+### Constraints
+
+- OpenCode never assumes its own conclusion is final
+- OpenCode stops at decision boundaries rather than making architectural assumptions
+- Reports are never modified by Needle
+- All Needle tools remain READ-only
+- The human decides what feedback is accepted
