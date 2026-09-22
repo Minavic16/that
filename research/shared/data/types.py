@@ -9,6 +9,7 @@ canonical in-memory representation of a bar time series:
 
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass
 
 import pandas as pd
@@ -60,6 +61,8 @@ class MarketBar:
             value = getattr(self, name)
             if not isinstance(value, (int, float)) or value != value:  # NaN check
                 errors.append(f"{name} is {value!r}, expected a real number")
+            elif not math.isfinite(value):
+                errors.append(f"{name} is {value}, expected a finite number")
             elif value <= 0:
                 errors.append(f"{name} is {value}, expected > 0")
 
@@ -78,12 +81,16 @@ class MarketBar:
 
         if not isinstance(self.volume, (int, float)) or self.volume != self.volume:
             errors.append(f"volume is {self.volume!r}, expected a real number")
+        elif not math.isfinite(self.volume):
+            errors.append(f"volume is {self.volume}, expected a finite number")
         elif self.volume < 0:
             errors.append(f"volume is {self.volume}, expected >= 0")
 
         if self.spread is not None:
             if not isinstance(self.spread, (int, float)) or self.spread != self.spread:
                 errors.append(f"spread is {self.spread!r}, expected a real number or None")
+            elif not math.isfinite(self.spread):
+                errors.append(f"spread is {self.spread}, expected a finite number or None")
             elif self.spread < 0:
                 errors.append(f"spread is {self.spread}, expected >= 0")
 

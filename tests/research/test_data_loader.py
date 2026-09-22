@@ -2,6 +2,7 @@
 
 import numpy as np
 import pandas as pd
+import pytest
 
 from nestquant.research.shared.data import DataLoader, validate_ohlcv, validation_passed
 from nestquant.research.shared.data.features import (
@@ -82,6 +83,22 @@ class TestDataLoaderMissingFile:
         _write_pickle(tmp_path, "EUR/USD", bad)
         loader = DataLoader(data_dir=str(tmp_path))
         assert loader.load("EUR/USD", timeframe="4h") is None
+
+
+class TestDataLoaderTimezone:
+    def test_naive_index_raises(self, tmp_path):
+        naive = _frame().tz_localize(None)
+        _write_pickle(tmp_path, "EUR/USD", naive)
+        loader = DataLoader(data_dir=str(tmp_path))
+        with pytest.raises(ValueError, match="timezone-naive"):
+            loader.load("EUR/USD", timeframe="4h")
+
+    def test_utc_index_succeeds(self, tmp_path):
+        _write_pickle(tmp_path, "EUR/USD", _frame())
+        loader = DataLoader(data_dir=str(tmp_path))
+        df = loader.load("EUR/USD", timeframe="4h")
+        assert df is not None
+        assert str(df.index.tz) == "UTC"
 
 
 class TestOHLCVWithFeatures:

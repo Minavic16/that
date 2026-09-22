@@ -87,6 +87,18 @@ class TestMarketBarValidation:
         errors = _valid_bar(spread=-0.1).validate()
         assert any("spread" in e for e in errors)
 
+    def test_nan_price_rejected(self):
+        errors = _valid_bar(close=float("nan")).validate()
+        assert any("close" in e for e in errors)
+
+    def test_inf_price_rejected(self):
+        errors = _valid_bar(high=float("inf")).validate()
+        assert any("finite" in e for e in errors)
+
+    def test_nan_volume_rejected(self):
+        errors = _valid_bar(volume=float("nan")).validate()
+        assert any("volume" in e for e in errors)
+
 
 class TestMarketBarImmutability:
     def test_frozen(self):

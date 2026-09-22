@@ -62,16 +62,33 @@ def validate_timestamps(df: pd.DataFrame) -> ValidationResult:
 
 
 def validate_4h_alignment(df: pd.DataFrame) -> ValidationResult:
-    """Check timestamps align to 4H bar boundaries (00/04/08/12/16/20 UTC)."""
+    """Check timestamps sit exactly on 4H bar boundaries.
+
+    Hour must be in {00, 04, 08, 12, 16, 20} UTC AND minute, second,
+    and sub-second components must all be zero. Checking the hour
+    alone lets malformed stamps like 04:37:12 pass.
+    """
     if not isinstance(df.index, pd.DatetimeIndex) or len(df) == 0:
         return ValidationResult("4h_alignment", False, "No DatetimeIndex to check alignment on")
-    invalid_hours = sorted(set(df.index.hour.unique()) - FOUR_H_BAR_HOURS)
-    if invalid_hours:
-        return ValidationResult(
-            "4h_alignment",
-            False,
-            f"Unexpected hours: {invalid_hours}. Expected: {sorted(FOUR_H_BAR_HOURS)}",
-        )
+    bad_hours = sorted(set(df.index.hour.unique()) - FOUR_H_BAR_HOURS)
+    off_boundary = (
+        (df.index.minute != 0)
+        | (df.index.second != 0)
+        | (df.index.microsecond != 0)
+        | (df.index.nanosecond != 0)
+    )
+    n_off = int(off_boundary.sum())
+    if bad_hours or n_off:
+        parts = []
+        if bad_hours:
+            parts.append(f"unexpected hours: {bad_hours}")
+        if n_off:
+            parts.append(
+                f"{n_off} timestamp(s) off the bar boundary "
+                "(non-zero minute/second/sub-second)"
+            )
+        parts.append(f"Expected hours: {sorted(FOUR_H_BAR_HOURS)}")
+        return ValidationResult("4h_alignment", False, "; ".join(parts))
     return ValidationResult("4h_alignment", True, "All timestamps align to 4H boundaries")
 
 
@@ -104,14 +121,27 @@ def validate_duplicates(df: pd.DataFrame) -> ValidationResult:
     return ValidationResult("duplicates", True, "No duplicate timestamps")
 
 
+def _non_finite_count(s: pd.Series) -> int:
+    """Count NaN/+inf/-inf values. Unconvertible dtypes count as all bad
+    (fail closed instead of raising TypeError on comparison)."""
+    try:
+        vals = pd.to_numeric(s, errors="coerce").to_numpy(dtype=float)
+    except (ValueError, TypeError):
+        return len(s)
+    return int((~np.isfinite(vals)).sum())
+
+
 def validate_prices(df: pd.DataFrame) -> ValidationResult:
-    """Check OHLC constraints: all > 0; H>=L, H>=O, H>=C, L<=O, L<=C."""
+    """Check OHLC constraints: all finite and > 0; H>=L, H>=O, H>=C, L<=O, L<=C."""
     issues: list[str] = []
     for col in ("open", "high", "low", "close"):
         if col in df.columns:
             n_bad = int((df[col] <= 0).sum())
             if n_bad > 0:
                 issues.append(f"{col}: {n_bad} non-positive value(s)")
+            n_nonfinite = _non_finite_count(df[col])
+            if n_nonfinite > 0:
+                issues.append(f"{col}: {n_nonfinite} non-finite value(s) (NaN/inf)")
     if all(c in df.columns for c in ("open", "high", "low", "close")):
         checks = [
             (df["high"] < df["low"], "high < low"),
@@ -130,16 +160,22 @@ def validate_prices(df: pd.DataFrame) -> ValidationResult:
 
 
 def validate_volume_spread(df: pd.DataFrame) -> ValidationResult:
-    """Check volume >= 0 and spread >= 0 where present."""
+    """Check volume >= 0 and spread >= 0 where present; both must be finite."""
     issues: list[str] = []
     if "volume" in df.columns:
         n_bad = int((df["volume"] < 0).sum())
         if n_bad > 0:
             issues.append(f"volume: {n_bad} negative value(s)")
+        n_nonfinite = _non_finite_count(df["volume"])
+        if n_nonfinite > 0:
+            issues.append(f"volume: {n_nonfinite} non-finite value(s) (NaN/inf)")
     if "spread" in df.columns:
         n_bad = int((df["spread"] < 0).sum())
         if n_bad > 0:
             issues.append(f"spread: {n_bad} negative value(s)")
+        n_nonfinite = _non_finite_count(df["spread"])
+        if n_nonfinite > 0:
+            issues.append(f"spread: {n_nonfinite} non-finite value(s) (NaN/inf)")
     if issues:
         return ValidationResult("volume_spread", False, "; ".join(issues))
     return ValidationResult("volume_spread", True, "Volume and spread non-negative")

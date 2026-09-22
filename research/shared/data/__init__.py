@@ -26,6 +26,7 @@ from nestquant.research.shared.data.validate import (
     validate_prices,
     validate_schema,
     validate_timestamps,
+    validate_volume_spread,
     validation_passed,
 )
 
@@ -47,5 +48,6 @@ __all__ = [
     "validate_prices",
     "validate_schema",
     "validate_timestamps",
+    "validate_volume_spread",
     "validation_passed",
 ]

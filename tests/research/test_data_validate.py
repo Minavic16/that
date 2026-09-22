@@ -11,6 +11,7 @@ from nestquant.research.shared.data import (
     validate_prices,
     validate_schema,
     validate_timestamps,
+    validate_volume_spread,
     validation_passed,
 )
 from nestquant.research.shared.data.validate import classify_gap, detect_gaps
@@ -67,6 +68,29 @@ class TestValidate4HAlignment:
     def test_1h_bars_rejected(self):
         assert validate_4h_alignment(_frame(freq="1h")).passed is False
 
+    def test_0401_rejected(self):
+        idx = pd.DatetimeIndex(
+            ["2024-01-01 04:01", "2024-01-01 08:00", "2024-01-01 12:00"], tz="UTC"
+        )
+        assert validate_4h_alignment(pd.DataFrame({"a": [1, 2, 3]}, index=idx)).passed is False
+
+    def test_0430_rejected(self):
+        idx = pd.DatetimeIndex(
+            ["2024-01-01 04:30", "2024-01-01 08:00", "2024-01-01 12:00"], tz="UTC"
+        )
+        assert validate_4h_alignment(pd.DataFrame({"a": [1, 2, 3]}, index=idx)).passed is False
+
+    def test_040001_rejected(self):
+        idx = pd.DatetimeIndex(
+            ["2024-01-01 04:00:01", "2024-01-01 08:00", "2024-01-01 12:00"], tz="UTC"
+        )
+        assert validate_4h_alignment(pd.DataFrame({"a": [1, 2, 3]}, index=idx)).passed is False
+
+    def test_microsecond_rejected(self):
+        idx = pd.DatetimeIndex(["2024-01-01 08:00", "2024-01-01 12:00"], tz="UTC")
+        idx = idx.insert(0, pd.Timestamp("2024-01-01 04:00", tz="UTC") + pd.Timedelta(microseconds=1))
+        assert validate_4h_alignment(pd.DataFrame({"a": [1, 2, 3]}, index=idx)).passed is False
+
 
 class TestValidatePrices:
     def test_valid_prices_pass(self):
@@ -83,6 +107,49 @@ class TestValidatePrices:
         df = _frame()
         df.loc[df.index[3], "close"] = 0.0
         assert validate_prices(df).passed is False
+
+    def test_nan_close_rejected(self):
+        df = _frame()
+        df.loc[df.index[3], "close"] = float("nan")
+        r = validate_prices(df)
+        assert r.passed is False
+        assert "non-finite" in r.message
+
+    def test_pos_inf_high_rejected(self):
+        df = _frame()
+        df.loc[df.index[3], "high"] = float("inf")
+        r = validate_prices(df)
+        assert r.passed is False
+        assert "non-finite" in r.message
+
+    def test_neg_inf_low_rejected(self):
+        df = _frame()
+        df.loc[df.index[3], "low"] = float("-inf")
+        assert validate_prices(df).passed is False
+
+
+class TestValidateVolumeSpread:
+    def test_valid_passes(self):
+        assert validate_volume_spread(_frame()).passed is True
+
+    def test_nan_volume_rejected(self):
+        df = _frame()
+        df.loc[df.index[3], "volume"] = float("nan")
+        r = validate_volume_spread(df)
+        assert r.passed is False
+        assert "non-finite" in r.message
+
+    def test_nan_spread_rejected(self):
+        df = _frame()
+        df.loc[df.index[3], "spread"] = float("nan")
+        r = validate_volume_spread(df)
+        assert r.passed is False
+        assert "non-finite" in r.message
+
+    def test_inf_volume_rejected(self):
+        df = _frame()
+        df.loc[df.index[3], "volume"] = float("inf")
+        assert validate_volume_spread(df).passed is False
 
 
 class TestValidateDuplicates:
