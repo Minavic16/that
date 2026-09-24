@@ -8,6 +8,7 @@ import pytest
 
 from nestquant.research.shared.evaluation import (
     EvaluationConfig,
+    EvaluationResult,
     EvaluationStatus,
     MetricStatus,
     MetricValue,
@@ -137,6 +138,30 @@ class TestMetricSemantics:
         assert metrics.total_trades.value == 2
         assert any("non_finite_pnl" in w for w in warnings)
         assert metrics.total_pnl.value == pytest.approx(5.0)
+        # documented contract: total_trades counts finite-PnL closed population only
+        assert "finite" in metrics.total_trades.definition.lower()
+        assert metrics.winning_trades.value == 1
+        assert metrics.losing_trades.value == 1
+        assert metrics.expectancy.value == pytest.approx(2.5)
+        assert metrics.profit_factor.value == pytest.approx(2.0)
+
+    def test_total_trades_contract_finite_nan_finite(self):
+        """M-1 regression: closed finite / NaN / finite -> total_trades=2."""
+        trades = [
+            make_trade(10.0, entry="2024-01-02 10:00", exit_="2024-01-02 11:00"),
+            make_trade(float("nan"), entry="2024-01-02 12:00", exit_="2024-01-02 13:00"),
+            make_trade(-5.0, entry="2024-01-02 14:00", exit_="2024-01-02 15:00"),
+        ]
+        metrics, warnings = compute_metrics(trades)
+        assert metrics.total_trades.status == MetricStatus.DEFINED
+        assert metrics.total_trades.value == 2
+        assert "non-finite" in metrics.total_trades.definition
+        assert "excluded" in metrics.total_trades.definition
+        assert any(w.startswith("non_finite_pnl_excluded:1") for w in warnings)
+        # related metrics use the same finite population
+        assert metrics.win_rate.value == pytest.approx(0.5)
+        assert metrics.total_pnl.value == pytest.approx(5.0)
+        assert metrics.breakeven_trades.value == 0
 
     def test_open_trades_excluded(self):
         closed = make_trade(10.0)
@@ -166,6 +191,32 @@ class TestMetricSemantics:
         # peak 10100, trough 9900 -> dd 200
         assert metrics.max_drawdown.value == pytest.approx(200.0)
         assert not any("equity_curve_missing" in w for w in warnings)
+
+    def test_drawdown_source_interpretation_contract(self):
+        """M-3: equity path vs trade-normalized path must be distinguishable."""
+        trades = [make_trade(100.0), make_trade(-50.0)]
+        # equity supplied -> equity-path DD, no fallback warning
+        eq = [
+            EquityPoint(timestamp="t0", balance=10000.0),
+            EquityPoint(timestamp="t1", balance=10000.0),
+            EquityPoint(timestamp="t2", balance=9800.0),
+        ]
+        m_eq, w_eq = compute_metrics(
+            list(trades), equity_curve=eq, initial_balance=10000.0
+        )
+        assert m_eq.max_drawdown.value == pytest.approx(200.0)
+        assert not any("trade_normalized" in w for w in w_eq)
+        assert not any("equity_curve_missing" in w for w in w_eq)
+        assert "equity" in m_eq.max_drawdown.definition.lower()
+
+        # equity absent -> trade-normalized + explicit warning
+        m_tr, w_tr = compute_metrics(list(trades), initial_balance=10000.0)
+        assert m_tr.max_drawdown.status == MetricStatus.DEFINED
+        assert any("equity_curve_missing" in w for w in w_tr)
+        assert any("trade_normalized" in w or "initial_balance_unknown" in w for w in w_tr)
+        # trade path: 10000 -> 10100 -> 10050, peak 10100 dd=50
+        assert m_tr.max_drawdown.value == pytest.approx(50.0)
+        assert m_eq.max_drawdown.value != m_tr.max_drawdown.value
 
     def test_missing_equity_uses_trade_path_with_warning(self):
         trades = [make_trade(100.0), make_trade(-50.0)]
@@ -235,6 +286,41 @@ class TestEvaluateAPI:
         assert back.metrics.to_dict() == result.metrics.to_dict()
         assert back.status == result.status
 
+    def test_result_to_dict_json_safe_nonfinite(self):
+        """m-4: EvaluationResult.to_dict must not emit Infinity/NaN JSON."""
+        import json
+        from nestquant.research.shared.evaluation.contracts import (
+            EvaluationMetrics,
+            MetricStatus,
+            MetricValue,
+        )
+
+        # Craft a result whose metric value is non-finite (defensive path)
+        bad = MetricValue(
+            name="sharpe_ratio",
+            value=float("inf"),
+            unit="ratio",
+            definition="x",
+            status=MetricStatus.DEFINED,
+        )
+        base = EvaluationMetrics.empty()
+        metrics = EvaluationMetrics(
+            **{**base.as_mapping(), "sharpe_ratio": bad}
+        )
+        result = EvaluationResult(
+            evaluation_id="eval-test",
+            metrics=metrics,
+            warnings=(),
+            status=EvaluationStatus.VALID,
+            configuration=EvaluationConfig(),
+        )
+        payload = result.to_dict()
+        # metrics_to_jsonable nullifies non-finite
+        assert payload["metrics"]["sharpe_ratio"]["value"] is None
+        text = json.dumps(payload, allow_nan=False)
+        assert "Infinity" not in text
+        assert "NaN" not in text
+
 
 class TestFoldsAndAggregation:
     def test_fold_roles_explicit(self):
@@ -280,6 +366,36 @@ class TestFoldsAndAggregation:
             [FoldEvaluation(fold=Fold(fold_id="1"), evaluation=e, trades=None)]
         )
         assert any("aggregate_without_trades" in w for w in agg.warnings)
+
+    def test_aggregate_recomputes_not_averages_fold_metrics(self):
+        """M-4: pooled method recomputes from trades; not mean of fold metrics."""
+        t1 = [make_trade(100.0), make_trade(100.0)]
+        t2 = [make_trade(-10.0)]
+        e1 = evaluate(t1)
+        e2 = evaluate(t2)
+        # mean of fold win_rates would be (1.0 + 0.0)/2 = 0.5
+        # pooled win_rate = 2/3
+        agg = aggregate_fold_evaluations(
+            [
+                FoldEvaluation(fold=Fold(fold_id="a", role=FoldRole.IS), evaluation=e1, trades=t1),
+                FoldEvaluation(fold=Fold(fold_id="b", role=FoldRole.OOS), evaluation=e2, trades=t2),
+            ]
+        )
+        assert agg.aggregation_method == "pooled_closed_trades"
+        assert agg.aggregate_metrics.total_trades.value == 3
+        assert agg.aggregate_metrics.win_rate.value == pytest.approx(2.0 / 3.0)
+        mean_fold_wr = (e1.metrics.win_rate.value + e2.metrics.win_rate.value) / 2
+        assert agg.aggregate_metrics.win_rate.value != pytest.approx(mean_fold_wr)
+        # fold-level results retained
+        assert len(agg.fold_evaluations) == 2
+        # path metrics present but labeled as trade-sequence via warnings
+        assert any("equity_curve_missing" in w or "trade_normalized" in w for w in agg.warnings)
+
+    def test_duplicate_trades_counted_as_supplied(self):
+        t = make_trade(10.0)
+        metrics, _ = compute_metrics([t, t])
+        assert metrics.total_trades.value == 2
+        assert metrics.total_pnl.value == pytest.approx(20.0)
 
 
 class TestComparison:

@@ -260,7 +260,11 @@ class EvaluationMetrics:
             )
 
         return cls(
-            total_trades=m("total_trades", "count", "closed trades"),
+            total_trades=m(
+                "total_trades",
+                "count",
+                "closed trades with finite PnL in the evaluation population",
+            ),
             winning_trades=m("winning_trades", "count", "closed trades with pnl>0"),
             losing_trades=m("losing_trades", "count", "closed trades with pnl<0"),
             breakeven_trades=m("breakeven_trades", "count", "closed trades with pnl==0"),
@@ -294,7 +298,11 @@ class EvaluationMetrics:
 
 @dataclass(frozen=True)
 class EvaluationResult:
-    """Immutable single-run evaluation evidence (not a quality score)."""
+    """Immutable single-run evaluation evidence (not a quality score).
+
+    Duplicate-trade convention: metrics reflect the trade observations supplied
+    to evaluate(); duplicate trade objects count as distinct observations.
+    """
 
     evaluation_id: str
     metrics: EvaluationMetrics
@@ -309,12 +317,15 @@ class EvaluationResult:
         return self.metrics.as_mapping()[name]
 
     def to_dict(self) -> dict:
+        # Lazy import: metrics.py depends on contracts; avoid circular import.
+        from nestquant.research.shared.evaluation.metrics import metrics_to_jsonable
+
         return {
             "evaluation_id": self.evaluation_id,
             "status": self.status.value,
             "warnings": list(self.warnings),
             "configuration": self.configuration.to_dict(),
-            "metrics": self.metrics.to_dict(),
+            "metrics": metrics_to_jsonable(self.metrics),
             "execution_ref": self.execution_ref,
             "fold": dict(self.fold) if self.fold is not None else None,
             "experiment": dict(self.experiment) if self.experiment is not None else None,

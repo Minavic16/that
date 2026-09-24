@@ -69,7 +69,7 @@ from nestquant.research.shared.evaluation import (
     EvaluationConfig, evaluate, evaluation_input_from_simulator,
 )
 
-inp = evaluation_input_from_simulator(simulator, pair="EUR/USD")
+inp = evaluation_input_from_simulator(simulator)  # no pair filter; uses all portfolio trades
 result = evaluate(inp, EvaluationConfig())
 result.status          # VALID | VALID_WITH_WARNINGS | INVALID
 result.metrics.win_rate  # MetricValue(name, value, unit, definition, status)
@@ -85,23 +85,32 @@ result.metrics.win_rate  # MetricValue(name, value, unit, definition, status)
 - Undefined metrics: `value=None`, never accidental NaN or 0.
 - Non-finite metric values in JSON: serialized as `null` + status
   `NOT_APPLICABLE` (e.g. infinite profit factor when there are no losses).
+  `EvaluationResult.to_dict()` routes metrics through `metrics_to_jsonable()`.
 
 ### 4.3 Canonical metric set (19)
 
 | Metric | Unit | Edge cases |
 |---|---|---|
-| `total_trades` | count | 0 trades → DEFINED 0 |
-| `winning_trades` / `losing_trades` / `breakeven_trades` / `open_trades_excluded` | count | open trades excluded with warning |
+| `total_trades` | count | Closed trades with **finite PnL** in the evaluation population; closed trades with non-finite PnL are excluded from metric calculations (warning `non_finite_pnl_excluded`); 0 trades → DEFINED 0 |
+| `winning_trades` / `losing_trades` / `breakeven_trades` | count | Counts over the finite-PnL closed population |
 | `total_pnl` | account currency | non-finite PnL excluded + warning |
 | `gross_profit` / `gross_loss` | account currency | empty sides → 0 DEFINED |
-| `win_rate` | fraction [0,1] | 0 trades → UNDEFINED |
+| `win_rate` | fraction [0,1] | 0 trades → UNDEFINED; open trades excluded with warning (not a metric field) |
 | `profit_factor` | ratio | no losses → NOT_APPLICABLE (infinite) + warning; no wins → 0 |
 | `expectancy` | account currency | 0 trades → UNDEFINED |
 | `average_win` / `average_loss` | account currency | empty side → UNDEFINED |
-| `max_drawdown` | account currency | equity curve preferred; else trade-normalized cumsum + warning |
+| `max_drawdown` / `max_drawdown_pct` | currency / percent | **Source is input-dependent** (see §4.3.1); equity curve preferred; else trade-normalized cumsum + warning |
 | `total_return` | fraction | initial_balance ≤ 0 → UNDEFINED |
-| `sharpe_ratio` | ratio | <2 obs → UNDEFINED; zero variance → UNDEFINED + warning |
+| `sharpe_ratio` | ratio | Trade-PnL ×√252 convention (not universal portfolio time-series Sharpe); <2 obs → UNDEFINED; zero variance → UNDEFINED + warning |
 | `average_trade_duration` / `average_winning_trade_duration` / `average_losing_trade_duration` | seconds | missing exits skipped |
+
+**Warnings (not EvaluationMetrics fields):**
+
+- `open_trades_excluded_from_metrics:N` — open trades omitted from closed-trade metrics.
+- `non_finite_pnl_excluded:N` — closed trades with non-finite PnL omitted from the evaluation population.
+- `equity_curve_missing_trade_normalized_drawdown` / `equity_curve_missing_and_initial_balance_unknown` — drawdown source is trade-normalized, not equity-path.
+- `aggregate_zero_folds` — zero folds supplied to aggregate evaluation.
+- `aggregate_without_trades_unavailable_use_fold_results` — aggregate metrics empty without carried trades.
 
 Canonical formulas (aligned with `research/shared/backtest/metrics.py`):
 
@@ -113,6 +122,26 @@ Canonical formulas (aligned with `research/shared/backtest/metrics.py`):
   trade-normalized cumulative PnL (zero-trades / no-equity cases warn)
 
 All semantics are documented in `evaluation/metrics.py::METRIC_SEMANTICS`.
+
+**Duplicate trades:** evaluation counts the trade observations supplied to it.
+Duplicate trade objects are treated as distinct observations unless the caller
+removes them before evaluation.
+
+#### 4.3.1 Drawdown source contract
+
+`max_drawdown` / `max_drawdown_pct` share one metric name whose **source depends
+on input availability**:
+
+1. **Equity-path drawdown** — when `equity_curve` is supplied, path = balance series.
+2. **Trade-normalized drawdown** — when equity is absent, path = initial_balance +
+   cumsum of closed finite-PnL trades (or base 0 if initial unknown).
+
+Consumers **MUST** inspect evaluation warnings (and source context) when
+interpreting drawdown; the two sources are not silently identical. When equity
+is absent, warnings `equity_curve_missing_trade_normalized_drawdown` or
+`equity_curve_missing_and_initial_balance_unknown` are emitted. Aggregate fold
+evaluation without an equity curve produces **trade-sequence drawdown**, not
+reconstructed portfolio equity drawdown.
 
 ### 4.4 Status rules
 
@@ -132,7 +161,21 @@ All semantics are documented in `evaluation/metrics.py::METRIC_SEMANTICS`.
 - No equity-curve stitching across folds. If trades are not carried on
   `FoldEvaluation.trades`, aggregate metrics stay empty and warning
   `aggregate_without_trades_unavailable_use_fold_results` is set.
-- Zero folds → `VALID_WITH_WARNINGS` + `zero_folds_no_aggregate_metrics`.
+- Zero folds → `VALID_WITH_WARNINGS` + `aggregate_zero_folds`.
+
+**`pooled_closed_trades` interpretation (ADR-4):** the method recomputes
+metrics from the supplied trade observations (concatenate closed trades →
+recompute canonical metrics). It does **not** average fold metrics. Path-dependent
+metrics such as drawdown depend on the supplied fold order and represent the
+concatenated trade sequence. They do not reconstruct capital continuity between
+independent folds and must not be interpreted as a stitched multi-fold portfolio
+equity curve. Therefore:
+
+- fold order is semantically relevant for path-dependent aggregate metrics;
+- no fold overlap detection is currently performed;
+- no assumption should be made that independently evaluated folds share one
+  continuous capital account;
+- no OOS equity stitching is performed.
 
 ### 4.6 Comparison
 
@@ -147,11 +190,19 @@ are reported as such.
 - `Provenance`: `run_id`, `experiment_id`, `git (GitIdentity)`, `code_version`,
   `data (DataIdentity)`, `strategy_identity`, `execution_config` +
   `evaluation_config` (+ sha256 config hashes), `evaluation_id`,
-  `created_at`, `parent_run_id`, `notes`.
+  `evaluation_status` (string: `VALID` / `VALID_WITH_WARNINGS` / `INVALID` or
+  other caller-supplied label; provenance does not import the evaluation
+  package), `created_at`, `parent_run_id`, `notes`.
 - `GitIdentity`: `commit`, `dirty`, `available` — unavailable git → all `None`
   / `available=False` (fail closed, never fabricate a SHA).
 - `DataIdentity`: instruments, timeframe, start/end, source, dataset id/version,
   checksum, n_bars — all optional, all explicit.
+
+**Data identity completeness (reproducibility-grade):** high-level identity is
+useful but partial. Reproducibility-grade runs should provide as much of
+source, dataset ID/version, instrument set, timeframe, time window, checksum,
+and bar count as is realistically available. The system must never fabricate
+missing identity information.
 
 ### 5.2 Identity helpers (`provenance/identity.py`)
 
@@ -160,7 +211,9 @@ are reported as such.
   same fail-closed pattern as `research/experiment.py`.
 - `config_hash(mapping)`: deterministic JSON (`sort_keys`, compact separators)
   → SHA-256 → 16 hex chars; same pattern as `core/configuration/experiment.py`,
-  **reimplemented research-side** (no production import). Empty/None → None.
+  **reimplemented research-side** (no production import).
+  `None` → `None`; empty mapping `{}` → deterministic hash of the empty
+  mapping (not `None`).
 
 ### 5.3 Builder
 
@@ -273,6 +326,14 @@ ResearchLedger().append_provenance(prov, status="COMPLETE", result_ref=f"eval://
   aggregate metrics use `pooled_closed_trades`; fold-level results always
   retained; no cross-fold equity stitch. If trades aren’t available, aggregate
   metrics are empty with an explicit warning rather than a fabricated number.
+  **`pooled_closed_trades` recomputes metrics from the supplied trade
+  observations. Path-dependent metrics such as drawdown depend on the supplied
+  fold order and represent the concatenated trade sequence. They do not
+  reconstruct capital continuity between independent folds and must not be
+  interpreted as a stitched multi-fold portfolio equity curve.** Fold order is
+  semantically relevant for path-dependent aggregates; no fold overlap detection
+  is performed; independently evaluated folds must not be assumed to share one
+  continuous capital account; no OOS equity stitching is performed.
 - **Consequences:** Aggregates are reproducible and conservative; walk-forward
   methodology remains a future, explicit design.
 

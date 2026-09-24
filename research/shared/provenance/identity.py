@@ -67,7 +67,9 @@ def canonical_json(obj: Any) -> str:
 def config_hash(obj: Optional[Mapping[str, Any]]) -> Optional[str]:
     """Deterministic SHA-256 of a JSON-safe config mapping.
 
-    Same configuration -> same hash. Returns None for empty/None config.
+    Same configuration -> same hash.
+      - None -> None
+      - empty mapping {} -> deterministic hash of the empty mapping (not None)
     """
     if obj is None:
         return None

@@ -109,7 +109,9 @@ class LedgerEntry:
             git_dirty=provenance.git.dirty,
             status=status,
             notes=tuple(notes) + tuple(provenance.notes),
-            evaluation_status=evaluation_status,
+            evaluation_status=evaluation_status
+            if evaluation_status is not None
+            else provenance.evaluation_status,
             warnings=tuple(warnings),
         )
 

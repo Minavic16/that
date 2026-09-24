@@ -79,8 +79,28 @@ class TestExecutionToEvaluationContract:
             engine.on_bar("EUR/USD", df.iloc[i : i + 10])
         inp = evaluation_input_from_engine(engine)
         result = evaluate(inp)
-        assert result.metrics.total_trades.status.value in ("DEFINED", "UNDEFINED")
-        assert result.status in (EvaluationStatus.VALID, EvaluationStatus.VALID_WITH_WARNINGS)
+        # non-trivial fixture: engine path produces a concrete closed population
+        n_closed = len([t for t in inp.trades if not t.is_open])
+        assert n_closed >= 1
+        assert result.metrics.total_trades.status.value == "DEFINED"
+        assert result.metrics.total_trades.value == n_closed
+        assert result.status in (
+            EvaluationStatus.VALID,
+            EvaluationStatus.VALID_WITH_WARNINGS,
+        )
+        assert result.execution_ref == "engines.BacktestEngine"
+        # deterministic metric: total_pnl equals sum of finite closed pnl
+        finite_pnl = sum(
+            float(t.pnl)
+            for t in inp.trades
+            if not t.is_open and t.pnl == t.pnl and t.pnl not in (float("inf"), float("-inf"))
+        )
+        if n_closed >= 1:
+            assert result.metrics.total_pnl.value == pytest.approx(finite_pnl)
+        # Phase 2 compatibility: engine still exposes get_results via simulator
+        results = engine.get_results()
+        assert "total_trades" in results
+        assert results["total_trades"] == n_closed
 
     def test_simulator_to_evaluation(self):
         sim = ExecutionSimulator(BacktestConfig())
@@ -212,6 +232,18 @@ class TestProvenance:
         assert config_hash(a) == config_hash(b)
         assert config_hash(a) is not None
         assert config_hash(None) is None
+        # m-1: empty mapping hashes deterministically; None stays None
+        empty_hash = config_hash({})
+        assert empty_hash is not None
+        assert config_hash({}) == empty_hash
+        assert empty_hash != config_hash(None)
+
+    def test_data_identity_never_fabricates(self):
+        prov = build_provenance(data=None)
+        assert prov.data.checksum is None
+        assert prov.data.dataset_id is None
+        assert prov.data.instruments == ()
+        assert prov.data.timeframe is None
 
     def test_git_identity_available_or_none(self):
         commit = get_git_commit()
@@ -249,11 +281,13 @@ class TestProvenance:
         )
         assert prov.run_id.startswith("run-")
         assert prov.evaluation_id == result.evaluation_id
+        assert prov.evaluation_status == "VALID_WITH_WARNINGS"
         assert prov.evaluation_config_hash is not None
         assert prov.git.available in (True, False)
         # dirty tree must be represented if known
         d = prov.to_dict()
         assert d["git"]["dirty"] in (True, False, None)
+        assert d["evaluation_status"] == "VALID_WITH_WARNINGS"
 
     def test_provenance_roundtrip(self):
         prov = build_provenance(

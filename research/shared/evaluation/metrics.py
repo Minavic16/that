@@ -4,6 +4,10 @@ Formula authority for the ROS evaluation layer (P&L / trade metrics).
 Compatible in spirit with research.shared.backtest.metrics.calculate_metrics
 for shared formulas, with explicit MetricValue edge-case statuses.
 
+Duplicate-trade convention: evaluation counts the trade observations supplied
+to it. Duplicate trade objects are treated as distinct observations unless the
+caller removes them before evaluation.
+
 Must not import production.* or Strategy 2 modules.
 """
 from __future__ import annotations
@@ -28,8 +32,13 @@ from nestquant.research.shared.execution.contracts import Trade
 
 METRIC_SEMANTICS: dict[str, dict[str, str]] = {
     "total_trades": {
-        "definition": "Count of closed trades (exit_price is not None).",
+        "definition": (
+            "Count of closed trades with finite P&L values included in the "
+            "evaluation population; closed trades with non-finite P&L are "
+            "excluded from metric calculations."
+        ),
         "unit": "count",
+        "non_finite_pnl": "Excluded from total_trades and all PnL metrics; warning emitted.",
     },
     "winning_trades": {
         "definition": "Closed trades with pnl > 0.",
@@ -90,11 +99,17 @@ METRIC_SEMANTICS: dict[str, dict[str, str]] = {
     },
     "max_drawdown": {
         "definition": (
-            "Maximum peak-to-trough drop on the equity path. Uses provided "
-            "equity_curve when present; otherwise trade-normalized cumsum path "
-            "from initial_balance (warning emitted)."
+            "Maximum peak-to-trough drop on the chosen equity path. Source is "
+            "input-dependent: uses provided equity_curve balances when present "
+            "(equity-path drawdown); otherwise trade-normalized cumsum path "
+            "from initial_balance (trade-sequence approximation). Consumers "
+            "MUST inspect evaluation warnings/source context when interpreting "
+            "drawdown — the two sources are not silently identical. Aggregate "
+            "fold evaluation without an equity curve produces trade-sequence "
+            "drawdown, not reconstructed portfolio equity drawdown."
         ),
         "unit": "currency",
+        "equity_source": "equity_curve when present; else trade-normalized path + warning",
     },
     "max_drawdown_pct": {
         "definition": "max_drawdown / running_peak * 100 (percent).",

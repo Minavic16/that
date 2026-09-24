@@ -129,7 +129,7 @@ def build_provenance(
     Does not require Strategy 2. Unavailable values remain None (fail closed).
     """
     exec_cfg, exec_src = _execution_fields(execution)
-    eval_cfg, eval_id, _eval_status = _evaluation_fields(evaluation)
+    eval_cfg, eval_id, eval_status = _evaluation_fields(evaluation)
     exp_id = _experiment_id(experiment)
 
     commit = get_git_commit(cwd=cwd)
@@ -152,6 +152,7 @@ def build_provenance(
         evaluation_config_hash=config_hash(eval_cfg),
         created_at=created_at or now_iso(),
         evaluation_id=eval_id,
+        evaluation_status=eval_status,
         parent_run_id=parent_run_id,
         notes=tuple(notes),
     )

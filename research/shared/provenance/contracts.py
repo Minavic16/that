@@ -87,6 +87,9 @@ class Provenance:
     evaluation_config_hash: Optional[str] = None
     created_at: Optional[str] = None
     evaluation_id: Optional[str] = None
+    # String form of EvaluationStatus (VALID/VALID_WITH_WARNINGS/INVALID) or
+    # other status labels; provenance does not import the evaluation package.
+    evaluation_status: Optional[str] = None
     parent_run_id: Optional[str] = None
     notes: tuple[str, ...] = ()
 
@@ -108,6 +111,7 @@ class Provenance:
             "evaluation_config_hash": self.evaluation_config_hash,
             "created_at": self.created_at,
             "evaluation_id": self.evaluation_id,
+            "evaluation_status": self.evaluation_status,
             "parent_run_id": self.parent_run_id,
             "notes": list(self.notes),
         }
@@ -127,6 +131,7 @@ class Provenance:
             evaluation_config_hash=d.get("evaluation_config_hash"),
             created_at=d.get("created_at"),
             evaluation_id=d.get("evaluation_id"),
+            evaluation_status=d.get("evaluation_status"),
             parent_run_id=d.get("parent_run_id"),
             notes=tuple(d.get("notes", ()) or ()),
         )
