@@ -1,0 +1,76 @@
+{
+  "timestamp": "2026-09-24T19:11:28.551746+00:00",
+  "health_status": "GREEN",
+  "account": {
+    "starting_capital": 0.0,
+    "current_balance": 0.0,
+    "current_equity": 0.0,
+    "peak_equity": 0.0,
+    "available_capital": null
+  },
+  "pnl": {
+    "realized_pnl": 0.0,
+    "unrealized_pnl": 0.0,
+    "total_pnl": 0.0,
+    "daily_pnl": 0.0,
+    "weekly_pnl": 0.0,
+    "monthly_pnl": 0.0,
+    "total_return_pct": 0.0
+  },
+  "drawdown": {
+    "current_drawdown_pct": 0.0,
+    "maximum_drawdown_pct": 0.0,
+    "daily_drawdown_pct": 0.0,
+    "drawdown_from_peak": 0.0,
+    "drawdown_from_starting_capital": 0.0
+  },
+  "trading": {
+    "total_trades": 0,
+    "winning_trades": 0,
+    "losing_trades": 0,
+    "win_rate": 0.0,
+    "profit_factor": 0.0,
+    "average_win": 0.0,
+    "average_loss": 0.0,
+    "expectancy": 0.0,
+    "average_r": null,
+    "largest_win": 0.0,
+    "largest_loss": 0.0,
+    "current_losing_streak": 0,
+    "max_losing_streak": 0,
+    "open_positions": 0
+  },
+  "risk": {
+    "risk_per_trade_pct": 0.0015,
+    "daily_loss_limit_pct": 3.0,
+    "current_daily_loss_pct": 0.0,
+    "max_drawdown_limit_pct": 8.0,
+    "current_drawdown_pct": 0.0,
+    "remaining_daily_loss_pct": 3.0,
+    "remaining_drawdown_pct": 8.0,
+    "remaining_trades_today": 4,
+    "max_concurrent_positions": 3,
+    "max_total_exposure": 3.0,
+    "max_position_size_per_pair": 0.1,
+    "kill_switch_active": false,
+    "circuit_breaker_status": null
+  },
+  "execution": {
+    "last_signal": {
+      "symbol": "EUR/NZD",
+      "direction": "BUY",
+      "signal_id": "980d2388-cb6b-45a9-b4e5-eab545ebf450",
+      "entry": 2.00977,
+      "sl": 2.000683675905153,
+      "tp": 2.0415721343319633,
+      "timestamp": "2026-09-24T16:00:00+00:00"
+    },
+    "last_trade": null,
+    "execution_mode": "SHADOW",
+    "mt5_connected": true,
+    "bridge_health": "healthy",
+    "runner_health": "healthy",
+    "data_freshness": "2026-09-24T16:00:00+00:00",
+    "last_evaluation": "2026-09-24T19:11:28.548065+00:00"
+  }
+}
